@@ -1,16 +1,16 @@
 
 
 import { UserModel } from "./user.schema.js"
-import {RoomModel} from "../room/room.schema.js"
+import { RoomModel } from "../room/room.schema.js"
 import bcrypt from "bcrypt"
 export const userRegisterationRepo = async (userData) => {
 
 
     try {
         const newUser = new UserModel(userData)
-        const publicRoomData=await RoomModel.findOne({type:"public"})
-        
-        if(publicRoomData){
+        const publicRoomData = await RoomModel.findOne({ type: "public" })
+
+        if (publicRoomData) {
             // publicRoomData.participants.push(newUser._id)
             // await publicRoomData.save()
         }
@@ -21,7 +21,7 @@ export const userRegisterationRepo = async (userData) => {
             message: "User Registered Successfully",
             data: {
                 user: {
-                    publicRommId: publicRoomData?._id ,
+                    publicRommId: publicRoomData?._id,
                     userId: newUser?._id,
                     name: newUser?.name,
                     // email: newUser.email,
@@ -49,8 +49,8 @@ export const userSignInRepo = async (data) => {
 
     try {
         const user = await UserModel.findOne({ email })
-         const publicRoomData=await RoomModel.findOne({type:"public"})
-         console.log("public room data at signin repo",publicRoomData)
+        const publicRoomData = await RoomModel.findOne({ type: "public" })
+        console.log("public room data at signin repo", publicRoomData)
         if (!user) {
             return {
                 success: false,
@@ -90,10 +90,6 @@ export const userSignInRepo = async (data) => {
 
         }
 
-
-
-
-
     } catch (error) {
         return {
             success: false,
@@ -106,30 +102,65 @@ export const userSignInRepo = async (data) => {
 }
 
 
+export const getAllUsersRepo = async () => {
+
+    try {
+        const getAllUser = await UserModel.find().select("-password")
+        return {
+            success: true,
+            status: 200,
+            message: "All Users Fetched Successfully",
+            data: getAllUser
+        }
+
+
+    } catch (error) {
+        return {
+            success: false,
+            error: {
+                statusCode: 500,
+                message: error
+            }
+
+        }
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+
 ////////////////////////////////////////////////////////////////
 // ******SOCKET REPO FUNCTIONS______________ 
 ////////////////////////////////////////////////////////////////       
 
 export const handleOnlineUsersrepo = async (userId) => {
     console.log("handleonlinerepotriggered")
-  try {
-    const updatedUser = await UserModel.findByIdAndUpdate(
-      userId,
-      { isOnline: true,lastSeen:new Date },
-      { new: true }   // returns updated document
-    );
-    //  console.log("updatedUser",updatedUser)
-    return {
-      success: true,
-      status: 200,
-      data: updatedUser
-    };
+    try {
+        const updatedUser = await UserModel.findByIdAndUpdate(
+            userId,
+            { isOnline: true, lastSeen: new Date },
+            { new: true }   // returns updated document
+        );
+        //  console.log("updatedUser",updatedUser)
+        return {
+            success: true,
+            status: 200,
+            data: updatedUser
+        };
 
-  } catch (error) {
-    return {
-      success: false,
-      status: 500,
-      message: error.message
-    };
-  }
+    } catch (error) {
+        return {
+            success: false,
+            status: 500,
+            message: error.message
+        };
+    }
 };

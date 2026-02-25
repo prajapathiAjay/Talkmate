@@ -22,9 +22,16 @@ export const socketLogic = (server) => {
   console.log(error)
  }
    
+// typing indicator
+// on Typing
+ socket.on("typing",({name,roomId,userId})=>{
+socket.broadcast.to(roomId).emit("userTyping",{userId,name})
+})  
 
-   
-
+//  on STop Typing
+socket.on("stop-typing",({name,roomId,userId})=>{
+  socket.broadcast.to(roomId).emit("userStopTyping",{userId,name})
+})
 
     socket.on("join", ({ publicRoomId, userName }) => {
       socket.roomId = publicRoomId;

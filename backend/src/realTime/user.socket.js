@@ -25,3 +25,20 @@ export const handleOnlineUsers = async (socket) => {
       console.error("Error in handleOnlineUsers:", error)
    }
 }
+
+
+export const handleOfflineUsers=async (socket)=>{
+console.log("handleOffline Users triggered")
+
+try {
+   const userId=socket.user.id
+   const response=await handleDisconnectUserRepo(userId)
+   if(response.success){
+      socket.broadcast.emit("userDisconnected",response)
+   }
+} catch (error) {
+   console.log(error)
+   
+}
+
+}

@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt"
-import { userRegisterationRepo } from "./user.reposotory.js"
+import { userRegisterationRepo,userSignInRepo,getAllUsersRepo } from "./user.reposotory.js"
 import { customErrorHandler } from "../../middlewares/errorHandler.js"
-import { userSignInRepo } from "./user.reposotory.js"
 import jwt from "jsonwebtoken"
 
 export const userRegisteration = async (req, res, next) => {
@@ -87,5 +86,31 @@ export const userSignIn = async (req, res, next) => {
       )
     )
   }
+} 
+
+
+
+export const getAllUsers= async(req,res,next)=>{
+
+ try {
+   const allUsers=await getAllUsersRepo()
+  
+  if(allUsers.success){
+      return res.status(200).json({
+        success:allUsers?.success,
+        message:allUsers?.message,
+        data:allUsers?.data
+
+
+      })
+  }
+  
+ } catch (error) {
+  return next(new customErrorHandler(500,error.message || "internal Server error"))
+ }
+
+
+
+
 }
 

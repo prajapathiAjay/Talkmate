@@ -16,7 +16,7 @@ const MessageItem = ({ msg, currentUser }) => {
 
   return (
     <div
-      className={`flex ${isCurrentUser ? "justify-end" : "justify-start"} mb-4`}
+      className={`flex ${isCurrentUser ? "justify-end" : "justify-start"} mb-4 bg-amber-600`}
     >
       <div className="flex max-w-xl">
         {!isCurrentUser && (
@@ -51,6 +51,7 @@ const MessageItem = ({ msg, currentUser }) => {
           </span>
         </div>
       </div>
+      
     </div>
   );
 };

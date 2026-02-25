@@ -7,6 +7,8 @@ import MessageItem from "./MessageItem";
 import MessageInput from "./MessageInput";
 import { useAuth } from "../contexts/AuthProvider.jsx";
 import CustomApiService from "../services/CustomApiService.jsx";
+import MessageTypingIndicator from "./MessageTypingIndicator.jsx";
+import OnlineUsers from "./OnlineUsers.jsx";
 
 const Chat = () => {
   const { GET } = CustomApiService();
@@ -16,10 +18,10 @@ const Chat = () => {
   console.log("User Data in Chat Component:", userData);
   const [currentUser, setCurrentUser] = useState(userData?.user?.userId);
   const [messages, setMessages] = useState([]);
-  const [newMsg, setNewMsg] = useState("");
+  const [isAtBottom, setIsAtBottom] = useState(true);
   const [roomType, setRoomType] = useState("public");
   const messagesEndRef = useRef(null);
-  console.log("sendt message", newMsg);
+  // console.log("sendt message", newMsg);
 
   const usersOnline = [
     { name: "Alice", status: "online", isActive: true },
@@ -90,14 +92,14 @@ const Chat = () => {
   }, []);
 
   console.log("Messagest", messages);
-const handleStatusChange=(data)=>{
-console.log("handleStatus",data)
-}
+  const handleStatusChange = (data) => {
+    console.log("handleStatus", data);
+  };
 
   useEffect(() => {
     if (!currentUser) return;
 
-    socket.on("user-status-changed",handleStatusChange);
+    socket.on("user-status-changed", handleStatusChange);
     socket.emit("join", { publicRoomId: publicRoomId, userName: currentUser });
     socket.on("userJoined", handleUserJoined);
     socket.on("joinSuccess", handleJoinSuccess);
@@ -107,8 +109,8 @@ console.log("handleStatus",data)
       console.error("Socket connection error:", error.message);
     });
     socket.on("disconnect", (reason) => {
-  console.log("Client detected disconnect:", reason);
-});
+      console.log("Client detected disconnect:", reason);
+    });
 
     return () => {
       socket.off("userJoined", handleUserJoined);
@@ -120,37 +122,41 @@ console.log("handleStatus",data)
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
   useEffect(() => {
-    scrollToBottom();
+    if (isAtBottom) {
+      scrollToBottom();
+    }
   }, [messages]);
+  // useEffect(() => {
+  //   scrollToBottom();
+  // }, [messages]);
 
-  const sendMessage = () => {
-    if (!newMsg.trim()) return;
+  // const sendMessage = () => {
+  //   if (!newMsg.trim()) return;
 
-    const messageData = {
-      senderId: userId,
-      senderName: userData?.user?.name,
-      message: newMsg,
-    };
-    console.log("messageData", messageData);
-    if (roomType === "public") {
-      messageData.roomId = publicRoomId;
-    }
+  //   const messageData = {
+  //     senderId: userId,
+  //     senderName: userData?.user?.name,
+  //     message: newMsg,
+  //   };
+  //   console.log("messageData", messageData);
+  //   if (roomType === "public") {
+  //     messageData.roomId = publicRoomId;
+  //   }
 
-    socket.emit("sendMessage", messageData, (res) => {
-      console.log("server", res);
-    });
-    // console.log("Message sent:", res);
-    setNewMsg("");
-  };
+  //   socket.emit("sendMessage", messageData, (res) => {
+  //     console.log("server", res);
+  //   });
+  //   // console.log("Message sent:", res);
+  //   setNewMsg("");
+  // };
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
+  // const handleKeyPress = (e) => {
+  //   if (e.key === "Enter" && !e.shiftKey) {
+  //     e.preventDefault();
+  //     sendMessage();
+  //   }
+  // };
 
   const handleCreateRoom = (data) => {
     console.log("Joining with data:", data);
@@ -170,7 +176,7 @@ console.log("handleStatus",data)
       {/* <UserList usersOnline={usersOnline} /> */}
 
       {/* Middle - Join Room / Welcome */}
-      <JoinRoom onJoin={handleCreateRoom} currentUser={currentUser} />
+      
 
       {/* Right - Main Chat Area */}
       <div
@@ -178,8 +184,15 @@ console.log("handleStatus",data)
       >
         <ChatHeader />
 
-        {/* Messages Container */}
-        <div className="flex-1 overflow-y-auto bg-linear-to-b from-white to-gray-50 p-6">
+        {/* Messages Container-scrolling container */}
+        {/* <div className="flex-1  overflow-y-auto bg-linear-to-b from-white to-gray-50 p-6"> */}
+        <div
+          className="flex-1   overflow-y-auto bg-linear-to-b from-white to-gray-50 p-6" 
+          onScroll={(e) => {
+            const { scrollTop, scrollHeight, clientHeight } = e.target;
+            setIsAtBottom(scrollHeight - scrollTop <= clientHeight + 50);
+          }}
+        >
           <div className="max-w-4xl mx-auto">
             {messages.length === 0 ? (
               <div className="h-full flex items-center justify-center">
@@ -208,21 +221,78 @@ console.log("handleStatus",data)
                 <MessageItem key={index} msg={msg} currentUser={currentUser} />
               ))
             )}
+            <MessageTypingIndicator />
             <div ref={messagesEndRef} />
           </div>
         </div>
 
         {/* Input Area */}
         <MessageInput
-          newMsg={newMsg}
-          setNewMsg={setNewMsg}
-          onSend={sendMessage}
-          onKeyPress={handleKeyPress}
+          // newMsg={newMsg}
+          // setNewMsg={setNewMsg}
+          // onSend={sendMessage}
+          // onKeyPress={handleKeyPress}
           disabled={!currentUser}
+          roomType={roomType}
         />
       </div>
+      {/* <JoinRoom onJoin={handleCreateRoom} currentUser={currentUser} /> */}
+      <OnlineUsers/>
     </div>
   );
 };
 
 export default Chat;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React from 'react'
+// import { Cloudinary } from '@cloudinary/url-gen';
+// import { auto } from '@cloudinary/url-gen/actions/resize';
+// import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
+// import { AdvancedImage } from '@cloudinary/react';
+
+// const App = () => {
+//   const cld = new Cloudinary({ cloud: { cloudName: 'dujidnpfl' } });
+  
+//   // Use this sample image or upload your own via the Media Library
+//   const img = cld
+//         .image('cld-sample-5')
+//         .format('auto') // Optimize delivery by resizing and applying auto-format and auto-quality
+//         .quality('auto')
+//         .resize(auto().gravity(autoGravity()).width(500).height(500)); // Transform the image: auto-crop to square aspect_ratio
+
+//   return (<AdvancedImage cldImg={img}/>);
+// };
+
+// export default App

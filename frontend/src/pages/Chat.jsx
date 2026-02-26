@@ -14,12 +14,15 @@ const Chat = () => {
   const { GET } = CustomApiService();
   const { userData } = useAuth();
   let userId = userData?.user?.userId;
+  let userName=userData?.user?.name
   let publicRoomId = userData?.user?.publicRoomId;
   console.log("User Data in Chat Component:", userData);
   const [currentUser, setCurrentUser] = useState(userData?.user?.userId);
   const [messages, setMessages] = useState([]);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [roomType, setRoomType] = useState("public");
+  const [roomId,setRoomId]=useState(publicRoomId||null)
+
   const messagesEndRef = useRef(null);
   // console.log("sendt message", newMsg);
 
@@ -100,9 +103,9 @@ const Chat = () => {
     if (!currentUser) return;
 
     socket.on("user-status-changed", handleStatusChange);
-    socket.emit("join", { publicRoomId: publicRoomId, userName: currentUser });
+    socket.emit("join-room", {roomId: publicRoomId, userName: userName });
     socket.on("userJoined", handleUserJoined);
-    socket.on("joinSuccess", handleJoinSuccess);
+    // socket.on("joinSuccess", handleJoinSuccess);
     socket.on("message", handleMessage);
     // socket.on("user-status-changed",handleUserStatus)
     socket.on("connect_error", (error) => {
@@ -114,7 +117,7 @@ const Chat = () => {
 
     return () => {
       socket.off("userJoined", handleUserJoined);
-      socket.off("joinSuccess", handleJoinSuccess);
+      // socket.off("joinSuccess", handleJoinSuccess);
       socket.off("message", handleMessage);
     };
   }, [currentUser, publicRoomId]);
@@ -186,7 +189,7 @@ const Chat = () => {
 
         {/* Messages Container-scrolling container */}
         {/* <div className="flex-1  overflow-y-auto bg-linear-to-b from-white to-gray-50 p-6"> */}
-        <div
+        {roomId?(<div
           className="flex-1   overflow-y-auto bg-linear-to-b from-white to-gray-50 p-6" 
           onScroll={(e) => {
             const { scrollTop, scrollHeight, clientHeight } = e.target;
@@ -224,7 +227,9 @@ const Chat = () => {
             <MessageTypingIndicator />
             <div ref={messagesEndRef} />
           </div>
-        </div>
+        </div>):(<div>no room joined yet
+
+        </div>)}
 
         {/* Input Area */}
         <MessageInput

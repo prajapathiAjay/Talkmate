@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 
 const messageSchema = new mongoose.Schema({
     roomId: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Room",
         required: true
     },
     senderId: {
@@ -26,9 +27,9 @@ const messageSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    type: {
+    messageType: {
         type: String,
-        enum: ["user", "system","join","leave"],
+        enum: ["user", "system", "join", "leave"],
         default: "user"
     }
 

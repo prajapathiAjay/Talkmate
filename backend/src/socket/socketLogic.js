@@ -38,9 +38,8 @@ socket.on("stop-typing",({name,roomId,userId})=>{
       socket.userName = userName;
        console.log("roomid",roomId,userName)
       socket.join(roomId);
-
         try {
-          const messageData={roomId,message:`${userName} has joined the Chat`,type:"join"}
+          const messageData={roomId,message:`${userName} has joined the Chat`,messageType:"join"}
           const  message=await  createMessage(messageData)
           console.log("messages",message)
 
@@ -57,7 +56,7 @@ socket.on("stop-typing",({name,roomId,userId})=>{
           })
         }
       // socket.emit("joinSuccess", { userName });
-      socket.to(roomId).emit("userJoined", message);
+      // socket.to(roomId).emit("userJoined", message);
     });
 
     socket.on("sendMessage", async ({ message, senderName }, ack) => {

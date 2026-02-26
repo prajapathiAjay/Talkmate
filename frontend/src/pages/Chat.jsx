@@ -143,36 +143,7 @@ const Chat = () => {
       scrollToBottom();
     }
   }, [messages]);
-  // useEffect(() => {
-  //   scrollToBottom();
-  // }, [messages]);
-
-  // const sendMessage = () => {
-  //   if (!newMsg.trim()) return;
-
-  //   const messageData = {
-  //     senderId: userId,
-  //     senderName: userData?.user?.name,
-  //     message: newMsg,
-  //   };
-  //   console.log("messageData", messageData);
-  //   if (roomType === "public") {
-  //     messageData.roomId = publicRoomId;
-  //   }
-
-  //   socket.emit("sendMessage", messageData, (res) => {
-  //     console.log("server", res);
-  //   });
-  //   // console.log("Message sent:", res);
-  //   setNewMsg("");
-  // };
-
-  // const handleKeyPress = (e) => {
-  //   if (e.key === "Enter" && !e.shiftKey) {
-  //     e.preventDefault();
-  //     sendMessage();
-  //   }
-  // };
+  
 
   const handleCreateRoom = (data) => {
     console.log("Joining with data:", data);
@@ -244,16 +215,13 @@ const Chat = () => {
 
         {/* Input Area */}
         <MessageInput
-          // newMsg={newMsg}
-          // setNewMsg={setNewMsg}
-          // onSend={sendMessage}
-          // onKeyPress={handleKeyPress}
+    
           disabled={!currentUser}
           roomType={roomType}
         />
       </div>
       {/* <JoinRoom onJoin={handleCreateRoom} currentUser={currentUser} /> */}
-      {/* <OnlineUsers/> */}
+      <OnlineUsers/>
     </div>
   );
 };

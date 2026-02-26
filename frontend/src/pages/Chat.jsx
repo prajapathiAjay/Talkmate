@@ -253,7 +253,7 @@ const Chat = () => {
         />
       </div>
       {/* <JoinRoom onJoin={handleCreateRoom} currentUser={currentUser} /> */}
-      <OnlineUsers/>
+      {/* <OnlineUsers/> */}
     </div>
   );
 };

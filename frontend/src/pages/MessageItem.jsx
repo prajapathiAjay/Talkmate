@@ -2,6 +2,7 @@
 
 
 import React from "react";
+import { getTimeFormat } from "../utilityFuntions/getTimeFormat";
 
 const MessageItem = ({ msg, currentUser }) => {
   const isCurrentUser = msg?.senderId !== currentUser;
@@ -50,7 +51,7 @@ const MessageItem = ({ msg, currentUser }) => {
           </div>
           
           <span className="text-xs text-gray-500 mt-1 px-1">
-            {msg?.createdAt}
+            {getTimeFormat(msg?.createdAt)}
           </span>
         </div>
       </div>

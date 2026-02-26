@@ -53,6 +53,19 @@ const Chat = () => {
     setCurrentUser(userName);
   };
 
+  const handleJoinRoom=(res)=>{
+    if(res.success){
+  setMessages((prevMessages)=>[
+...prevMessages,res.data
+
+  ])
+
+
+    }else{
+      console.log("unable to join room")
+    }
+
+  }
   const handleMessage = (message) => {
     // setMessages((prevMessages) => [
     //   ...prevMessages,
@@ -81,7 +94,7 @@ const Chat = () => {
       );
 
       if (response?.success) {
-        console.log("response", response);
+        console.log("responsemessage", response);
         const allMessages = response?.data;
         setMessages([...allMessages]);
       }
@@ -103,7 +116,7 @@ const Chat = () => {
     if (!currentUser) return;
 
     socket.on("user-status-changed", handleStatusChange);
-    socket.emit("join-room", {roomId: publicRoomId, userName: userName });
+    socket.emit("join-room", {roomId: publicRoomId, userName: userName },handleJoinRoom);
     socket.on("userJoined", handleUserJoined);
     // socket.on("joinSuccess", handleJoinSuccess);
     socket.on("message", handleMessage);
@@ -189,7 +202,7 @@ const Chat = () => {
 
         {/* Messages Container-scrolling container */}
         {/* <div className="flex-1  overflow-y-auto bg-linear-to-b from-white to-gray-50 p-6"> */}
-        {roomId?(<div
+      <div
           className="flex-1   overflow-y-auto bg-linear-to-b from-white to-gray-50 p-6" 
           onScroll={(e) => {
             const { scrollTop, scrollHeight, clientHeight } = e.target;
@@ -227,9 +240,7 @@ const Chat = () => {
             <MessageTypingIndicator />
             <div ref={messagesEndRef} />
           </div>
-        </div>):(<div>no room joined yet
-
-        </div>)}
+        </div>
 
         {/* Input Area */}
         <MessageInput

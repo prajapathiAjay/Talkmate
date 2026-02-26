@@ -86,7 +86,7 @@ getAllUsers()
               {filteredUsers.length > 0 ? (
                 filteredUsers.map((user, index) => (
                   <div
-                    key={user.id}
+                    key={index}
                     className="group flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-700/50 transition-all duration-200 cursor-pointer border border-transparent hover:border-gray-600"
                   >
                     {/* Avatar with Status */}

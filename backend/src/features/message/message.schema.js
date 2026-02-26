@@ -9,26 +9,35 @@ const messageSchema = new mongoose.Schema({
     senderId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        required: true,
+        required: function () {
+            return this.type === "user"
+        }
 
 
     },
     senderName: {
         type: String,
-        required: true,
+        required: function () {
+            return this.type === "user"
+        },
 
     },
     message: {
         type: String,
         required: true
     },
+    type: {
+        type: String,
+        enum: ["user", "system","join","leave"],
+        default: "user"
+    }
 
 
 }, { timestamps: true })
 
 
 
-export const MessageModel=mongoose.model("Message",messageSchema)
+export const MessageModel = mongoose.model("Message", messageSchema)
 
 
 

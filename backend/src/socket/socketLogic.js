@@ -2,7 +2,7 @@ import { Server } from "socket.io";
 import { socketAuth } from "../middlewares/socketAuth.js";
 // message services
 
-import { handleOnlineUsers } from "../realTime/user.socket.js";
+import { handleOnlineUsers,handleOfflineUser } from "../realTime/user.socket.js";
 import { createMessage } from "../features/message/message.service.js";
 export const socketLogic = (server) => {
 
@@ -33,14 +33,31 @@ socket.on("stop-typing",({name,roomId,userId})=>{
   socket.broadcast.to(roomId).emit("userStopTyping",{userId,name})
 })
 
-    socket.on("join", ({ publicRoomId, userName }) => {
-      socket.roomId = publicRoomId;
+    socket.on("join-room", async ({ roomId, userName },ack) => {
+      socket.roomId = roomId;
       socket.userName = userName;
+       console.log("roomid",roomId,userName)
+      socket.join(roomId);
 
-      socket.join(publicRoomId);
+        try {
+          const messageData={roomId,message:`${userName} has joined the Chat`,type:"join"}
+          const  message=await  createMessage(messageData)
+          console.log("messages",message)
 
-      socket.emit("joinSuccess", { userName });
-      socket.to(publicRoomId).emit("userJoined", { userName });
+          if(message?.success){
+           ack?.({
+            message
+           })
+          }
+        } catch (error) {
+          ack?.({
+            success:false,
+            message:"failed to join room",
+            error:error?.message,
+          })
+        }
+      // socket.emit("joinSuccess", { userName });
+      socket.to(roomId).emit("userJoined", message);
     });
 
     socket.on("sendMessage", async ({ message, senderName }, ack) => {
@@ -68,7 +85,12 @@ socket.on("stop-typing",({name,roomId,userId})=>{
 
     })
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", async () => {
+      try {
+        await handleOfflineUser(socket)
+      } catch (error) {
+        console.error("disconnection problem")
+      }
       console.log("socket disconnected");
     });
   });

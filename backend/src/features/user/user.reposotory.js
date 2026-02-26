@@ -3,12 +3,14 @@
 import { UserModel } from "./user.schema.js"
 import { RoomModel } from "../room/room.schema.js"
 import bcrypt from "bcrypt"
+
+
 export const userRegisterationRepo = async (userData) => {
 
-
     try {
-        const newUser = new UserModel(userData)
         const publicRoomData = await RoomModel.findOne({ type: "public" })
+        const newUser = new UserModel(userData)
+        // const publicRoomData = await RoomModel.findOne({ type: "public" })
 
         if (publicRoomData) {
             // publicRoomData.participants.push(newUser._id)
@@ -25,6 +27,7 @@ export const userRegisterationRepo = async (userData) => {
                     userId: newUser?._id,
                     name: newUser?.name,
                     // email: newUser.email,
+
                 }
             }
         }
@@ -141,12 +144,14 @@ export const getAllUsersRepo = async () => {
 // ******SOCKET REPO FUNCTIONS______________ 
 ////////////////////////////////////////////////////////////////       
 
-export const handleOnlineUsersrepo = async (userId) => {
+export const handleOnlineUsersrepo = async (onlineStatus,userId) => {
+    const publicRoomData = await RoomModel.findOne({ type: "public" })
+
     console.log("handleonlinerepotriggered")
     try {
         const updatedUser = await UserModel.findByIdAndUpdate(
             userId,
-            { isOnline: true, lastSeen: new Date },
+            { isOnline: onlineStatus, lastSeen: new Date },
             { new: true }   // returns updated document
         );
         //  console.log("updatedUser",updatedUser)

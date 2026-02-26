@@ -3,7 +3,7 @@ import { handleOnlineUsersrepo } from "../features/user/user.reposotory.js"
 const onlineUsers = new Map()
 
 export const handleOnlineUsers = async (socket) => {
-   console.log("handleOnline triggear")
+   // console.log("handleOnline triggear")
    try {
       const userId = socket.user.id
       let isFirstConnection = false
@@ -16,9 +16,14 @@ export const handleOnlineUsers = async (socket) => {
       onlineUsers.get(userId).add(socket.id)
 
       if (isFirstConnection) {
-          const response=await handleOnlineUsersrepo(userId)
-         console.log("response",response)
-         socket.broadcast.emit("user-status-changed", response)
+         const response = await handleOnlineUsersrepo(true, userId);
+
+         if (response.success) {
+
+            socket.broadcast.emit("user-status-changed", response)
+         }
+         console.log("connectresponse", response)
+
       }
 
    } catch (error) {
@@ -27,18 +32,40 @@ export const handleOnlineUsers = async (socket) => {
 }
 
 
-export const handleOfflineUsers=async (socket)=>{
-console.log("handleOffline Users triggered")
+export const handleOfflineUser = async (socket) => {
 
-try {
-   const userId=socket.user.id
-   const response=await handleDisconnectUserRepo(userId)
-   if(response.success){
-      socket.broadcast.emit("userDisconnected",response)
+   try {
+      const userId = socket.user.id
+      if (!onlineUsers.has(userId)) {
+         return
+      }
+      onlineUsers.get(userId).delete(socket.id)
+      if (onlineUsers.get(userId).size === 0) {
+         onlineUsers.delete(userId)
+
+         const response = await handleOnlineUsersrepo(false, userId)
+         if (!response.success) {
+            return
+         }
+         console.log("disconnectresponse", response)
+         socket.broadcast.emit("use-status-changed", response)
+
+      }
+
+   } catch (error) {
+      console.error("Error in handleOflineUsers:", error)
    }
-} catch (error) {
-   console.log(error)
-   
-}
+
+
+
+
+
+
+
+
+
+
+
+
 
 }

@@ -66,7 +66,7 @@ const OnlineUsers = ({ showOnlineUsers }) => {
                   <h2 className="text-xl font-bold text-white">Online Users</h2>
                   <p className="text-blue-100 text-sm">
                     {AllUSers.filter((u) => u.status === "online").length} users
-                    online
+                    online 
                   </p>
                 </div>
               </div>

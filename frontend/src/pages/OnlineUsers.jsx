@@ -1,27 +1,26 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Users, Circle, Search, MoreVertical } from "lucide-react";
 import CustomApiService from "../services/CustomApiService";
 
-
-const OnlineUsers = () => {
-  const {GET}=CustomApiService()
+const OnlineUsers = ({ showOnlineUsers }) => {
+  const { GET } = CustomApiService();
   const [AllUSers, setAllUsers] = useState([]);
-   
-  const getAllUsers=async ()=>{
-   try {
-    const res=await GET("user/allUsers",{},{},{})
-    if(res?.success){
-    const allUsersData=res?.data
-     setAllUsers(allUsersData)
+
+  const getAllUsers = async () => {
+    try {
+      const res = await GET("user/allUsers", {}, {}, {});
+      if (res?.success) {
+        const allUsersData = res?.data;
+        setAllUsers(allUsersData);
+      }
+    } catch (error) {
+      console.log(error);
     }
-   } catch (error) {
-    console.log(error)
-   }
-  } 
-   
-useEffect(()=>{
-getAllUsers()
-},[])
+  };
+
+  useEffect(() => {
+    getAllUsers();
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -41,8 +40,19 @@ getAllUsers()
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-900 to-gray-400 p-6">
-      <div className="max-w-md mx-auto">
+    // <div className={`fixed inset-y-0 right-0  transform ${showOnlineUsers ? 'translate-x-0' : 'translate-x-full'}   bg-linear-to-br from-gray-900 to-gray-400 p-6 md:w-80 md:relative md:top-0 md:left-0 `}>
+
+    <div
+      className={`fixed inset-y-0 right-0 
+  w-full md:w-80
+  transform ${showOnlineUsers ? "translate-x-0" : "translate-x-full"}
+  transition-transform duration-300 ease-in-out
+  bg-linear-to-br from-gray-900 to-gray-400
+  p-6
+  md:relative md:translate-x-0
+`}
+    >
+      <div className="w-auto mx-auto">
         {/* Main Card */}
         <div className="bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-700">
           {/* Header */}
@@ -55,8 +65,8 @@ getAllUsers()
                 <div>
                   <h2 className="text-xl font-bold text-white">Online Users</h2>
                   <p className="text-blue-100 text-sm">
-                    {AllUSers.filter((u) => u.status === "online").length}{" "}
-                    users online
+                    {AllUSers.filter((u) => u.status === "online").length} users
+                    online
                   </p>
                 </div>
               </div>

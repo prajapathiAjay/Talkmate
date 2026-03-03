@@ -21,6 +21,7 @@ const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [roomType, setRoomType] = useState("public");
+  const [showOnlineUsers, setShowOnlineUsers] = useState(false);
   const [roomId,setRoomId]=useState(publicRoomId||null)
 
   const messagesEndRef = useRef(null);
@@ -157,19 +158,22 @@ const Chat = () => {
     socket.emit("createRoom", { roomName: data.roomName });
   };
 
+  const handleShowOnlineUsers=()=>{
+    console.log("show online users")
+    setShowOnlineUsers((prev)=>!prev)
+  }
+
   return (
     <div className="flex h-screen w-screen bg-linear-to-br from-gray-50 to-blue-50">
       {/* Left Sidebar - User List */}
       {/* <UserList usersOnline={usersOnline} /> */}
 
       {/* Middle - Join Room / Welcome */}
-      
-
       {/* Right - Main Chat Area */}
       <div
         className={`flex-1 flex flex-col ${!currentUser ? "opacity-50 pointer-events-none" : ""}`}
       >
-        <ChatHeader />
+        <ChatHeader handleShowOnlineUsers={handleShowOnlineUsers} />
 
         {/* Messages Container-scrolling container */}
         {/* <div className="flex-1  overflow-y-auto bg-linear-to-b from-white to-gray-50 p-6"> */}
@@ -221,7 +225,7 @@ const Chat = () => {
         />
       </div>
       {/* <JoinRoom onJoin={handleCreateRoom} currentUser={currentUser} /> */}
-      <OnlineUsers/>
+      <OnlineUsers showOnlineUsers={showOnlineUsers} />
     </div>
   );
 };

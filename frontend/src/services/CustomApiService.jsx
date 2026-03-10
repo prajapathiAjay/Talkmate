@@ -3,9 +3,9 @@ import axios from "axios";
 // Create a single axios instance (singleton)
 const apiClient = axios.create({
   baseURL: `${import.meta.env.VITE_API_URL}/${import.meta.env.VITE_APP_NAME}/` || "http://localhost:5000/api",
-  headers: {
-    "Content-Type": "application/json",
-  },
+  // headers: {
+  //   "Content-Type": "application/json",
+  // },
   withCredentials: true, // Include cookies in requests
 });
 

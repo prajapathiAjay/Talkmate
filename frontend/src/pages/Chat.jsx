@@ -6,12 +6,12 @@ import ChatHeader from "./ChatHeader";
 import MessageItem from "./MessageItem";
 import MessageInput from "./MessageInput";
 import { useAuth } from "../contexts/AuthProvider.jsx";
-import CustomApiService from "../services/CustomApiService.jsx";
+import CustomeApiService from "../services/CustomApiService.jsx";
 import MessageTypingIndicator from "./MessageTypingIndicator.jsx";
 import OnlineUsers from "./OnlineUsers.jsx";
 
 const Chat = () => {
-  const { GET } = CustomApiService();
+  const { GET } = CustomeApiService();
   const { userData } = useAuth();
   let userId = userData?.user?.userId;
   let userName=userData?.user?.name

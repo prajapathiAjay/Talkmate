@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthProvider";
 import socket from "../Socket";
+import CustomeApiService from "../services/CustomApiService.jsx";
 
 const MessageInput = ({ roomType, disabled = false }) => {
+  const { POST } = CustomeApiService();
   const { userData } = useAuth();
   const [newMsg, setNewMsg] = useState("");
-let userName=userData?.user?.name
+  const [files, setFiles] = useState([]);
+  let userName = userData?.user?.name;
   let userId = userData?.user?.userId;
   let publicRoomId = userData?.user?.publicRoomId;
   const TypingTimeOutRef = useRef(null);
   const isTypingRef = useRef(false);
-
+  console.log("all files", files);
   //
 
   const onKeyPress = (e) => {
@@ -25,45 +28,80 @@ let userName=userData?.user?.name
 
     if (!isTypingRef.current) {
       isTypingRef.current = true;
-      socket.emit("typing", {name:userName, roomId: publicRoomId,userId:userId });
+      socket.emit("typing", {
+        name: userName,
+        roomId: publicRoomId,
+        userId: userId,
+      });
 
       clearTimeout(TypingTimeOutRef.current);
 
       TypingTimeOutRef.current = setTimeout(() => {
         isTypingRef.current = false;
-        socket.emit("stop-typing", {name:userName, roomId: publicRoomId,userId:userId });
+        socket.emit("stop-typing", {
+          name: userName,
+          roomId: publicRoomId,
+          userId: userId,
+        });
       }, 2000);
     }
   };
 
   useEffect(() => {}, []);
-  const onSend = () => {
-    if (!newMsg.trim()) return;
+
+  const onSend = async () => {
+    if (!newMsg.trim() && files.length === 0) return;
+    console.log("sending message", { newMsg, files });
+    let uploadedFiles = [];
+    console.log("files state", files);
+    console.log("is array:", Array.isArray(files));
+    if (files.length > 0) {
+      const formData = new FormData();
+
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+      console.log("form data", formData.getAll("files"));
+      try {
+        const res = await POST("upload/messages", {}, {}, formData);
+
+        console.log("file upload response", res);
+
+        uploadedFiles = res?.files || [];
+      } catch (err) {
+        console.error("Upload error", err);
+      }
+    }
 
     const messageData = {
       senderId: userId,
-      senderName: userData?.user?.name,
+      senderName: userName,
       message: newMsg,
+      attachments: uploadedFiles,
     };
-    console.log("messageData", messageData);
+
     if (roomType === "public") {
       messageData.roomId = publicRoomId;
     }
 
     socket.emit("sendMessage", messageData, (res) => {
       console.log("server", res);
+      console.log("message sent", messageData);
     });
-    // console.log("Message sent:", res);
+
     setNewMsg("");
+    setFiles([]);
   };
   return (
     <div className="bg-white border-t border-gray-200 p-4">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center space-x-3">
-          <button
+          {/* <button
             title="Attach file"
             className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
           >
+
+         <input type="file" multiple onChange={(e)=>setFile(e.target.value)} className="hidden" id="file-upload" />
             <svg
               className="w-6 h-6"
               fill="none"
@@ -77,7 +115,33 @@ let userName=userData?.user?.name
                 d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
               />
             </svg>
-          </button>
+          </button> */}
+          <label
+            htmlFor="file-upload"
+            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors cursor-pointer"
+          >
+            <input
+              type="file"
+              multiple
+              onChange={(e) => setFiles([...e.target.files])}
+              className="hidden"
+              id="file-upload"
+            />
+
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+              />
+            </svg>
+          </label>
           <button
             title="Emoji"
             className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
@@ -126,11 +190,12 @@ let userName=userData?.user?.name
             </div>
           </div>
 
+         
           <button
             onClick={onSend}
-            disabled={!newMsg.trim() || disabled}
+            disabled={(!newMsg.trim() && files.length === 0) || disabled}
             className={`px-6 py-3 rounded-2xl font-medium transition-all duration-200 ${
-              newMsg.trim() && !disabled
+              newMsg.trim() || files.length > 0
                 ? "bg-linear-to-r from-blue-500 to-purple-500 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 : "bg-gray-200 text-gray-400 cursor-not-allowed"
             }`}
@@ -139,9 +204,9 @@ let userName=userData?.user?.name
           </button>
         </div>
 
-        <div className="mt-2 text-xs text-gray-500 text-center">
+        {/* <div className="mt-2 text-xs text-gray-500 text-center">
           Press Enter to send, Shift+Enter for new line
-        </div>
+        </div> */}
       </div>
     </div>
   );

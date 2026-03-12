@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthProvider";
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
 import socket from "../Socket";
 import CustomeApiService from "../services/CustomApiService.jsx";
 
 const MessageInput = ({ roomType, disabled = false }) => {
   const { POST } = CustomeApiService();
+  
   const { userData } = useAuth();
   const [newMsg, setNewMsg] = useState("");
   const [files, setFiles] = useState([]);
@@ -13,6 +16,7 @@ const MessageInput = ({ roomType, disabled = false }) => {
   let publicRoomId = userData?.user?.publicRoomId;
   const TypingTimeOutRef = useRef(null);
   const isTypingRef = useRef(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   console.log("all files", files);
   //
 
@@ -48,8 +52,13 @@ const MessageInput = ({ roomType, disabled = false }) => {
   };
 
   useEffect(() => {}, []);
-
+const handleEmojiSelect = (emoji) => {
+  const emojiChar = emoji.native;
+  setNewMsg((prev) => prev + emojiChar);
+  // setShowEmojiPicker(false);
+}
   const onSend = async () => {
+    setShowEmojiPicker(false)
     if (!newMsg.trim() && files.length === 0) return;
     console.log("sending message", { newMsg, files });
     let uploadedFiles = [];
@@ -94,7 +103,7 @@ const MessageInput = ({ roomType, disabled = false }) => {
   };
   return (
     <div className="bg-white border-t border-gray-200 p-4">
-      <div className="max-w-6xl mx-auto">
+      <div className=" relative max-w-6xl mx-auto">
         <div className="flex items-center space-x-3">
           {/* <button
             title="Attach file"
@@ -142,10 +151,12 @@ const MessageInput = ({ roomType, disabled = false }) => {
               />
             </svg>
           </label>
-          <button
+          <button 
+          onClick={()=>setShowEmojiPicker(!showEmojiPicker)}
             title="Emoji"
             className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
           >
+
             <svg
               className="w-6 h-6"
               fill="none"
@@ -160,7 +171,11 @@ const MessageInput = ({ roomType, disabled = false }) => {
               />
             </svg>
           </button>
-
+          {showEmojiPicker&&(
+            <div className="absolute bottom-full mb-2 z-9999">
+              <Picker data={data} onEmojiSelect={handleEmojiSelect} />
+            </div>
+          )}
           <div className="flex-1 relative">
             <input
               type="text"

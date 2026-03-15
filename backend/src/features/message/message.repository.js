@@ -1,10 +1,10 @@
 import { MessageModel } from "./message.schema.js"
 export const createMessageRepository = async (messageData) => {
-
+  console.log("message data in repository", messageData);
     try {
         const newMessage = new MessageModel(messageData)
         await newMessage.save()
-
+ console.log("new message in repository", newMessage);
         return {
             success: true,
             status: 201,

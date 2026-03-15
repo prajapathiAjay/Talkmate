@@ -16,6 +16,7 @@ const messageSchema = new mongoose.Schema({
 
 
     },
+
     senderName: {
         type: String,
         required: function () {
@@ -27,6 +28,20 @@ const messageSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    attachments: [{
+        fileUrl: {
+            type: String,
+            required:false
+        },
+        fileName: {
+            type: String,
+            required:false
+        },
+        fileType: {
+            type: String,
+            required:false
+        }
+    }],
     messageType: {
         type: String,
         enum: ["user", "system", "join", "leave"],

@@ -59,11 +59,11 @@ socket.on("stop-typing",({name,roomId,userId})=>{
       // socket.to(roomId).emit("userJoined", message);
     });
 
-    socket.on("sendMessage", async ({ message, senderName }, ack) => {
+    socket.on("sendMessage", async ({ message, senderName,attachments }, ack) => {
       const { roomId, userName } = socket
       try {
         let userId = socket.user.id
-        const messageData = { roomId, senderId: userId, senderName, message }
+        const messageData = { roomId, senderId: userId, senderName, message, attachments }
         const messageSaved = await createMessage(messageData)
         io.to(roomId).emit("message", messageSaved)
 

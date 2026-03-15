@@ -6,9 +6,10 @@ export const messageFileUpload = async (req, res, next) => {
     }
 
     const files = req.files.map((file) => {
-        return {
-            url: file.path,
-            fileName: file.originalname
+         return {
+            fileUrl: file.path,
+            fileName: file.originalname,
+            fileType: file.mimetype   // <-- file type
         }
     })
 

@@ -125,112 +125,168 @@ const Login = () => {
     <div className="h-screen w-screen overflow-hidden bg-linear-to-br from-slate-900 via-slate-800 to-blue-900">
       <div className="h-full w-full flex flex-col lg:flex-row">
         {/* Left Panel - Full Height Content */}
-        <div className="lg:w-1/2 h-full p-6 lg:p-8 xl:p-12 flex flex-col overflow-hidden">
-          {/* Logo */}
-          <div className="flex items-center space-x-4 mb-8 lg:mb-12">
-            <div className="p-3 bg-linear-to-br from-blue-500 to-cyan-400 rounded-xl shadow-lg">
-              <MessageSquare size={28} className="text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl lg:text-3xl font-bold text-white">TalkMate</h1>
-              <p className="text-sm text-blue-200/70 mt-1">Enterprise Communication</p>
-            </div>
-          </div>
+        {/* 
 
-          {/* Hero Content - No Scroll */}
-          <div className="flex-1 overflow-hidden flex flex-col">
-            <div className="mb-8">
-              <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-500/20 backdrop-blur-sm border border-blue-400/30 mb-6">
-                <Zap className="w-4 h-4 mr-2 text-blue-300" />
-                <span className="text-sm font-medium text-blue-200">Trusted by 15,000+ teams</span>
-              </div>
-              
-              <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6 leading-tight">
-                Professional<br />
-                <span className="bg-linear-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-                  Team Collaboration
-                </span>
-              </h2>
-              
-              <p className="text-lg text-blue-100/80 leading-relaxed">
-                Secure, intelligent platform for modern team communication with enterprise-grade features.
-              </p>
-            </div>
-
-            {/* Features Grid - Fixed Height */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 flex-1 overflow-hidden">
-              <div className="p-4 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-linear-to-br from-blue-500 to-blue-600 rounded-lg">
-                    <Shield className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-white mb-1">Enterprise Security</h3>
-                    <p className="text-sm text-blue-200/70">End-to-end encryption</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-linear-to-br from-emerald-500 to-teal-500 rounded-lg">
-                    <LineChart className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-white mb-1">Productivity</h3>
-                    <p className="text-sm text-blue-200/70">Real-time analytics</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-linear-to-br from-purple-500 to-indigo-500 rounded-lg">
-                    <Building2 className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-white mb-1">Scale</h3>
-                    <p className="text-sm text-blue-200/70">For teams of all sizes</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-linear-to-br from-amber-500 to-orange-500 rounded-lg">
-                    <Award className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-white mb-1">Award Winning</h3>
-                    <p className="text-sm text-blue-200/70">2024 Best Platform</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Testimonial - Fixed at bottom */}
-            <div className="mt-6 p-5 bg-linear-to-r from-blue-900/30 to-indigo-900/30 rounded-xl border border-blue-500/20">
-              <div className="flex items-start space-x-3">
-                <div className="shrink-0">
-                  <div className="w-10 h-10 rounded-full bg-linear-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-                    <Users className="w-5 h-5 text-white" />
-                  </div>
-                </div>
-                <div>
-                  <p className="text-blue-100/80 text-sm italic mb-2">
-                    "NexusChat transformed how our remote team collaborates. The security features are outstanding."
-                  </p>
-                  <div>
-                    <p className="font-semibold text-white text-sm">Alex Morgan</p>
-                    <p className="text-xs text-blue-200/60">CTO, TechVision Corp</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Right Panel - Full Height Form */}
+
+        <div className="lg:w-1/2 h-full bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 p-12 flex items-center justify-center relative overflow-hidden">
+  {/* Animated background elements */}
+  <div className="absolute inset-0">
+    <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+    <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+    <div className="absolute -bottom-8 left-20 w-72 h-72 bg-indigo-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+  </div>
+
+  {/* Main SVG Illustration */}
+  <div className="relative z-10 w-full max-w-lg">
+    <svg viewBox="0 0 500 500" className="w-full h-auto drop-shadow-2xl">
+      {/* Background decorative circles */}
+      <circle cx="250" cy="250" r="200" fill="url(#grad1)" opacity="0.1" />
+      <circle cx="250" cy="250" r="150" fill="url(#grad2)" opacity="0.1" />
+      
+      {/* Main chat interface illustration */}
+      <g transform="translate(50, 50)">
+        {/* Chat window background */}
+        <rect x="50" y="50" width="350" height="350" rx="30" fill="white" opacity="0.95" className="drop-shadow-xl" />
+        
+        {/* Chat header */}
+        <rect x="50" y="50" width="350" height="70" rx="30" fill="url(#headerGrad)" />
+        <circle cx="100" cy="85" r="20" fill="white" opacity="0.9" />
+        <circle cx="140" cy="85" r="6" fill="#4ADE80" stroke="white" strokeWidth="2" />
+        <text x="180" y="95" fontFamily="Arial" fontSize="16" fill="white" fontWeight="bold">Team Chat</text>
+        
+        {/* Chat messages */}
+        {/* Message 1 - Received */}
+        <rect x="80" y="140" width="150" height="45" rx="20" fill="#F3F4F6" />
+        <circle cx="60" cy="162" r="15" fill="#60A5FA" />
+        <text x="45" y="167" fontFamily="Arial" fontSize="12" fill="white" textAnchor="middle">JD</text>
+        <text x="95" y="165" fontFamily="Arial" fontSize="12" fill="#374151">Hey team! 🚀</text>
+        <text x="190" y="175" fontFamily="Arial" fontSize="8" fill="#9CA3AF">10:30</text>
+        
+        {/* Message 2 - Sent */}
+        <rect x="200" y="200" width="150" height="45" rx="20" fill="#3B82F6" />
+        <text x="215" y="222" fontFamily="Arial" fontSize="12" fill="white">Great to see you!</text>
+        <text x="320" y="235" fontFamily="Arial" fontSize="8" fill="#BFDBFE">10:32 ✓✓</text>
+        
+        {/* Message 3 - File attachment */}
+        <rect x="80" y="260" width="180" height="55" rx="20" fill="#F3F4F6" />
+        <rect x="95" y="275" width="30" height="30" rx="8" fill="#60A5FA" />
+        <text x="100" y="295" fontFamily="Arial" fontSize="10" fill="white">📎</text>
+        <text x="135" y="285" fontFamily="Arial" fontSize="12" fill="#374151">project-file.pdf</text>
+        <text x="135" y="302" fontFamily="Arial" fontSize="10" fill="#6B7280">2.4 MB</text>
+        
+        {/* Message 4 - Image attachment */}
+        <rect x="200" y="330" width="120" height="80" rx="15" fill="#F3F4F6" />
+        <rect x="215" y="345" width="90" height="50" rx="8" fill="#D1D5DB" />
+        <text x="260" y="375" fontFamily="Arial" fontSize="10" fill="#6B7280" textAnchor="middle">📷 Image</text>
+        
+        {/* Typing indicator */}
+        <circle cx="100" cy="430" r="6" fill="#4ADE80" opacity="0.6" className="animate-pulse" />
+        <circle cx="120" cy="430" r="6" fill="#4ADE80" opacity="0.6" className="animate-pulse animation-delay-200" />
+        <circle cx="140" cy="430" r="6" fill="#4ADE80" opacity="0.6" className="animate-pulse animation-delay-400" />
+        
+        {/* Input field */}
+        <rect x="80" y="390" width="250" height="45" rx="25" fill="white" stroke="#E5E7EB" strokeWidth="2" />
+        <text x="100" y="420" fontFamily="Arial" fontSize="14" fill="#9CA3AF">Type your message...</text>
+        <circle cx="300" cy="412" r="18" fill="#3B82F6" />
+        <text x="300" y="417" fontFamily="Arial" fontSize="12" fill="white" textAnchor="middle">📤</text>
+      </g>
+      
+      {/* Floating elements */}
+      <g className="animate-float">
+        <circle cx="100" cy="100" r="8" fill="#FBBF24" />
+        <circle cx="400" cy="150" r="12" fill="#34D399" />
+        <circle cx="450" cy="350" r="10" fill="#F87171" />
+      </g>
+      
+      {/* Connection lines */}
+      <path d="M150 150 L200 200 L250 150" stroke="white" strokeWidth="2" fill="none" opacity="0.2" strokeDasharray="5,5" />
+      
+      {/* Gradients */}
+      <defs>
+        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#3B82F6" />
+          <stop offset="100%" stopColor="#8B5CF6" />
+        </linearGradient>
+        <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#EC4899" />
+          <stop offset="100%" stopColor="#8B5CF6" />
+        </linearGradient>
+        <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#3B82F6" />
+          <stop offset="100%" stopColor="#8B5CF6" />
+        </linearGradient>
+        
+        {/* Avatar patterns */}
+        <pattern id="avatar1" patternUnits="userSpaceOnUse" width="30" height="30">
+          <circle cx="15" cy="15" r="15" fill="#60A5FA" />
+          <text x="8" y="22" fontFamily="Arial" fontSize="14" fill="white">JD</text>
+        </pattern>
+      </defs>
+      
+      {/* Connection nodes */}
+      <g className="animate-pulse">
+        <circle cx="200" cy="200" r="4" fill="#60A5FA" />
+        <circle cx="300" cy="250" r="4" fill="#FBBF24" />
+        <circle cx="250" cy="300" r="4" fill="#34D399" />
+      </g>
+    </svg>
+
+    {/* Floating stats cards */}
+    <div className="absolute -top-10 right-10 bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-2xl animate-float animation-delay-2000">
+      <div className="flex items-center space-x-3">
+        <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center">
+          <Users className="w-6 h-6 text-white" />
+        </div>
+        <div>
+          <p className="text-sm text-gray-500">Active Users</p>
+          <p className="text-2xl font-bold text-gray-800">1,482</p>
+        </div>
+      </div>
+    </div>
+
+    <div className="absolute -bottom-5 left-0 bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-2xl animate-float animation-delay-4000">
+      <div className="flex items-center space-x-3">
+        <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
+          <MessageSquare className="w-6 h-6 text-white" />
+        </div>
+        <div>
+          <p className="text-sm text-gray-500">Messages Today</p>
+          <p className="text-2xl font-bold text-gray-800">12.5K</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* Add animation styles */}
+  <style jsx>{`
+    @keyframes blob {
+      0% { transform: translate(0px, 0px) scale(1); }
+      33% { transform: translate(30px, -50px) scale(1.1); }
+      66% { transform: translate(-20px, 20px) scale(0.9); }
+      100% { transform: translate(0px, 0px) scale(1); }
+    }
+    .animate-blob {
+      animation: blob 7s infinite;
+    }
+    .animation-delay-2000 {
+      animation-delay: 2s;
+    }
+    .animation-delay-4000 {
+      animation-delay: 4s;
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    .animate-float {
+      animation: float 3s ease-in-out infinite;
+    }
+  `}</style>
+</div>
         <div className="lg:w-1/2 h-full flex items-center justify-center p-4 lg:p-6 xl:p-8 bg-white">
           <div className="w-full max-w-md h-full flex flex-col justify-center py-8">
             {/* Mobile Header */}

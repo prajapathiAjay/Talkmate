@@ -7,7 +7,7 @@ import CustomeApiService from "../services/CustomApiService.jsx";
 
 const MessageInput = ({ roomType, disabled = false }) => {
   const { POST } = CustomeApiService();
-  
+
   const { userData } = useAuth();
   const [newMsg, setNewMsg] = useState("");
   const [files, setFiles] = useState([]);
@@ -16,6 +16,7 @@ const MessageInput = ({ roomType, disabled = false }) => {
   let publicRoomId = userData?.user?.publicRoomId;
   const TypingTimeOutRef = useRef(null);
   const isTypingRef = useRef(false);
+  const [showFilePreview, setShowFilePreview] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   console.log("all files", files);
   //
@@ -52,16 +53,18 @@ const MessageInput = ({ roomType, disabled = false }) => {
   };
 
   useEffect(() => {}, []);
-const handleEmojiSelect = (emoji) => {
-  const emojiChar = emoji.native;
-  setNewMsg((prev) => prev + emojiChar);
-  // setShowEmojiPicker(false);
-}
+  const handleEmojiSelect = (emoji) => {
+    const emojiChar = emoji.native;
+    setNewMsg((prev) => prev + emojiChar);
+    // setShowEmojiPicker(false);
+  };
   const onSend = async () => {
-    setShowEmojiPicker(false)
+    setShowEmojiPicker(false);
     if (!newMsg.trim() && files.length === 0) return;
     console.log("sending message", { newMsg, files });
+
     let uploadedFiles = [];
+    
     console.log("files state", files);
     console.log("is array:", Array.isArray(files));
     if (files.length > 0) {
@@ -151,12 +154,11 @@ const handleEmojiSelect = (emoji) => {
               />
             </svg>
           </label>
-          <button 
-          onClick={()=>setShowEmojiPicker(!showEmojiPicker)}
+          <button
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             title="Emoji"
             className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
           >
-
             <svg
               className="w-6 h-6"
               fill="none"
@@ -171,7 +173,24 @@ const handleEmojiSelect = (emoji) => {
               />
             </svg>
           </button>
-          {showEmojiPicker&&(
+
+          {files.length > 0 && (
+            <div className="absolute bottom-full mb-2 z-999  bg-red-500">
+              <div className="flex  items-center space-x-2 m-2">
+                <div>Selected Documents</div>
+                {files.map((file, index) => (
+                  <div key={index} className="">
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt="Preview"
+                      className="w-64 h-64 object-cover rounded-lg"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {showEmojiPicker && (
             <div className="absolute bottom-full mb-2 z-9999">
               <Picker data={data} onEmojiSelect={handleEmojiSelect} />
             </div>
@@ -205,7 +224,6 @@ const handleEmojiSelect = (emoji) => {
             </div>
           </div>
 
-         
           <button
             onClick={onSend}
             disabled={(!newMsg.trim() && files.length === 0) || disabled}

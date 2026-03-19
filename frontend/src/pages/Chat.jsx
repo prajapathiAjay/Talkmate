@@ -209,7 +209,7 @@ const Chat = () => {
               </div>
             ) : (
               messages.map((msg, index) => (
-                <MessageItem key={index} msg={msg} currentUser={currentUser} />
+                <MessageItem key={index} msg={msg} currentUser={currentUser} prevMessage={messages[index - 1]} />
               ))
             )}
             <MessageTypingIndicator />

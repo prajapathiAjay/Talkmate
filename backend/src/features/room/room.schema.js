@@ -6,7 +6,7 @@ const roomSchema = new mongoose.Schema({
         // required: true,
         // unique: true,
         index: true,
-        required: true,
+        // required: true,
         unique:true
 
     },

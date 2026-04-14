@@ -3,7 +3,7 @@ import { handleOnlineUsersrepo } from "../features/user/user.reposotory.js"
 const onlineUsers = new Map()
 
 export const handleOnlineUsers = async (socket) => {
-   // console.log("handleOnline triggear")
+   console.log("handleOnline triggear")
    try {
       const userId = socket.user.id
       let isFirstConnection = false
@@ -19,7 +19,7 @@ export const handleOnlineUsers = async (socket) => {
          const response = await handleOnlineUsersrepo(true, userId);
 
          if (response.success) {
-
+               console.log("EMITTING user-status-changed", response)
             socket.broadcast.emit("user-status-changed", response)
          }
          console.log("connectresponse", response)
@@ -48,7 +48,7 @@ export const handleOfflineUser = async (socket) => {
             return
          }
          console.log("disconnectresponse", response)
-         socket.broadcast.emit("use-status-changed", response)
+         socket.broadcast.emit("user-status-changed", response)
 
       }
 

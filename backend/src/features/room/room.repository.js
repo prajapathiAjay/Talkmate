@@ -66,3 +66,23 @@ export const roomCreationRepo = async (roomData) => {
 
 
 }
+
+
+
+export const getRoomDataRepo=async (roomData)=>{
+
+
+    try {
+      
+   
+        
+    } catch (error) {
+        
+    }
+
+
+
+
+
+
+}

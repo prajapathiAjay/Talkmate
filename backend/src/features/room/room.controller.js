@@ -57,6 +57,38 @@ export const roomCreation = async (req,res,next) => {
 
 }
 
+const getRoomData=async (req,res,next)=>{
+   const {type}=req.query
+
+    try {
+ const resp=await getRoomDataRepo(type)
+
+ if(resp.success){
+    return res.status(200).json({
+        success: true,
+        message: resp?.message,
+        data: resp.data
+    })
+ }
+
+ return next(
+    new customErrorHandler(
+        resp.error?.statusCode,
+        resp.error?.message || "Error while fetching the room data"
+    )
+ )
+
+           
+    } catch (error) {
+        
+        new customErrorHandler(
+            error?.statusCode || 500,
+            error?.message || "Error while fetching the room data"
+        )
+    }
+
+}
+
 
 
 

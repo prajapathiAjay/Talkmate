@@ -1,13 +1,24 @@
-
-
 import React, { useState, useEffect } from "react";
-import { 
-  Users, Circle, Search, MoreVertical, 
-  MessageCircle, Wifi, WifiOff, Clock,
-  Filter, X, Star, Crown, Zap,
-  ChevronRight, Activity, Coffee
+import {
+  Users,
+  Circle,
+  Search,
+  MoreVertical,
+  MessageCircle,
+  Wifi,
+  WifiOff,
+  Clock,
+  Filter,
+  X,
+  Star,
+  Crown,
+  Zap,
+  ChevronRight,
+  Activity,
+  Coffee,
 } from "lucide-react";
 import CustomApiService from "../services/CustomApiService";
+import socket from "../Socket.jsx";
 
 const OnlineUsers = ({ showOnlineUsers, onClose }) => {
   const { GET } = CustomApiService();
@@ -30,14 +41,35 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
       setIsLoading(false);
     }
   };
-
+  const handleStatusChange = (response) => {
+    if (response.success) {
+      let newJoinedUsers = response?.data;
+      setAllUsers((prevUsers) => {
+        const existingUser = prevUsers.some(
+          (user) => user._id === newJoinedUsers._id,
+        );
+        if (existingUser) {
+          return prevUsers.map((user) =>
+            user._id === newJoinedUsers._id ? newJoinedUsers : user,
+          );
+        } else {
+          return [newJoinedUsers, ...prevUsers];
+        }
+      });
+    }
+    console.log("handleStatus", response);
+  };
   useEffect(() => {
     getAllUsers();
+    socket.on("user-status-changed", handleStatusChange);
   }, []);
 
   const filteredUsers = AllUSers.filter((user) => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = selectedFilter === "all" || user.status === selectedFilter;
+    const matchesSearch = user.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesFilter =
+      selectedFilter === "all" || user.isOnline === selectedFilter;
     return matchesSearch && matchesFilter;
   });
 
@@ -85,12 +117,14 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
     }
   };
 
-  const onlineCount = AllUSers.filter((u) => u.status === "online").length;
-  const awayCount = AllUSers.filter((u) => u.status === "away").length;
-  const offlineCount = AllUSers.filter((u) => u.status === "offline").length;
+  const onlineCount = AllUSers.filter((u) => u.isOnline === true);
+  const awayCount = AllUSers.filter((u) => u.isOnline === false);
+  const offlineCount = AllUSers.filter((u) => u.status === "offline");
 
   // Featured users (for demo - you can modify based on your data)
-  const featuredUsers = AllUSers.filter(u => u.isFeatured || u.status === "online").slice(0, 3);
+  const featuredUsers = AllUSers.filter(
+    (u) => u.isFeatured || u.status === "online",
+  ).slice(0, 3);
 
   return (
     <div
@@ -108,7 +142,7 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
       {/* Decorative Elements */}
       {/* <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-200/30 to-purple-200/30 rounded-full blur-3xl -z-10"></div>
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-pink-200/20 to-orange-200/20 rounded-full blur-3xl -z-10"></div> */}
-      
+
       {/* Header with Gradient */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-5 relative overflow-hidden">
         <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
@@ -129,11 +163,13 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
                 <div className="flex items-center gap-1.5">
                   <Activity className="w-4 h-4 text-white/80" />
                   <span className="text-white/90 text-sm font-medium">
-                    {onlineCount} active now
+                    {onlineCount?.length} active now
                   </span>
                 </div>
                 <span className="text-white/40">•</span>
-                <span className="text-white/70 text-sm">{AllUSers.length} total</span>
+                <span className="text-white/70 text-sm">
+                  {AllUSers.length} total
+                </span>
               </div>
             </div>
           </div>
@@ -142,7 +178,7 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
               <Star className="w-5 h-5 text-white" />
             </button>
             {onClose && (
-              <button 
+              <button
                 onClick={onClose}
                 className="p-2 hover:bg-white/20 rounded-xl transition-all md:hidden border border-white/20"
               >
@@ -156,21 +192,34 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
         {featuredUsers.length > 0 && (
           <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
             {featuredUsers.map((user, idx) => (
-              <div key={idx} className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full pl-1 pr-3 py-1 border border-white/20">
+              <div
+                key={idx}
+                className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full pl-1 pr-3 py-1 border border-white/20"
+              >
                 <div className="relative">
                   {user.avatar ? (
-                    <img src={user.avatar} alt={user.name} className="w-6 h-6 rounded-full border border-white" />
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-6 h-6 rounded-full border border-white"
+                    />
                   ) : (
                     <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 flex items-center justify-center text-white text-xs font-bold">
                       {user.name.charAt(0)}
                     </div>
                   )}
-                  <div className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-white ${user.status === 'online' ? 'bg-green-400' : 'bg-gray-400'}`}></div>
+                  <div
+                    className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-white ${user.status === "online" ? "bg-green-400" : "bg-gray-400"}`}
+                  ></div>
                 </div>
-                <span className="text-xs text-white font-medium whitespace-nowrap">{user.name}</span>
+                <span className="text-xs text-white font-medium whitespace-nowrap">
+                  {user.name}
+                </span>
               </div>
             ))}
-            <div className="text-xs text-white/60 whitespace-nowrap">+{AllUSers.length - featuredUsers.length} more</div>
+            <div className="text-xs text-white/60 whitespace-nowrap">
+              +{AllUSers.length - featuredUsers.length} more
+            </div>
           </div>
         )}
       </div>
@@ -187,7 +236,7 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
             className="w-full bg-white border-2 border-gray-100 text-gray-800 placeholder-gray-400 rounded-2xl pl-10 pr-12 py-3.5 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition-all shadow-sm"
           />
           {searchTerm && (
-            <button 
+            <button
               onClick={() => setSearchTerm("")}
               className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
@@ -207,42 +256,54 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
             }`}
           >
             All
-            <span className={`ml-2 px-1.5 py-0.5 rounded-full text-xs ${
-              selectedFilter === "all" ? "bg-white/20 text-white" : "bg-gray-100 text-gray-600"
-            }`}>
+            <span
+              className={`ml-2 px-1.5 py-0.5 rounded-full text-xs ${
+                selectedFilter === "all"
+                  ? "bg-white/20 text-white"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
               {AllUSers.length}
             </span>
           </button>
           <button
-            onClick={() => setSelectedFilter("online")}
+            onClick={() => setSelectedFilter(true)}
             className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all transform hover:scale-105 flex items-center gap-1.5 ${
-              selectedFilter === "online"
+              selectedFilter === true
                 ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-200"
                 : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 shadow-sm"
             }`}
           >
             <Zap className="w-4 h-4" />
             Online
-            <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs ${
-              selectedFilter === "online" ? "bg-white/20 text-white" : "bg-gray-100 text-gray-600"
-            }`}>
-              {onlineCount}
+            <span
+              className={`ml-1 px-1.5 py-0.5 rounded-full text-xs ${
+                selectedFilter === true
+                  ? "bg-white/20 text-white"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              {onlineCount?.length}
             </span>
           </button>
           <button
-            onClick={() => setSelectedFilter("away")}
+            onClick={() => setSelectedFilter(false)}
             className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all transform hover:scale-105 flex items-center gap-1.5 ${
-              selectedFilter === "away"
+              selectedFilter === false
                 ? "bg-gradient-to-r from-yellow-500 to-amber-500 text-white shadow-lg shadow-yellow-200"
                 : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 shadow-sm"
             }`}
           >
             <Coffee className="w-4 h-4" />
             Away
-            <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs ${
-              selectedFilter === "away" ? "bg-white/20 text-white" : "bg-gray-100 text-gray-600"
-            }`}>
-              {awayCount}
+            <span
+              className={`ml-1 px-1.5 py-0.5 rounded-full text-xs ${
+                selectedFilter === false
+                  ? "bg-white/20 text-white"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              {awayCount.length}
             </span>
           </button>
         </div>
@@ -253,15 +314,20 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
         <div className="space-y-2 pb-4">
           {isLoading ? (
             // Animated loading skeletons
-            Array(6).fill(0).map((_, i) => (
-              <div key={i} className="flex items-center space-x-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm animate-pulse">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-r from-gray-200 to-gray-300"></div>
-                <div className="flex-1 space-y-3">
-                  <div className="h-4 w-32 bg-gradient-to-r from-gray-200 to-gray-300 rounded"></div>
-                  <div className="h-3 w-20 bg-gradient-to-r from-gray-200 to-gray-300 rounded"></div>
+            Array(6)
+              .fill(0)
+              .map((_, i) => (
+                <div
+                  key={i}
+                  className="flex items-center space-x-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm animate-pulse"
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-r from-gray-200 to-gray-300"></div>
+                  <div className="flex-1 space-y-3">
+                    <div className="h-4 w-32 bg-gradient-to-r from-gray-200 to-gray-300 rounded"></div>
+                    <div className="h-3 w-20 bg-gradient-to-r from-gray-200 to-gray-300 rounded"></div>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))
           ) : filteredUsers.length > 0 ? (
             filteredUsers.map((user, index) => (
               <div
@@ -272,7 +338,9 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
                 <div className="flex items-center space-x-4">
                   {/* Avatar with fancy ring */}
                   <div className="relative">
-                    <div className={`absolute inset-0 ${getStatusColor(user.status)} rounded-2xl blur opacity-50 group-hover:opacity-70 transition-opacity`}></div>
+                    <div
+                      className={`absolute inset-0 ${getStatusColor(user.status)} rounded-2xl blur opacity-50 group-hover:opacity-70 transition-opacity`}
+                    ></div>
                     {user.avatar ? (
                       <img
                         src={user.avatar}
@@ -280,11 +348,15 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
                         className="relative w-14 h-14 rounded-2xl object-cover border-3 border-white shadow-lg"
                       />
                     ) : (
-                      <div className={`relative w-14 h-14 rounded-2xl bg-gradient-to-br ${user.status === 'online' ? 'from-green-400 to-blue-500' : 'from-gray-400 to-gray-500'} flex items-center justify-center text-white font-bold text-xl shadow-lg`}>
+                      <div
+                        className={`relative w-14 h-14 rounded-2xl bg-gradient-to-br ${user.status === "online" ? "from-green-400 to-blue-500" : "from-gray-400 to-gray-500"} flex items-center justify-center text-white font-bold text-xl shadow-lg`}
+                      >
                         {user.name.charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(user.status)} rounded-full border-3 border-white shadow-lg`}></div>
+                    <div
+                      className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(user.status)} rounded-full border-3 border-white shadow-lg`}
+                    ></div>
                   </div>
 
                   {/* User Info */}
@@ -293,21 +365,23 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
                       <h3 className="font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
                         {user.name}
                       </h3>
-                      <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getBadgeColor(user.status)}`}>
+                      <div
+                        className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getBadgeColor(user.status)}`}
+                      >
                         {getStatusIcon(user.status)}
                         <span>{user.status}</span>
                       </div>
                     </div>
-                    
+
                     {/* Activity or last seen */}
                     <p className="text-sm text-gray-500 flex items-center gap-1">
-                      {user.status === 'online' ? (
+                      {user.status === "online" ? (
                         <>
                           <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
                           <span>Typing...</span>
                         </>
                       ) : (
-                        user.lastActive || 'Last seen recently'
+                        user.lastSeen || "Last seen recently"
                       )}
                     </p>
 
@@ -335,7 +409,7 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
                 </div>
 
                 {/* Progress/Activity bar (optional) */}
-                {user.status === 'online' && (
+                {user.status === "online" && (
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-green-400 to-blue-500 rounded-b-2xl animate-slide"></div>
                 )}
               </div>
@@ -349,12 +423,16 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
                   <Users className="w-16 h-16 text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text" />
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">No users found</h3>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                No users found
+              </h3>
               <p className="text-gray-500 max-w-[220px]">
-                {searchTerm ? "No matches for your search" : "Be the first to join the community!"}
+                {searchTerm
+                  ? "No matches for your search"
+                  : "Be the first to join the community!"}
               </p>
               {searchTerm && (
-                <button 
+                <button
                   onClick={() => setSearchTerm("")}
                   className="mt-4 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
                 >
@@ -372,19 +450,27 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 bg-gradient-to-r from-green-400 to-green-500 rounded-full animate-pulse"></div>
-              <span className="text-sm font-medium text-gray-700">{onlineCount} online</span>
+              <span className="text-sm font-medium text-gray-700">
+                {onlineCount?.length} online
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full"></div>
-              <span className="text-sm font-medium text-gray-700">{awayCount} away</span>
+              <span className="text-sm font-medium text-gray-700">
+                {awayCount?.length} away
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full"></div>
-              <span className="text-sm font-medium text-gray-700">{offlineCount} offline</span>
+              <span className="text-sm font-medium text-gray-700">
+                {offlineCount} offline
+              </span>
             </div>
           </div>
           <div className="flex items-center gap-1 text-sm">
-            <span className="font-bold text-blue-600">{filteredUsers.length}</span>
+            <span className="font-bold text-blue-600">
+              {filteredUsers.length}
+            </span>
             <span className="text-gray-400">/ {AllUSers.length}</span>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
@@ -403,7 +489,7 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
             transform: translateY(0);
           }
         }
-        
+
         @keyframes slide {
           0% {
             transform: translateX(-100%);
@@ -412,16 +498,16 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
             transform: translateX(100%);
           }
         }
-        
+
         .animate-fadeIn {
           animation: fadeIn 0.6s ease-out forwards;
           opacity: 0;
         }
-        
+
         .animate-slide {
           animation: slide 2s infinite;
         }
-        
+
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }
@@ -429,7 +515,7 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
-        
+
         /* Custom Scrollbar */
         .overflow-y-auto::-webkit-scrollbar {
           width: 6px;

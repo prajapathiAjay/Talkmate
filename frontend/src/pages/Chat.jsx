@@ -9,12 +9,13 @@ import { useAuth } from "../contexts/AuthProvider.jsx";
 import CustomeApiService from "../services/CustomApiService.jsx";
 import MessageTypingIndicator from "./MessageTypingIndicator.jsx";
 import OnlineUsers from "./OnlineUsers.jsx";
+import { Trophy } from "lucide-react";
 
 const Chat = () => {
   const { GET } = CustomeApiService();
   const { userData } = useAuth();
   let userId = userData?.user?.userId;
-  let userName=userData?.user?.name
+  let userName = userData?.user?.name;
   let publicRoomId = userData?.user?.publicRoomId;
   console.log("User Data in Chat Component:", userData);
   const [currentUser, setCurrentUser] = useState(userData?.user?.userId);
@@ -22,18 +23,10 @@ const Chat = () => {
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [roomType, setRoomType] = useState("public");
   const [showOnlineUsers, setShowOnlineUsers] = useState(false);
-  const [roomId,setRoomId]=useState(publicRoomId||null)
-
+  const [roomId, setRoomId] = useState(publicRoomId || null);
+  console.log("currentUser", currentUser);
   const messagesEndRef = useRef(null);
   // console.log("sendt message", newMsg);
-
-  const usersOnline = [
-    { name: "Alice", status: "online", isActive: true },
-    { name: "Bob", status: "online", isActive: false },
-    { name: "Charlie", status: "away", isActive: false },
-    { name: "Diana", status: "online", isActive: false },
-    { name: "Eve", status: "offline", isActive: false },
-  ];
 
   // Socket event handlers
   const handleUserJoined = ({ userName }) => {
@@ -54,37 +47,20 @@ const Chat = () => {
     setCurrentUser(userName);
   };
 
-  const handleJoinRoom=(res)=>{
-    if(res.success){
-  setMessages((prevMessages)=>[
-...prevMessages,res.data
-
-  ])
-
-
-    }else{
-      console.log("unable to join room")
+  const handleJoinRoom = (res) => {
+    if (res.success) {
+      setMessages((prevMessages) => [...prevMessages, res.data]);
+    } else {
+      console.log("unable to join room");
     }
-
-  }
+  };
   const handleMessage = (message) => {
-    // setMessages((prevMessages) => [
-    //   ...prevMessages,
-    //   {
-    //     sender: userName,
-    //     text: message,
-    //     time: new Date().toLocaleTimeString([], {
-    //       hour: "2-digit",
-    //       minute: "2-digit",
-    //     }),
-    //   },
-    // ]);
-
     if (message?.success) {
       console.log("Received message from server:", message.data);
       setMessages((prevMessages) => [...prevMessages, message.data]);
     }
   };
+
   const fetchAllMessages = async () => {
     try {
       const response = await GET(
@@ -104,20 +80,31 @@ const Chat = () => {
     }
   };
 
+  // const fectchRoomData = async () => {
+  //   try {
+  //     const response = await GET();
+  //     rooms;
+  //   } catch (error) {
+  //     console.error("Error fetching room data:", error);
+  //   }
+  // };
+
   useEffect(() => {
     fetchAllMessages();
   }, []);
 
-  console.log("Messagest", messages);
-  const handleStatusChange = (data) => {
-    console.log("handleStatus", data);
-  };
+  // console.log("Messagest", messages);
+
 
   useEffect(() => {
     if (!currentUser) return;
 
-    socket.on("user-status-changed", handleStatusChange);
-    socket.emit("join-room", {roomId: publicRoomId, userName: userName },handleJoinRoom);
+    // socket.on("user-status-changed", handleStatusChange);
+    socket.emit(
+      "join-room",
+      { roomId: publicRoomId, userName: userName },
+      handleJoinRoom,
+    );
     socket.on("userJoined", handleUserJoined);
     // socket.on("joinSuccess", handleJoinSuccess);
     socket.on("message", handleMessage);
@@ -144,7 +131,6 @@ const Chat = () => {
       scrollToBottom();
     }
   }, [messages]);
-  
 
   const handleCreateRoom = (data) => {
     console.log("Joining with data:", data);
@@ -158,10 +144,10 @@ const Chat = () => {
     socket.emit("createRoom", { roomName: data.roomName });
   };
 
-  const handleShowOnlineUsers=()=>{
-    console.log("show online users")
-    setShowOnlineUsers((prev)=>!prev)
-  }
+  const handleShowOnlineUsers = () => {
+    console.log("show online users");
+    setShowOnlineUsers((prev) => !prev);
+  };
 
   return (
     <div className="flex h-screen w-screen bg-linear-to-br from-gray-50 to-blue-50">
@@ -177,8 +163,8 @@ const Chat = () => {
 
         {/* Messages Container-scrolling container */}
         {/* <div className="flex-1  overflow-y-auto bg-linear-to-b from-white to-gray-50 p-6"> */}
-      <div
-          className="flex-1   overflow-y-auto bg-linear-to-b from-white to-gray-50 p-6" 
+        <div
+          className="flex-1   overflow-y-auto bg-linear-to-b from-white to-gray-50 p-6"
           onScroll={(e) => {
             const { scrollTop, scrollHeight, clientHeight } = e.target;
             setIsAtBottom(scrollHeight - scrollTop <= clientHeight + 50);
@@ -209,7 +195,12 @@ const Chat = () => {
               </div>
             ) : (
               messages.map((msg, index) => (
-                <MessageItem key={index} msg={msg} currentUser={currentUser} prevMessage={messages[index - 1]} />
+                <MessageItem
+                  key={index}
+                  msg={msg}
+                  currentUser={currentUser}
+                  prevMessage={messages[index - 1]}
+                />
               ))
             )}
             <MessageTypingIndicator />
@@ -218,11 +209,7 @@ const Chat = () => {
         </div>
 
         {/* Input Area */}
-        <MessageInput
-    
-          disabled={!currentUser}
-          roomType={roomType}
-        />
+        <MessageInput disabled={!currentUser} roomType={roomType} />
       </div>
       {/* <JoinRoom onJoin={handleCreateRoom} currentUser={currentUser} /> */}
       <OnlineUsers showOnlineUsers={showOnlineUsers} />
@@ -232,38 +219,6 @@ const Chat = () => {
 
 export default Chat;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // import React from 'react'
 // import { Cloudinary } from '@cloudinary/url-gen';
 // import { auto } from '@cloudinary/url-gen/actions/resize';
@@ -272,7 +227,7 @@ export default Chat;
 
 // const App = () => {
 //   const cld = new Cloudinary({ cloud: { cloudName: 'dujidnpfl' } });
-  
+
 //   // Use this sample image or upload your own via the Media Library
 //   const img = cld
 //         .image('cld-sample-5')

@@ -73,8 +73,7 @@ const MessageInput = ({ roomType, disabled = false }) => {
 
     let uploadedFiles = [];
 
-    console.log("files state", files);
-    console.log("is array:", Array.isArray(files));
+  
     if (files.length > 0) {
       const formData = new FormData();
 

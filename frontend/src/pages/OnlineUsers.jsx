@@ -14,13 +14,14 @@ import {
   Crown,
   Zap,
   ChevronRight,
+  ChevronLeft,
   Activity,
   Coffee,
 } from "lucide-react";
 import CustomApiService from "../services/CustomApiService";
 import socket from "../Socket.jsx";
 
-const OnlineUsers = ({ showOnlineUsers, onClose }) => {
+const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
   const { GET } = CustomApiService();
   const [AllUSers, setAllUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -147,7 +148,8 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-5 relative overflow-hidden">
         <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
         <div className="relative flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+          {/* <div className="flex items-center space-x-4">
+            <div>Back Button</div>
             <div className="relative">
               <div className="bg-white/20 backdrop-blur-sm p-3 rounded-2xl shadow-lg border border-white/30">
                 <Users className="w-6 h-6 text-white" />
@@ -172,8 +174,65 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
                 </span>
               </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
+          </div> */}
+          <div className="flex w-full items-center justify-between px-5 py-3 rounded-2xl 
+bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 shadow-lg">
+  
+  {/* LEFT */}
+  <div className="flex items-center gap-4">
+    
+    {/* 🔙 Back */}
+    <button
+      onClick={handleShowOnlineUsers}
+      className="flex items-center justify-center w-10 h-10 rounded-xl 
+      bg-white/20 hover:bg-white/30 transition backdrop-blur-md border border-white/30"
+    >
+      <ChevronLeft className="w-6 h-6 text-white" />
+    </button>
+
+    {/* 👥 Icon */}
+    <div className="relative">
+      <div className="p-3 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-inner">
+        <Users className="w-6 h-6 text-white" />
+      </div>
+
+      {/* simple online dot (no star/ping) */}
+      <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></span>
+    </div>
+
+    {/* label */}
+    <div className="flex flex-col leading-tight">
+      <span className="text-white text-sm font-semibold tracking-wide">
+        Users
+      </span>
+      <span className="text-white/70 text-xs">
+        Active members
+      </span>
+    </div>
+  </div>
+
+  {/* RIGHT */}
+  <div className="flex items-center gap-3">
+    
+    {/* Active count */}
+    <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-xl backdrop-blur-md border border-white/30">
+      <Activity className="w-4 h-4 text-green-300" />
+      <span className="text-white text-sm font-semibold">
+        {onlineCount?.length}
+      </span>
+    </div>
+
+    {/* Total users */}
+    {/* <div className="bg-white/10 px-3 py-1.5 rounded-xl backdrop-blur-md border border-white/20">
+      <span className="text-white/80 text-sm font-medium">
+        {AllUSers.length}
+      </span>
+    </div> */}
+
+  </div>
+</div>
+          
+          {/* <div className="flex items-center gap-2">
             <button className="p-2 hover:bg-white/20 rounded-xl transition-all backdrop-blur-sm border border-white/20">
               <Star className="w-5 h-5 text-white" />
             </button>
@@ -185,7 +244,7 @@ const OnlineUsers = ({ showOnlineUsers, onClose }) => {
                 <X className="w-5 h-5 text-white" />
               </button>
             )}
-          </div>
+          </div> */}
         </div>
 
         {/* Featured Users Strip */}

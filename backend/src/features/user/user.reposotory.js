@@ -23,7 +23,7 @@ export const userRegisterationRepo = async (userData) => {
             message: "User Registered Successfully",
             data: {
                 user: {
-                    publicRommId: publicRoomData?._id,
+                    publicRoomId: publicRoomData?._id,
                     userId: newUser?._id,
                     name: newUser?.name,
                     // email: newUser.email,

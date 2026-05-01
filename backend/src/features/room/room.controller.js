@@ -1,6 +1,6 @@
 
 import { customErrorHandler } from "../../middlewares/errorHandler.js";
-import { roomCreationRepo } from "./room.repository.js";
+import { roomCreationRepo,getRoomDataRepo } from "./room.repository.js";
 
 
 
@@ -57,11 +57,11 @@ export const roomCreation = async (req,res,next) => {
 
 }
 
-const getRoomData=async (req,res,next)=>{
-   const {type}=req.query
+export const getRoomData=async (req,res,next)=>{
+   const {type,roomId}=req.query
 
     try {
- const resp=await getRoomDataRepo(type)
+ const resp=await getRoomDataRepo({type,roomId})
 
  if(resp.success){
     return res.status(200).json({

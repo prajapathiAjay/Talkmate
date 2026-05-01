@@ -69,11 +69,31 @@ export const roomCreationRepo = async (roomData) => {
 
 
 
-export const getRoomDataRepo=async (roomData)=>{
+export const getRoomDataRepo=async (data)=>{
 
 
     try {
-      
+        if(data?.type==="public"){
+
+const roomData=await RoomModel.findOne({type:data?.type})
+
+            return{
+                success:true,
+                status:200,
+                data:roomData
+
+            }
+        }
+
+      return {
+            success: true,
+            status: 201,
+            message: `New room with name has been created uccessfully`,
+
+
+
+        }
+
    
         
     } catch (error) {

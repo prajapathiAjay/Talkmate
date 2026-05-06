@@ -10,20 +10,25 @@ import CustomeApiService from "../services/CustomApiService.jsx";
 import MessageTypingIndicator from "./MessageTypingIndicator.jsx";
 import OnlineUsers from "./OnlineUsers.jsx";
 import { Trophy } from "lucide-react";
+import { useRoom } from "../contexts/RoomProvider.jsx";
+import FormLayoOut from "../components/FormLayoOut.jsx";
+
 
 const Chat = () => {
   const { GET } = CustomeApiService();
   const { userData } = useAuth();
+  const { roomId,setRoomId,roomData } = useRoom();
   let userId = userData?.user?.userId;
   let userName = userData?.user?.name;
-  let publicRoomId = userData?.user?.publicRoomId;
+  // let roomId = userData?.user?.roomId;
   console.log("User Data in Chat Component:", userData);
   const [currentUser, setCurrentUser] = useState(userData?.user?.userId);
   const [messages, setMessages] = useState([]);
+  const [editRoom,setEditRoom] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [roomType, setRoomType] = useState("public");
   const [showOnlineUsers, setShowOnlineUsers] = useState(false);
-  const [roomId, setRoomId] = useState(publicRoomId || null);
+  // const [roomId, setRoomId] = useState(roomId || null);
   console.log("currentUser", currentUser);
   const messagesEndRef = useRef(null);
   // console.log("sendt message", newMsg);
@@ -102,7 +107,7 @@ const Chat = () => {
     // socket.on("user-status-changed", handleStatusChange);
     socket.emit(
       "join-room",
-      { roomId: publicRoomId, userName: userName },
+      { roomId: roomId, userName: userName },
       handleJoinRoom,
     );
     socket.on("userJoined", handleUserJoined);
@@ -121,7 +126,7 @@ const Chat = () => {
       // socket.off("joinSuccess", handleJoinSuccess);
       socket.off("message", handleMessage);
     };
-  }, [currentUser, publicRoomId]);
+  }, [currentUser, roomId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -213,6 +218,8 @@ const Chat = () => {
       </div>
       {/* <JoinRoom onJoin={handleCreateRoom} currentUser={currentUser} /> */}
       <OnlineUsers showOnlineUsers={showOnlineUsers} handleShowOnlineUsers={handleShowOnlineUsers} />
+      {editRoom && <FormLayoOut />}
+
     </div>
   );
 };

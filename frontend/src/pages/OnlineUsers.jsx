@@ -148,33 +148,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-5 relative overflow-hidden">
         <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
         <div className="relative flex items-center justify-between">
-          {/* <div className="flex items-center space-x-4">
-            <div>Back Button</div>
-            <div className="relative">
-              <div className="bg-white/20 backdrop-blur-sm p-3 rounded-2xl shadow-lg border border-white/30">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                Community Hub
-                <Crown className="w-5 h-5 text-yellow-300" />
-              </h2>
-              <div className="flex items-center gap-3 mt-1">
-                <div className="flex items-center gap-1.5">
-                  <Activity className="w-4 h-4 text-white/80" />
-                  <span className="text-white/90 text-sm font-medium">
-                    {onlineCount?.length} active now
-                  </span>
-                </div>
-                <span className="text-white/40">•</span>
-                <span className="text-white/70 text-sm">
-                  {AllUSers.length} total
-                </span>
-              </div>
-            </div>
-          </div> */}
+        
           <div className="flex w-full items-center justify-between px-5 py-3 rounded-2xl 
 bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 shadow-lg">
   
@@ -184,7 +158,7 @@ bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 shadow-lg">
     {/* 🔙 Back */}
     <button
       onClick={handleShowOnlineUsers}
-      className="flex items-center justify-center w-10 h-10 rounded-xl 
+      className="block md:hidden flex items-center justify-center w-10 h-10 rounded-xl 
       bg-white/20 hover:bg-white/30 transition backdrop-blur-md border border-white/30"
     >
       <ChevronLeft className="w-6 h-6 text-white" />

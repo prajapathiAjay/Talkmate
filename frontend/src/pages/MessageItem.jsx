@@ -81,7 +81,7 @@ const MessageItem = ({ msg, currentUser, prevMessage }) => {
   const isCurrentUser = msg?.senderId === currentUser;
   // console.log("isCurrentUser",isCurrentUser)
   const isJoinMessage = msg?.messageType === "join";
-  const isSameSenderAsPrev = prevMessage && prevMessage.senderId === msg.senderId;
+  const isSameSenderAsPrev = prevMessage && prevMessage?.senderId === msg?.senderId;
 
   if (isJoinMessage) {
     return (

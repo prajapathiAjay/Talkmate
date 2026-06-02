@@ -39,7 +39,7 @@ const Chat = () => {
       ...prevMessages,
       {
         type: "joining message",
-        text: `${userName} has joined the chat.`,
+        text: `${userName} has joined df;gfdthe chat.`,
         time: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
@@ -102,6 +102,10 @@ const Chat = () => {
 
 
   useEffect(() => {
+      console.log("JOIN EFFECT", {
+    currentUser,
+    roomId,
+  });
     if (!currentUser) return;
 
     // socket.on("user-status-changed", handleStatusChange);
@@ -110,7 +114,7 @@ const Chat = () => {
       { roomId: roomId, userName: userName },
       handleJoinRoom,
     );
-    socket.on("userJoined", handleUserJoined);
+    socket.on("userJoined");
     // socket.on("joinSuccess", handleJoinSuccess);
     socket.on("message", handleMessage);
     // socket.on("user-status-changed",handleUserStatus)
@@ -122,7 +126,7 @@ const Chat = () => {
     });
 
     return () => {
-      socket.off("userJoined", handleUserJoined);
+      socket.off("userJoined");
       // socket.off("joinSuccess", handleJoinSuccess);
       socket.off("message", handleMessage);
     };

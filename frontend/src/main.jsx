@@ -6,7 +6,7 @@ import AuthProvider from "./contexts/AuthProvider.jsx";
 import { RoomProvider } from "./contexts/RoomProvider.jsx";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
+  // <StrictMode>
    
       <AuthProvider>
          <RoomProvider>
@@ -14,5 +14,5 @@ createRoot(document.getElementById("root")).render(
         </RoomProvider>
       </AuthProvider>
    
-  </StrictMode>,
+  // </StrictMode>,
 );

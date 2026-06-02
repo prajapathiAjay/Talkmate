@@ -4,6 +4,7 @@ import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import socket from "../Socket";
 import CustomeApiService from "../services/CustomApiService.jsx";
+import { Send, SendHorizonal, Loader2 } from "lucide-react";
 
 const MessageInput = ({ roomType, disabled = false }) => {
   const { POST } = CustomeApiService();
@@ -11,11 +12,13 @@ const MessageInput = ({ roomType, disabled = false }) => {
   const { userData } = useAuth();
   const [newMsg, setNewMsg] = useState("");
   const [files, setFiles] = useState([]);
+  const [sending, setSending] = useState(false);
   let userName = userData?.user?.name;
   let userId = userData?.user?.userId;
   let publicRoomId = userData?.user?.publicRoomId;
   const TypingTimeOutRef = useRef(null);
   const isTypingRef = useRef(false);
+  const emojiPickerRef = useRef(null);
   const [showFilePreview, setShowFilePreview] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   console.log("all files", files);
@@ -27,6 +30,23 @@ const MessageInput = ({ roomType, disabled = false }) => {
       onSend();
     }
   };
+
+  // Emoji Outside Click Handler
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target)
+      ) {
+        setShowEmojiPicker(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return ()=>{
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, []);
 
   const handleTypingMessage = (value) => {
     setNewMsg(value);
@@ -56,60 +76,56 @@ const MessageInput = ({ roomType, disabled = false }) => {
   const handleEmojiSelect = (emoji) => {
     const emojiChar = emoji.native;
     setNewMsg((prev) => prev + emojiChar);
-    // setShowEmojiPicker(false);
+    setShowEmojiPicker(false);
   };
   const handleRemoveFile = (indexToRemove) => {
-    setFiles((prev)=>prev.filter((_,index)=>index!==indexToRemove))
-
-  }
-  const handleRevomeAllFiles=()=>{
-
-    setFiles([])
-  }
+    setFiles((prev) => prev.filter((_, index) => index !== indexToRemove));
+  };
+  const handleRevomeAllFiles = () => {
+    setFiles([]);
+  };
   const onSend = async () => {
     setShowEmojiPicker(false);
+
     if (!newMsg.trim() && files.length === 0) return;
-    console.log("sending message", { newMsg, files });
 
-    let uploadedFiles = [];
+    setSending(true);
 
-  
-    if (files.length > 0) {
-      const formData = new FormData();
+    try {
+      let uploadedFiles = [];
 
-      files.forEach((file) => {
-        formData.append("files", file);
-      });
-      console.log("form data", formData.getAll("files"));
-      try {
+      if (files.length > 0) {
+        const formData = new FormData();
+
+        files.forEach((file) => {
+          formData.append("files", file);
+        });
+
         const res = await POST("upload/messages", {}, {}, formData);
 
-        console.log("file upload response", res);
-
         uploadedFiles = res?.files || [];
-      } catch (err) {
-        console.error("Upload error", err);
       }
+
+      const messageData = {
+        senderId: userId,
+        senderName: userName,
+        message: newMsg,
+        attachments: uploadedFiles,
+      };
+
+      if (roomType === "public") {
+        messageData.roomId = publicRoomId;
+      }
+
+      socket.emit("sendMessage", messageData);
+
+      setNewMsg("");
+      setFiles([]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSending(false);
     }
-
-    const messageData = {
-      senderId: userId,
-      senderName: userName,
-      message: newMsg,
-      attachments: uploadedFiles,
-    };
-
-    if (roomType === "public") {
-      messageData.roomId = publicRoomId;
-    }
-
-    socket.emit("sendMessage", messageData, (res) => {
-      console.log("server", res);
-      console.log("message sent", messageData);
-    });
-
-    setNewMsg("");
-    setFiles([]);
   };
   return (
     <div className="bg-white border-t border-gray-200 p-4">
@@ -161,65 +177,58 @@ const MessageInput = ({ roomType, disabled = false }) => {
             </svg>
           </button>
 
-     
-
           {files.length > 0 && (
-  <div className="absolute bottom-full mb-3 w-full max-w-xl bg-white border border-gray-200 shadow-xl rounded-xl z-50">
-    
-    {/* Header */}
-    <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50 rounded-t-xl">
-      <h3 className="text-sm font-semibold text-gray-700">
-        Selected Files ({files.length})
-      </h3>
+            <div className="absolute bottom-full mb-3 w-full max-w-xl bg-white border border-gray-200 shadow-xl rounded-xl z-50">
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50 rounded-t-xl">
+                <h3 className="text-sm font-semibold text-gray-700">
+                  Selected Files ({files.length})
+                </h3>
 
-      <button
-        onClick={handleRevomeAllFiles}
-        className="text-xs px-3 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-md transition"
-      >
-        Clear All
-      </button>
-    </div>
+                <button
+                  onClick={handleRevomeAllFiles}
+                  className="text-xs px-3 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-md transition"
+                >
+                  Clear All
+                </button>
+              </div>
 
-    {/* Files Grid */}
-    <div className="max-h-64 overflow-y-auto p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {/* Files Grid */}
+              <div className="max-h-64 overflow-y-auto p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {files.map((file, index) => (
+                  <div
+                    key={index}
+                    className="relative group border rounded-lg overflow-hidden bg-gray-50"
+                  >
+                    {/* Image */}
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt="Preview"
+                      className="w-full h-28 object-cover"
+                    />
 
-      {files.map((file, index) => (
-        <div
-          key={index}
-          className="relative group border rounded-lg overflow-hidden bg-gray-50"
-        >
-          {/* Image */}
-          <img
-            src={URL.createObjectURL(file)}
-            alt="Preview"
-            className="w-full h-28 object-cover"
-          />
+                    {/* Remove Button */}
+                    <button
+                      onClick={() => handleRemoveFile(index)}
+                      className="absolute top-1 right-1 bg-black/60 text-white text-xs w-6 h-6 rounded-full opacity-100 group-hover:opacity-100 transition"
+                    >
+                      ✕
+                    </button>
 
-          {/* Remove Button */}
-          <button
-            onClick={() => handleRemoveFile(index)}
-            className="absolute top-1 right-1 bg-black/60 text-white text-xs w-6 h-6 rounded-full opacity-100 group-hover:opacity-100 transition"
-          >
-            ✕
-          </button>
-
-          {/* File Info */}
-          <div className="p-2 text-xs">
-            <p className="truncate font-medium text-gray-700">
-              {file.name}
-            </p>
-            <p className="text-gray-400">
-              {file.type || "file"}
-            </p>
-          </div>
-        </div>
-      ))}
-
-    </div>
-  </div>
-)}
+                    {/* File Info */}
+                    <div className="p-2 text-xs">
+                      <p className="truncate font-medium text-gray-700">
+                        {file.name}
+                      </p>
+                      <p className="text-gray-400">{file.type || "file"}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {showEmojiPicker && (
-            <div className="absolute bottom-full mb-2 z-9999">
+            <div className="absolute bottom-full mb-2 z-9999" ref={emojiPickerRef}>
               <Picker data={data} onEmojiSelect={handleEmojiSelect} />
             </div>
           )}
@@ -254,14 +263,47 @@ const MessageInput = ({ roomType, disabled = false }) => {
 
           <button
             onClick={onSend}
-            disabled={(!newMsg.trim() && files.length === 0) || disabled}
-            className={`px-6 py-3 rounded-2xl font-medium transition-all duration-200 ${
-              newMsg.trim() || files.length > 0
-                ? "bg-linear-to-r from-blue-500 to-purple-500 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                : "bg-gray-200 text-gray-400 cursor-not-allowed"
-            }`}
+            disabled={
+              (!newMsg.trim() && files.length === 0) || disabled || sending
+            }
+            className={`
+    group relative overflow-hidden
+    w-12 h-12 rounded-full
+    flex items-center justify-center
+    transition-all duration-300 ease-out
+    ${
+      newMsg.trim() || files.length > 0
+        ? `
+          bg-white/10 backdrop-blur-xl
+          border border-white/20
+          text-white
+          shadow-[0_8px_32px_rgba(59,130,246,0.35)]
+          hover:scale-110
+          hover:rotate-12
+          hover:shadow-[0_12px_40px_rgba(168,85,247,0.5)]
+          active:scale-95
+        `
+        : `
+          bg-gray-100
+          text-gray-400
+          cursor-not-allowed
+        `
+    }
+  `}
           >
-            Send
+            {/* Glow */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-90" />
+
+            {/* Shine effect */}
+            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-linear-to-r from-transparent via-white/30 to-transparent" />
+
+            <span className="relative z-10">
+              {sending ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <SendHorizonal className="w-5 h-5" />
+              )}
+            </span>
           </button>
         </div>
       </div>
@@ -270,5 +312,3 @@ const MessageInput = ({ roomType, disabled = false }) => {
 };
 
 export default MessageInput;
-
-

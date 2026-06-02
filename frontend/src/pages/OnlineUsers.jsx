@@ -430,7 +430,7 @@ bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 shadow-lg">
                           ✓ Verified
                         </span>
                       )}
-                    </div>
+                    </div>h
                   </div>
 
                   {/* Action Button with animation */}
@@ -511,7 +511,7 @@ bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 shadow-lg">
       </div>
 
       {/* Custom Styles */}
-      <style jsx>{`
+      <style>{`
         @keyframes fadeIn {
           from {
             opacity: 0;

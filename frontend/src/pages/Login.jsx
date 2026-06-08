@@ -28,6 +28,7 @@ import {
   Check
 } from "lucide-react";
 import CustomApiServices from "../services/CustomApiService";
+import { toast } from "sonner";
 
 const Login = () => {
   const {login}=useAuth();
@@ -102,7 +103,9 @@ const Login = () => {
       const response = await POST(endpoint, {}, {}, payload);
   if(response.success){
     login(response.data);
-    navigate("/chat")
+      navigate("/chat")
+    toast.success(response.message || (type === "login" ? "Logged in successfully!" : "Account created successfully!"));
+  
   }
      
     } catch (error) {

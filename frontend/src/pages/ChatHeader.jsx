@@ -1,7 +1,7 @@
 
 
 
-
+import {toast} from "sonner";
 import React, { useState, useRef, useEffect } from "react";
 import { useRoom } from "../contexts/RoomProvider";
 import { 
@@ -19,6 +19,11 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
   const { roomData } = useRoom();
   const [openMenu, setOpenMenu] = useState(false);
   const menuRef = useRef(null);
+
+  
+
+
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -57,8 +62,14 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
             </div>
             <div className="flex items-center gap-2 mt-1.5">
               <div className="flex -space-x-1.5 overflow-hidden">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="inline-block h-4 w-4 rounded-full ring-2  ring-white bg-gray-200" />
+                {[1, 2, 3,4,5,6].map((i) => (
+                  <div key={i} className="inline-block h-5 w-5 rounded-full ring-2  ring-white bg-gray-200" >
+                    <img
+                      src={`https://i.pravatar.cc/150?img=${i + 10}`}
+                      alt={`User ${i}`}
+                      className="h-full w-full object-cover rounded-full"
+                    />
+                  </div>
                 ))}
               </div>
               <p className="text-[11px] font-medium text-gray-400">
@@ -71,14 +82,14 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
         {/* RIGHT: Global Actions */}
         <div className="flex items-center gap-1.5">
           {/* Secondary Action: Search */}
-          <button className="hidden sm:flex p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
+          <button onClick={() => {toast.info("Search functionality coming soon!");}} className="hidden sm:flex p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
             <Search className="w-4.5 h-4.5" />
           </button>
 
           {/* Secondary Action: Notifications */}
-          <button className="hidden sm:flex p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
+          {/* <button className="hidden sm:flex p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
             <Bell className="w-4.5 h-4.5" />
-          </button>
+          </button> */}
 
           <div className="h-4 w-[1px] bg-gray-200 mx-1 hidden sm:block" />
 

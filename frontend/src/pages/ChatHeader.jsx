@@ -1,29 +1,39 @@
-
-
-
-import {toast} from "sonner";
+import { toast } from "sonner";
 import React, { useState, useRef, useEffect } from "react";
 import { useRoom } from "../contexts/RoomProvider";
-import { 
-  Settings, 
-  LogOut, 
-  Users, 
-  Shield, 
+import socket from "../Socket.jsx";
+import {
+  Settings,
+  LogOut,
+  Users,
+  Shield,
   MoreHorizontal,
   Bell,
   Search,
-  ChevronDown
+  ChevronDown,
 } from "lucide-react";
-
+import CustomApiService from "../services/CustomApiService";
 const ChatHeader = ({ handleShowOnlineUsers }) => {
+  const { GET ,POST} = CustomApiService();
   const { roomData } = useRoom();
   const [openMenu, setOpenMenu] = useState(false);
   const menuRef = useRef(null);
 
-  
-
-
-
+  const logOut = async () => {
+    try {
+      const response = await POST("user/logout");
+      console.log("Logout response:", response);
+      if (response.success) {
+        toast.success("You have left the room.");
+        socket.disconnect();
+        window.location.href="/signIn";
+      } else {
+        toast.error(response.message );
+      }
+    } catch (err) {
+      toast.error(err.message || "An error occurred while leaving the room.");
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -38,7 +48,6 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
   return (
     <header className="sticky top-0  w-full px-4 pt-4 pb-2 bg-transparent pointer-events-none">
       <div className="max-w-7xl mx-auto h-16 pointer-events-auto bg-white/80 backdrop-blur-2xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl flex items-center justify-between px-4 ring-1 ring-gray-900/5">
-        
         {/* LEFT: Room Identity */}
         <div className="flex items-center gap-4">
           <div className="relative group">
@@ -57,13 +66,18 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
               </h1>
               <span className="flex items-center gap-1 bg-gray-100 px-1.5 py-0.5 rounded-md border border-gray-200/50">
                 <Shield className="w-2.5 h-2.5 text-gray-500" />
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Public</span>
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">
+                  Public
+                </span>
               </span>
             </div>
             <div className="flex items-center gap-2 mt-1.5">
               <div className="flex -space-x-1.5 overflow-hidden">
-                {[1, 2, 3,4,5,6].map((i) => (
-                  <div key={i} className="inline-block h-5 w-5 rounded-full ring-2  ring-white bg-gray-200" >
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div
+                    key={i}
+                    className="inline-block h-5 w-5 rounded-full ring-2  ring-white bg-gray-200"
+                  >
                     <img
                       src={`https://i.pravatar.cc/150?img=${i + 10}`}
                       alt={`User ${i}`}
@@ -73,7 +87,8 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
                 ))}
               </div>
               <p className="text-[11px] font-medium text-gray-400">
-                <span className="text-indigo-600 font-bold">12 active</span> contributors
+                <span className="text-indigo-600 font-bold">12 active</span>{" "}
+                contributors
               </p>
             </div>
           </div>
@@ -82,7 +97,12 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
         {/* RIGHT: Global Actions */}
         <div className="flex items-center gap-1.5">
           {/* Secondary Action: Search */}
-          <button onClick={() => {toast.info("Search functionality coming soon!");}} className="hidden sm:flex p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
+          <button
+            onClick={() => {
+              toast.info("Search functionality coming soon!");
+            }}
+            className="hidden sm:flex p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors"
+          >
             <Search className="w-4.5 h-4.5" />
           </button>
 
@@ -107,28 +127,35 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
             <button
               onClick={() => setOpenMenu(!openMenu)}
               className={`group flex items-center gap-1 p-1.5 pl-2 rounded-xl transition-all border ${
-                openMenu 
-                ? "bg-white border-gray-300 shadow-sm" 
-                : "bg-gray-50/50 border-transparent hover:border-gray-200 hover:bg-white"
+                openMenu
+                  ? "bg-white border-gray-300 shadow-sm"
+                  : "bg-gray-50/50 border-transparent hover:border-gray-200 hover:bg-white"
               }`}
             >
               <div className="w-6 h-6 rounded-lg bg-indigo-100 flex items-center justify-center">
                 <Settings className="w-3.5 h-3.5 text-indigo-600" />
               </div>
-              <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-300 ${openMenu ? 'rotate-180' : ''}`} />
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-300 ${openMenu ? "rotate-180" : ""}`}
+              />
             </button>
 
             {/* Menu Dropdown */}
             {openMenu && (
               <div className="absolute right-0 mt-2 w-52 bg-white border border-gray-200/60 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] py-1.5 z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
                 <div className="px-4 py-2 border-b border-gray-50 mb-1">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Manage</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    Manage
+                  </p>
                 </div>
                 <button className="w-full flex items-center gap-3 px-3.5 py-2 text-sm text-gray-600 hover:bg-indigo-50/50 hover:text-indigo-600 transition-colors mx-auto w-[94%] rounded-lg">
                   <Settings className="w-4 h-4" />
                   Room Settings
                 </button>
-                <button className="w-full flex items-center gap-3 px-3.5 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors mx-auto w-[94%] rounded-lg">
+                <button
+                  onClick={() => logOut()}
+                  className="w-full flex items-center gap-3 px-3.5 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors mx-auto w-[94%] rounded-lg"
+                >
                   <LogOut className="w-4 h-4" />
                   Leave Room
                 </button>
@@ -136,7 +163,6 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
             )}
           </div>
         </div>
-
       </div>
     </header>
   );

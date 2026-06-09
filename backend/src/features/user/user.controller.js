@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt"
-import { userRegisterationRepo,userSignInRepo,getAllUsersRepo } from "./user.reposotory.js"
+import { userRegisterationRepo, userSignInRepo, getAllUsersRepo } from "./user.reposotory.js"
 import { customErrorHandler } from "../../middlewares/errorHandler.js"
 import jwt from "jsonwebtoken"
 
@@ -21,7 +21,7 @@ export const userRegisteration = async (req, res, next) => {
         data: resp.data,
       });
     }
-    
+
 
     // business logic error (handled response)
     return next(
@@ -31,7 +31,7 @@ export const userRegisteration = async (req, res, next) => {
       )
     );
 
-    
+
   } catch (error) {
     // unexpected / runtime errors
     return next(
@@ -61,12 +61,14 @@ export const userSignIn = async (req, res, next) => {
         .cookie("jwtToken", token, {
           maxAge: 3600000,
           httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
         })
         .status(200)
         .json({
           success: true,
           message: response.message,
-          data:response.data
+          data: response.data
         })
     }
 
@@ -86,28 +88,54 @@ export const userSignIn = async (req, res, next) => {
       )
     )
   }
-} 
+}
+
+
+export const userLogout = async (req, res, next) => {
+  try {
+    res.clearCookie("jwtToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    }).status(200).json({
+      success: true,
+      message: "Logged out successfully"
+    })
+
+  } catch (error) {
+    return next(
+      new customErrorHandler(
+        500,
+        error.message || "Internal Server Error"
+      )
+    );
+
+  }
 
 
 
-export const getAllUsers= async(req,res,next)=>{
 
- try {
-   const allUsers=await getAllUsersRepo()
-  
-  if(allUsers.success){
+}
+
+
+export const getAllUsers = async (req, res, next) => {
+
+  try {
+    const allUsers = await getAllUsersRepo()
+
+    if (allUsers.success) {
       return res.status(200).json({
-        success:allUsers?.success,
-        message:allUsers?.message,
-        data:allUsers?.data
+        success: allUsers?.success,
+        message: allUsers?.message,
+        data: allUsers?.data
 
 
       })
+    }
+
+  } catch (error) {
+    return next(new customErrorHandler(500, error.message || "internal Server error"))
   }
-  
- } catch (error) {
-  return next(new customErrorHandler(500,error.message || "internal Server error"))
- }
 
 
 

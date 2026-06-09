@@ -147,7 +147,7 @@ export const getAllUsersRepo = async () => {
 export const handleOnlineUsersrepo = async (onlineStatus,userId) => {
     const publicRoomData = await RoomModel.findOne({ type: "public" })
 
-    console.log("handleonlinerepotriggered")
+
     try {
         const updatedUser = await UserModel.findByIdAndUpdate(
             userId,

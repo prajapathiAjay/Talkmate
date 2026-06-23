@@ -26,7 +26,7 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
       if (response.success) {
         toast.success("You have left the room.");
         socket.disconnect();
-        window.location.href="/signIn";
+        window.location.href="/signin";
       } else {
         toast.error(response.message );
       }

@@ -3,6 +3,7 @@ import { createContext, useState, useContext,useEffect } from "react";
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
+  console.log("AuthProvider file loaded");
   const [userData, setUserData] = useState(()=>{
     const availablUser=localStorage.getItem("userData");
     return availablUser ? JSON.parse(availablUser) : null;

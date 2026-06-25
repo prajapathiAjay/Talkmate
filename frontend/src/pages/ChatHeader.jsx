@@ -13,11 +13,14 @@ import {
   ChevronDown,
 } from "lucide-react";
 import CustomApiService from "../services/CustomApiService";
+import { useAuth } from "../contexts/AuthProvider.jsx";
 const ChatHeader = ({ handleShowOnlineUsers }) => {
   const { GET ,POST} = CustomApiService();
+  const { userData,login,logout } = useAuth();
   const { roomData } = useRoom();
   const [openMenu, setOpenMenu] = useState(false);
   const menuRef = useRef(null);
+
 
   const logOut = async () => {
     try {
@@ -26,6 +29,8 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
       if (response.success) {
         toast.success("You have left the room.");
         socket.disconnect();
+        logout();
+        // localStorage.removeItem("userData");
         window.location.href="/signin";
       } else {
         toast.error(response.message );

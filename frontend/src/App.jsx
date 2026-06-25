@@ -5,6 +5,7 @@ import RoutingSetup from "./components/RoutingSetup.jsx";
 import { useAuth } from "./contexts/AuthProvider.jsx";
 
 function App() {
+  console.log("App Rendered");
   const { userData } = useAuth();
 
 useEffect(() => {

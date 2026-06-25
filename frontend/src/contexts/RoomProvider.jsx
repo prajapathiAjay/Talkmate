@@ -1,15 +1,17 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import CustomApiService from "../services/CustomApiService";
+import { useAuth } from "./AuthProvider.jsx";
 const RoomContext = createContext();
 
 export const RoomProvider = ({ children }) => {
+  console.log("RoomProvider file loaded");
   const { GET } = CustomApiService();
-
+  const { userData } = useAuth();
   const [roomId, setRoomId] = useState();
   const [roomData,setRoomData]= useState()
   //   Fetch Room Data
   const fetchRoomData = async () => {
-    console.log("roomData api is trigered")
+    console.log("roomData provider")
     const params = {
       type: "public",
       roomId:roomId|| null
@@ -24,13 +26,17 @@ export const RoomProvider = ({ children }) => {
       } else {
       }
     } catch (error) {
-      throw new Error(error);
+      throw new Error("Room Api error", error);
     }
   };
 
   useEffect(()=>{
-fetchRoomData()
-  },[])
+      console.log("RoomProvider Mounted");
+      if(userData){
+        fetchRoomData()
+      }
+
+  },[userData])
 
   return (
     <RoomContext.Provider value={{ roomId, setRoomId,roomData }}>

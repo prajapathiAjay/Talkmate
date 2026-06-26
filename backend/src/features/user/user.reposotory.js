@@ -81,9 +81,9 @@ export const userSignInRepo = async (data) => {
                     message: "Signin Successful",
                     data: {
                         user: {
-                            publicRoomId: publicRoomData._id,
-                            userId: user._id,
-                            name: user.name,
+                            publicRoomId: publicRoomData?._id,
+                            userId: user?._id,
+                            name: user?.name,
                             // email: user.email
                         }
                     }

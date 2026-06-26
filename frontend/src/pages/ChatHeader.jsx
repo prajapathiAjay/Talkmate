@@ -20,7 +20,7 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
   const { userData,login,logout } = useAuth();
   const { roomData } = useRoom();
   const [openMenu, setOpenMenu] = useState(false);
-  const [openProfile, setOpenProfile] = useState(true);
+  const [openProfile, setOpenProfile] = useState(false);
   const menuRef = useRef(null);
 
 

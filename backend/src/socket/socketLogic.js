@@ -15,6 +15,12 @@ export const socketLogic = (server) => {
   });
   io.use(socketAuth);
   io.on("connection", async (socket) => {
+      console.log("CONNECTED", socket.id);
+
+  socket.onAny((event, ...args) => {
+    console.log("EVENT:", event, args);
+  });
+
     console.log("socket connected")
     try {
       await handleOnlineUsers(socket)
@@ -59,8 +65,9 @@ export const socketLogic = (server) => {
       // socket.to(roomId).emit("userJoined", message);
     });
 
-    socket.on("sendMessage", async ({ message, senderName, attachments }, ack) => {
-      const { roomId, userName } = socket
+    socket.on("sendMessage", async ({ message, senderName, attachments,roomId }, ack) => {
+      // const { roomId, userName } = socket
+   
       try {
         let userId = socket.user.id
         const messageData = { roomId, senderId: userId, senderName, message, attachments }

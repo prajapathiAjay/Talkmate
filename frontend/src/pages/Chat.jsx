@@ -106,7 +106,7 @@ const Chat = () => {
     currentUser,
     roomId,
   });
-    if (!currentUser) return;
+     if (!currentUser || !roomId) return;
 
     // socket.on("user-status-changed", handleStatusChange);
     socket.emit(

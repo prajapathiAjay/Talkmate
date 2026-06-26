@@ -593,7 +593,7 @@ import CustomApiServices from "../services/CustomApiService";
 import { toast } from "sonner";
 
 // Import your image - replace with your actual image path
-import loginImage from "../../public/login.png"; // Change this to your image path
+import loginImage from "../assets/image/login.png"; // Change this to your image path
 
 const Login = () => {
   const {login}=useAuth();

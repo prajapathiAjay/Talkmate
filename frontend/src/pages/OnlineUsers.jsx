@@ -76,9 +76,9 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "online":
+      case true:
         return "bg-gradient-to-r from-green-400 to-emerald-500";
-      case "away":
+      case false:
         return "bg-gradient-to-r from-yellow-400 to-amber-500";
       default:
         return "bg-gradient-to-r from-gray-400 to-gray-500";
@@ -109,9 +109,9 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
 
   const getBadgeColor = (status) => {
     switch (status) {
-      case "online":
+      case true:
         return "bg-green-100 text-green-700 border-green-200";
-      case "away":
+      case false:
         return "bg-yellow-100 text-yellow-700 border-yellow-200";
       default:
         return "bg-gray-100 text-gray-600 border-gray-200";
@@ -140,121 +140,36 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
         border-l border-indigo-100
       `}
     >
-      {/* Decorative Elements */}
-      {/* <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-200/30 to-purple-200/30 rounded-full blur-3xl -z-10"></div>
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-pink-200/20 to-orange-200/20 rounded-full blur-3xl -z-10"></div> */}
-
+      
       {/* Header with Gradient */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-5 relative overflow-hidden">
-        <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
-        <div className="relative flex items-center justify-between">
-        
-          <div className="flex w-full items-center justify-between px-5 py-3 rounded-2xl 
-bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 shadow-lg">
-  
-  {/* LEFT */}
-  <div className="flex items-center gap-4">
-    
-    {/* 🔙 Back */}
-    <button
-      onClick={handleShowOnlineUsers}
-      className="block md:hidden flex items-center justify-center w-10 h-10 rounded-xl 
-      bg-white/20 hover:bg-white/30 transition backdrop-blur-md border border-white/30"
-    >
-      <ChevronLeft className="w-6 h-6 text-white" />
-    </button>
+      <div className="flex items-center bg-[#7736FB]/10 border-2 border-indigo-200 px-2 py-1 relative overflow-hidden">
+       
+       <div onClick={handleShowOnlineUsers } className="block md:hidden flex items-center h-full w-8 text-[#7736FB]  rounded-lg bg-white border-2 border-indigo-200 hover:bg-indigo-50 cursor-pointer justify-center mr-3">
+        <ChevronLeft className="w-5 h-20 " />
+       </div>
 
-    {/* 👥 Icon */}
-    <div className="relative">
-      <div className="p-3 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-inner">
-        <Users className="w-6 h-6 text-white" />
-      </div>
+        <div className="flex flex-wrap items-between justify-evenly ">
+          <button className="cursor-pointer px-4 py-2 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 text-[#7736FB] font-semibold shadow-lg hover:bg-[#7736FB]/30 hover:scale-105 transition-all duration-300">
+            👥 Friends
+          </button>
 
-      {/* simple online dot (no star/ping) */}
-      <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></span>
-    </div>
+          <button onClick={() => setSelectedFilter(true)} className="cursor-pointer px-4 py-2 rounded-xl bg-green-500/20 border border-green-300/30 text-[#7736FB] font-semibold shadow-lg hover:bg-green-500/30 hover:scale-105 transition-all duration-300">
+            ⚡ Online
+          </button>
 
-    {/* label */}
-    <div className="flex flex-col leading-tight">
-      <span className="text-white text-sm font-semibold tracking-wide">
-        Users
-      </span>
-      <span className="text-white/70 text-xs">
-        Active members
-      </span>
-    </div>
-  </div>
+          <button  onClick={() => setSelectedFilter(false)} className="cursor-pointer px-4 py-2 rounded-xl bg-gray-500/20 border border-gray-300/30 text-[#7736FB] font-semibold shadow-lg hover:bg-gray-500/30 hover:scale-105 transition-all duration-300">
+            🌙 Offline
+          </button>
 
-  {/* RIGHT */}
-  <div className="flex items-center gap-3">
-    
-    {/* Active count */}
-    <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-xl backdrop-blur-md border border-white/30">
-      <Activity className="w-4 h-4 text-green-300" />
-      <span className="text-white text-sm font-semibold">
-        {onlineCount?.length}
-      </span>
-    </div>
+          <button  onClick={() => setSelectedFilter("all")} className="cursor-pointer px-4 py-2 rounded-xl bg-blue-500/20 border border-blue-300/30 text-[#7736FB] font-semibold shadow-lg hover:bg-blue-500/30 hover:scale-105 transition-all duration-300">
+            🌍 All Users
+          </button>
 
-    {/* Total users */}
-    {/* <div className="bg-white/10 px-3 py-1.5 rounded-xl backdrop-blur-md border border-white/20">
-      <span className="text-white/80 text-sm font-medium">
-        {AllUSers.length}
-      </span>
-    </div> */}
-
-  </div>
-</div>
-          
-          {/* <div className="flex items-center gap-2">
-            <button className="p-2 hover:bg-white/20 rounded-xl transition-all backdrop-blur-sm border border-white/20">
-              <Star className="w-5 h-5 text-white" />
-            </button>
-            {onClose && (
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-white/20 rounded-xl transition-all md:hidden border border-white/20"
-              >
-                <X className="w-5 h-5 text-white" />
-              </button>
-            )}
-          </div> */}
+          <button className="cursor-pointer px-4 py-2 rounded-xl bg-purple-500/20 border border-purple-300/30 text-[#7736FB] font-semibold shadow-lg hover:bg-purple-500/30 hover:scale-105 transition-all duration-300">
+            👨‍👩‍👧 Groups
+          </button>
         </div>
-
-        {/* Featured Users Strip */}
-        {featuredUsers.length > 0 && (
-          <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            {featuredUsers.map((user, idx) => (
-              <div
-                key={idx}
-                className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full pl-1 pr-3 py-1 border border-white/20"
-              >
-                <div className="relative">
-                  {user.avatar ? (
-                    <img
-                      src={user.avatar}
-                      alt={user.name}
-                      className="w-6 h-6 rounded-full border border-white"
-                    />
-                  ) : (
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 flex items-center justify-center text-white text-xs font-bold">
-                      {user.name.charAt(0)}
-                    </div>
-                  )}
-                  <div
-                    className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-white ${user.status === "online" ? "bg-green-400" : "bg-gray-400"}`}
-                  ></div>
-                </div>
-                <span className="text-xs text-white font-medium whitespace-nowrap">
-                  {user.name}
-                </span>
-              </div>
-            ))}
-            <div className="text-xs text-white/60 whitespace-nowrap">
-              +{AllUSers.length - featuredUsers.length} more
-            </div>
-          </div>
-        )}
+       
       </div>
 
       {/* Search Section */}
@@ -279,67 +194,7 @@ bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 shadow-lg">
         </div>
 
         {/* Filter Pills */}
-        <div className="flex items-center gap-2 mt-4">
-          <button
-            onClick={() => setSelectedFilter("all")}
-            className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all transform hover:scale-105 ${
-              selectedFilter === "all"
-                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-200"
-                : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 shadow-sm"
-            }`}
-          >
-            All
-            <span
-              className={`ml-2 px-1.5 py-0.5 rounded-full text-xs ${
-                selectedFilter === "all"
-                  ? "bg-white/20 text-white"
-                  : "bg-gray-100 text-gray-600"
-              }`}
-            >
-              {AllUSers.length}
-            </span>
-          </button>
-          <button
-            onClick={() => setSelectedFilter(true)}
-            className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all transform hover:scale-105 flex items-center gap-1.5 ${
-              selectedFilter === true
-                ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-200"
-                : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 shadow-sm"
-            }`}
-          >
-            <Zap className="w-4 h-4" />
-            Online
-            <span
-              className={`ml-1 px-1.5 py-0.5 rounded-full text-xs ${
-                selectedFilter === true
-                  ? "bg-white/20 text-white"
-                  : "bg-gray-100 text-gray-600"
-              }`}
-            >
-              {onlineCount?.length}
-            </span>
-          </button>
-          <button
-            onClick={() => setSelectedFilter(false)}
-            className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all transform hover:scale-105 flex items-center gap-1.5 ${
-              selectedFilter === false
-                ? "bg-gradient-to-r from-yellow-500 to-amber-500 text-white shadow-lg shadow-yellow-200"
-                : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 shadow-sm"
-            }`}
-          >
-            <Coffee className="w-4 h-4" />
-            Away
-            <span
-              className={`ml-1 px-1.5 py-0.5 rounded-full text-xs ${
-                selectedFilter === false
-                  ? "bg-white/20 text-white"
-                  : "bg-gray-100 text-gray-600"
-              }`}
-            >
-              {awayCount.length}
-            </span>
-          </button>
-        </div>
+        
       </div>
 
       {/* Users List */}
@@ -372,7 +227,7 @@ bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 shadow-lg">
                   {/* Avatar with fancy ring */}
                   <div className="relative">
                     <div
-                      className={`absolute inset-0 ${getStatusColor(user.status)} rounded-2xl blur opacity-50 group-hover:opacity-70 transition-opacity`}
+                      className={`absolute inset-0 ${getStatusColor(user.isOnline)} rounded-2xl blur opacity-50 group-hover:opacity-70 transition-opacity`}
                     ></div>
                     {user.avatar ? (
                       <img
@@ -382,13 +237,13 @@ bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 shadow-lg">
                       />
                     ) : (
                       <div
-                        className={`relative w-14 h-14 rounded-2xl bg-gradient-to-br ${user.status === "online" ? "from-green-400 to-blue-500" : "from-gray-400 to-gray-500"} flex items-center justify-center text-white font-bold text-xl shadow-lg`}
+                        className={`relative w-14 h-14 rounded-2xl bg-gradient-to-br ${user.isOnline ? "from-green-400 to-blue-500" : "from-gray-400 to-gray-500"} flex items-center justify-center text-white font-bold text-xl shadow-lg`}
                       >
                         {user.name.charAt(0).toUpperCase()}
                       </div>
                     )}
                     <div
-                      className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(user.status)} rounded-full border-3 border-white shadow-lg`}
+                      className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(user.isOnline)} rounded-full border-3 border-white shadow-lg`}
                     ></div>
                   </div>
 
@@ -398,14 +253,13 @@ bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 shadow-lg">
                       <h3 className="font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
                         {user.name}
                       </h3>
-                      <div
-                        className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getBadgeColor(user.status)}`}
+                      {/* <div
+                        className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getBadgeColor(user.isOnline)} border`}
                       >
-                        {getStatusIcon(user.status)}
-                        <span>{user.status}</span>
-                      </div>
+                        
+                        <span>{user.isOnline}</span>
+                      </div> */}
                     </div>
-
                     {/* Activity or last seen */}
                     <p className="text-sm text-gray-500 flex items-center gap-1">
                       {user.status === "online" ? (
@@ -417,7 +271,6 @@ bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 shadow-lg">
                         user.lastSeen || "Last seen recently"
                       )}
                     </p>
-
                     {/* Tags/Metadata */}
                     <div className="flex items-center gap-2 mt-2">
                       {user.isPro && (
@@ -430,14 +283,16 @@ bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 shadow-lg">
                           ✓ Verified
                         </span>
                       )}
-                    </div>h
+                    </div>
+        
                   </div>
 
                   {/* Action Button with animation */}
-                  <button className="absolute right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                  <button className="absolute right-4 opacity-50 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
                     <div className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white p-3 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-110">
                       <MessageCircle className="w-4 h-4" />
                     </div>
+                     
                   </button>
                 </div>
 

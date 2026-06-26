@@ -14,11 +14,13 @@ import {
 } from "lucide-react";
 import CustomApiService from "../services/CustomApiService";
 import { useAuth } from "../contexts/AuthProvider.jsx";
+import Modal from "../components/Modal.jsx";
 const ChatHeader = ({ handleShowOnlineUsers }) => {
   const { GET ,POST} = CustomApiService();
   const { userData,login,logout } = useAuth();
   const { roomData } = useRoom();
   const [openMenu, setOpenMenu] = useState(false);
+  const [openProfile, setOpenProfile] = useState(true);
   const menuRef = useRef(null);
 
 
@@ -50,7 +52,7 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  return (
+  return (<>
     <header className="sticky top-0  w-full px-4 pt-4 pb-2 bg-transparent pointer-events-none">
       <div className="max-w-7xl mx-auto h-16 pointer-events-auto bg-white/80 backdrop-blur-2xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl flex items-center justify-between px-4 ring-1 ring-gray-900/5">
         {/* LEFT: Room Identity */}
@@ -170,6 +172,14 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
         </div>
       </div>
     </header>
+    <Modal
+  isOpen={openProfile}
+  onClose={() => setOpenProfile(false)}
+  title="Edit Profile"
+  width="max-w-2xl"
+></Modal>
+    
+    </>
   );
 };
 

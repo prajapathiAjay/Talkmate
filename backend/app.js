@@ -1,3 +1,5 @@
+import dotenv from "dotenv"
+dotenv.config()
 import express from "express"
 import cors from "cors"
 import userRouter from "./src/features/user/user.routes.js"
@@ -10,7 +12,7 @@ const app = express()
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URI,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,

@@ -1,3 +1,5 @@
+// import dotenv from "dotenv"
+// dotenv.config()
 import { Server } from "socket.io";
 import { socketAuth } from "../middlewares/socketAuth.js";
 // message services
@@ -8,7 +10,7 @@ export const socketLogic = (server) => {
 
   const io = new Server(server, {
     cors: {
-      origin: "http://localhost:5173",
+      origin: process.env.FRONTEND_URI,
       methods: ["GET", "POST"],
       credentials: true,
     },

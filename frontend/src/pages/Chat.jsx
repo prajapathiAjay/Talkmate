@@ -17,10 +17,10 @@ import FormLayoOut from "../components/FormLayoOut.jsx";
 const Chat = () => {
   const { GET } = CustomeApiService();
   const { userData } = useAuth();
-  const { roomId,setRoomId,roomData } = useRoom();
+  // const { roomId,setRoomId,roomData } = useRoom();
   let userId = userData?.user?.userId;
   let userName = userData?.user?.name;
-  // let roomId = userData?.user?.roomId;
+  let roomId = userData?.user?.publicRoomId;
   console.log("User Data in Chat Component:", userData);
   const [currentUser, setCurrentUser] = useState(userData?.user?.userId);
   const [messages, setMessages] = useState([]);
@@ -53,13 +53,16 @@ const Chat = () => {
   };
 
   const handleJoinRoom = (res) => {
+  console.log("joinroom outside loop success",res)
     if (res.success) {
+          console.log("handleJoinRoom response:", res);
       setMessages((prevMessages) => [...prevMessages, res.data]);
     } else {
       console.log("unable to join room");
     }
   };
   const handleMessage = (message) => {
+    console.log("handle message invoked", message);
     if (message?.success) {
       console.log("Received message from server:", message.data);
       setMessages((prevMessages) => [...prevMessages, message.data]);
@@ -102,12 +105,15 @@ const Chat = () => {
 
 
   useEffect(() => {
-      console.log("JOIN EFFECT", {
+       console.log("JOIN EFFECT", {
     currentUser,
     roomId,
+    connected: socket.connected,
   });
-     if (!currentUser || !roomId) return;
 
+     if (!currentUser || !roomId) return;
+console.log("Socket connected?", socket.connected,socket.id);
+console.log("Socket id:", socket.id);
     // socket.on("user-status-changed", handleStatusChange);
     socket.emit(
       "join-room",

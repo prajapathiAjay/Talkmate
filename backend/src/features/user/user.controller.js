@@ -59,10 +59,14 @@ export const userSignIn = async (req, res, next) => {
 
       return res
         .cookie("jwtToken", token, {
-          maxAge: 3600000,
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "strict",
+          // maxAge: 3600000,
+          // httpOnly: true,
+          // secure: process.env.NODE_ENV === "production",
+          // sameSite: "strict",
+           maxAge: 3600000,
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
         })
         .status(200)
         .json({

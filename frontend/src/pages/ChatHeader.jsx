@@ -31,6 +31,7 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
       if (response.success) {
         toast.success("You have left the room.");
         socket.disconnect();
+        localStorage.removeItem("token");
         logout();
         // localStorage.removeItem("userData");
         window.location.href="/signin";

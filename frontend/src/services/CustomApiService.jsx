@@ -1,15 +1,46 @@
 import axios from "axios";
 
 // Create a single axios instance (singleton)
+// const apiClient = axios.create({
+//   baseURL: `${import.meta.env.VITE_API_URL}/${import.meta.env.VITE_APP_NAME}`,
+//   // headers: {
+//   //   "Content-Type": "application/json",
+//   // },
+//   // withCredentials: true, // Include cookies in requests
+// });
+
+// // Intercept responses globally
+// apiClient.interceptors.response.use(
+//   (response) => response,
+//   (error) =>
+//     Promise.reject({
+//       message: error.response?.data?.message || "Something went wrong!",
+//       status: error.response?.status,
+//       data: error.response?.data,
+//       headers: error.response?.headers,
+//       config: error.config,
+//     })
+// );
+
 const apiClient = axios.create({
   baseURL: `${import.meta.env.VITE_API_URL}/${import.meta.env.VITE_APP_NAME}`,
-  // headers: {
-  //   "Content-Type": "application/json",
-  // },
-  withCredentials: true, // Include cookies in requests
 });
 
-// Intercept responses globally
+// ✅ Request Interceptor
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// ✅ Response Interceptor
 apiClient.interceptors.response.use(
   (response) => response,
   (error) =>

@@ -667,7 +667,9 @@ const Login = () => {
 
       const response = await POST(endpoint, {}, {}, payload);
   if(response.success){
+      localStorage.setItem("token",response.token)
     login(response.data);
+  
       navigate("/chat")
     toast.success(response.message || (type === "login" ? "Logged in successfully!" : "Account created successfully!"));
   

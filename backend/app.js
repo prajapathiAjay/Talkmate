@@ -12,7 +12,8 @@ const app = express()
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URI,
+    // origin: process.env.FRONTEND_URI,
+    origin:"https://falcon-ajayprajapathis-projects.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,

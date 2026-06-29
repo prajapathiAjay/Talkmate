@@ -11,7 +11,9 @@ import {
   Bell,
   Search,
   ChevronDown,
+
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import CustomApiService from "../services/CustomApiService";
 import { useAuth } from "../contexts/AuthProvider.jsx";
 import Modal from "../components/Modal.jsx";
@@ -23,7 +25,7 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
   const [openProfile, setOpenProfile] = useState(false);
   const menuRef = useRef(null);
 
-
+const navigate=useNavigate()
   const logOut = async () => {
     try {
       const response = await POST("user/logout");
@@ -34,7 +36,7 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
         localStorage.removeItem("token");
         logout();
         // localStorage.removeItem("userData");
-        window.location.href="/signin";
+        navigate("/signin", { replace: true });
       } else {
         toast.error(response.message );
       }

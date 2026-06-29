@@ -57,24 +57,34 @@ export const userSignIn = async (req, res, next) => {
         { expiresIn: "1h" }
       )
 
-      return res
-        .cookie("jwtToken", token, {
-          // maxAge: 3600000,
-          // httpOnly: true,
-          // secure: process.env.NODE_ENV === "production",
-          // sameSite: "strict",
-           maxAge: 3600000,
-  httpOnly: true,
-  secure: true,
-  sameSite: "none",
-        })
-        .status(200)
-        .json({
-          success: true,
-          message: response.message,
-          data: response.data
-        })
+      // return res
+      //   .cookie("jwtToken", token, {
+      //     // maxAge: 3600000,
+      //     // httpOnly: true,
+      //     // secure: process.env.NODE_ENV === "production",
+      //     // sameSite: "strict",
+      //     maxAge: 3600000,
+      //     httpOnly: true,
+      //     secure: true,
+      //     sameSite: "none",
+      //   })
+      //   .status(200)
+      //   .json({
+      //     success: true,
+      //     message: response.message,
+      //     data: response.data
+      //   })
+
+ return res.status(200).json({
+      success: true,
+      message: response.message,
+      token,
+      data: response.data,
+    })
+
+
     }
+   
 
     // ✅ Proper error forwarding
     return next(

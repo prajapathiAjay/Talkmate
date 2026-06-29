@@ -19,7 +19,7 @@ const RoutingSetup = () => {
 />
       <Routes>
         <Route path="/" element={<Navigate to="/signIn" replace />} />
-        <Route path="/signin" element={<Login />} />
+        <Route path="/signIn" element={<Login />} />
         <Route path="/chat" element={<Chat/>} />
       </Routes>
     </BrowserRouter>

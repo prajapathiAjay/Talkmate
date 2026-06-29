@@ -18,7 +18,7 @@ const RoutingSetup = () => {
   }}
 />
       <Routes>
-        <Route path="/" element={<Navigate to="/signin" replace />} />
+        <Route path="/" element={<Navigate to="/signIn" replace />} />
         <Route path="/signin" element={<Login />} />
         <Route path="/chat" element={<Chat/>} />
       </Routes>

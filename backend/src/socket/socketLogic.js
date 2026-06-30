@@ -13,7 +13,7 @@ export const socketLogic = (server) => {
       // origin: process.env.FRONTEND_URI,
          origin:"https://talkmate-ezzq.onrender.com",
       methods: ["GET", "POST"],
-      credentials: true,
+      // credentials: true,
     },
   });
   // io.use(socketAuth);

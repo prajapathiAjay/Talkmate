@@ -51,7 +51,7 @@ export const socketLogic = (server) => {
       try {
         const messageData = { roomId, message: `${userName} has joined the Chat`, messageType: "join" }
         const message = await createMessageRepository(messageData)
-        console.log("messagessdasdasd", message)
+        // console.log("messagessdasdasd", message)
 
         if (message?.success) {
           ack?.({
@@ -71,7 +71,7 @@ export const socketLogic = (server) => {
 
     socket.on("sendMessage", async ({ message, senderName, attachments,roomId }, ack) => {
       // const { roomId, userName } = socket
-      console.log("")
+      console.log("send message triggered", socket)
    
       try {
         let userId = socket.user.id

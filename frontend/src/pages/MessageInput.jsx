@@ -85,6 +85,7 @@ const MessageInput = ({ roomType, disabled = false }) => {
     setFiles([]);
   };
   const onSend = async () => {
+    console.log("onsend",newMsg)
     setShowEmojiPicker(false);
 
     if (!newMsg.trim() && files.length === 0) return;
@@ -116,7 +117,7 @@ const MessageInput = ({ roomType, disabled = false }) => {
       if (roomType === "public") {
         messageData.roomId = publicRoomId;
       }
-
+     console.log("message Data",messageData)
       socket.emit("sendMessage", messageData);
 
       setNewMsg("");

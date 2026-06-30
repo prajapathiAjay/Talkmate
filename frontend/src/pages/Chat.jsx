@@ -56,7 +56,7 @@ const Chat = () => {
   const handleJoinRoom = (res) => {
  
     if (res?.message?.success) {
-
+    console.log("handle join trigger",res?.message?.data)
           //  toast.success(`${res?.message?.data?.message}`);
       setMessages((prevMessages) => [...prevMessages, res?.message?.data]);
     } else {
@@ -106,42 +106,102 @@ const Chat = () => {
   // console.log("Messagest", messages);
 
 
-  useEffect(() => {
-       console.log("JOIN EFFECT", {
+//   useEffect(() => {
+//        console.log("JOIN EFFECT", {
+//     currentUser,
+//     roomId,
+//     connected: socket.connected,
+//   });
+
+//      if (!currentUser || !roomId) return;
+// console.log("Socket connected?", socket.connected,socket.id);
+//  socket.on("connect", () => {
+//     console.log("Connected:",socket.connected, socket.id);
+//      socket.emit(
+//       "join-room",
+//       { roomId: roomId, userName: userName },
+//       handleJoinRoom,
+//     );
+//   });
+//     // socket.on("user-status-changed", handleStatusChange);
+   
+//     socket.on("userJoined");
+//     // socket.on("joinSuccess", handleJoinSuccess);
+//     socket.on("message", handleMessage);
+//     // socket.on("user-status-changed",handleUserStatus)
+//     socket.on("connect_error", (error) => {
+//       console.error("Socket connection error:", error.message);
+//     });
+//     socket.on("disconnect", (reason) => {
+//       console.log("Client detected disconnect:", reason);
+//     });
+
+//     return () => {
+//       socket.off("userJoined");
+//       // socket.off("joinSuccess", handleJoinSuccess);
+//       socket.off("message", handleMessage);
+//     };
+//   }, [currentUser, roomId]);
+
+
+useEffect(() => {
+  console.log("JOIN EFFECT", {
     currentUser,
     roomId,
     connected: socket.connected,
   });
 
-     if (!currentUser || !roomId) return;
-console.log("Socket connected?", socket.connected,socket.id);
- socket.on("connect", () => {
-    console.log("Connected:",socket.connected, socket.id);
-     socket.emit(
-      "join-room",
-      { roomId: roomId, userName: userName },
-      handleJoinRoom,
-    );
-  });
-    // socket.on("user-status-changed", handleStatusChange);
-   
-    socket.on("userJoined");
-    // socket.on("joinSuccess", handleJoinSuccess);
-    socket.on("message", handleMessage);
-    // socket.on("user-status-changed",handleUserStatus)
-    socket.on("connect_error", (error) => {
-      console.error("Socket connection error:", error.message);
-    });
-    socket.on("disconnect", (reason) => {
-      console.log("Client detected disconnect:", reason);
-    });
+  if (!currentUser || !roomId) return;
 
-    return () => {
-      socket.off("userJoined");
-      // socket.off("joinSuccess", handleJoinSuccess);
-      socket.off("message", handleMessage);
-    };
-  }, [currentUser, roomId]);
+  const joinRoom = () => {
+    console.log("Joining Room...");
+    console.log("Socket connected?", socket.connected, socket.id);
+
+    socket.emit(
+      "join-room",
+      {
+        roomId,
+        userName,
+      },
+      handleJoinRoom
+    );
+  };
+
+  // If socket is already connected
+  if (socket.connected) {
+    joinRoom();
+  }
+
+  // If socket reconnects later
+  socket.on("connect", joinRoom);
+
+  // Message listener
+  socket.on("message", handleMessage);
+
+  // Optional listeners
+  socket.on("userJoined", (data) => {
+    console.log("User Joined:", data);
+  });
+
+  const handleConnectError = (error) => {
+    console.error("Socket connection error:", error.message);
+  };
+
+  const handleDisconnect = (reason) => {
+    console.log("Client detected disconnect:", reason);
+  };
+
+  socket.on("connect_error", handleConnectError);
+  socket.on("disconnect", handleDisconnect);
+
+  return () => {
+    socket.off("connect", joinRoom);
+    socket.off("message", handleMessage);
+    socket.off("userJoined");
+    socket.off("connect_error", handleConnectError);
+    socket.off("disconnect", handleDisconnect);
+  };
+}, [currentUser, roomId, userName]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

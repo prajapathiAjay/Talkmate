@@ -6,6 +6,7 @@ import { socketAuth } from "../middlewares/socketAuth.js";
 
 import { handleOnlineUsers, handleOfflineUser } from "../realTime/user.socket.js";
 import { createMessage } from "../features/message/message.service.js";
+import { createMessageRepository } from "../features/message/message.repository.js";
 export const socketLogic = (server) => {
 
   const io = new Server(server, {
@@ -49,7 +50,7 @@ export const socketLogic = (server) => {
       socket.join(roomId);
       try {
         const messageData = { roomId, message: `${userName} has joined the Chat`, messageType: "join" }
-        const message = await createMessage(messageData)
+        const message = await createMessageRepository(messageData)
         console.log("messagessdasdasd", message)
 
         if (message?.success) {

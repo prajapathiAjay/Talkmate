@@ -113,7 +113,9 @@ const Chat = () => {
 
      if (!currentUser || !roomId) return;
 console.log("Socket connected?", socket.connected,socket.id);
-console.log("Socket id:", socket.id);
+ socket.on("connect", () => {
+    console.log("Connected:",socket.connected, socket.id);
+  });
     // socket.on("user-status-changed", handleStatusChange);
     socket.emit(
       "join-room",

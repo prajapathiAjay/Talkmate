@@ -38,7 +38,7 @@ export const authMiddleware = (req, res, next) => {
     // Get Authorization header
     const authHeader = req.headers.authorization;
 
-    console.log("Authorization Header:", authHeader);
+    // console.log("Authorization Header:", authHeader);
 
     // Check if header exists and starts with Bearer
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -51,7 +51,7 @@ export const authMiddleware = (req, res, next) => {
     // Extract token
     const token = authHeader.split(" ")[1];
 
-    console.log("Token:", token);
+    // console.log("Token:", token);
 
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);

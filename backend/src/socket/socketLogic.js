@@ -19,11 +19,11 @@ export const socketLogic = (server) => {
   });
   // io.use(socketAuth);
   io.on("connection", async (socket) => {
-      console.log("CONNECTED", socket.id);
+      // console.log("CONNECTED", socket.id);
 
-  socket.onAny((event, ...args) => {
-    console.log("EVENT:", event, args);
-  });
+  // socket.onAny((event, ...args) => {
+  //   console.log("EVENT:", event, args);
+  // });
 
     console.log("socket connected")
     try {
@@ -69,14 +69,18 @@ export const socketLogic = (server) => {
       // socket.to(roomId).emit("userJoined", message);
     });
 
-    socket.on("sendMessage", async ({ message, senderName, attachments,roomId }, ack) => {
+    socket.on("sendMessage", async ({ message, senderName, attachments,roomId,senderId }, ack) => {
       // const { roomId, userName } = socket
-      console.log("send message triggered", socket.roomId,socket.userName)
+    console.log("send message triggered",  message, senderName, attachments,roomId)
    
       try {
-        let userId = socket.user.id
-        const messageData = { roomId, senderId: userId, senderName, message, attachments }
+        //  console.log("my website",socket.user.id)
+
+        // let userId = socket.user.id
+        const messageData = { roomId, senderId:senderId, senderName, message, attachments }
+         console.log("my websiteffff")
         const messageSaved = await createMessageRepository(messageData)
+         
         console.log("messagesaved",messageSaved.success)
         io.to(roomId).emit("message", messageSaved)
 

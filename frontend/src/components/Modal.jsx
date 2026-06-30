@@ -86,10 +86,10 @@ const onSubmit = (data) => {
 
                 <div>
                   <form onSubmit={handleSubmit(onSubmit)}>
-                    {formFields.map((field) => {
+                    {formFields.map((field,index) => {
                       if (field.type === "text"|| field.type === "email" || field.type === "password"||field.type === "number") {
                         return (
-                          <div>
+                          <div key={index}>
                             <label
                               htmlFor={field.id}
                               className="block text-sm font-medium text-gray-700"

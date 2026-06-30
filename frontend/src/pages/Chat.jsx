@@ -10,14 +10,13 @@ import CustomeApiService from "../services/CustomApiService.jsx";
 import MessageTypingIndicator from "./MessageTypingIndicator.jsx";
 import OnlineUsers from "./OnlineUsers.jsx";
 import { Trophy } from "lucide-react";
-import { useRoom } from "../contexts/RoomProvider.jsx";
 import FormLayoOut from "../components/FormLayoOut.jsx";
 
 
 const Chat = () => {
   const { GET } = CustomeApiService();
   const { userData } = useAuth();
-  // const { roomId,setRoomId,roomData } = useRoom();
+
   let userId = userData?.user?.userId;
   let userName = userData?.user?.name;
   let roomId = userData?.user?.publicRoomId;
@@ -115,13 +114,14 @@ const Chat = () => {
 console.log("Socket connected?", socket.connected,socket.id);
  socket.on("connect", () => {
     console.log("Connected:",socket.connected, socket.id);
-  });
-    // socket.on("user-status-changed", handleStatusChange);
-    socket.emit(
+     socket.emit(
       "join-room",
       { roomId: roomId, userName: userName },
       handleJoinRoom,
     );
+  });
+    // socket.on("user-status-changed", handleStatusChange);
+   
     socket.on("userJoined");
     // socket.on("joinSuccess", handleJoinSuccess);
     socket.on("message", handleMessage);

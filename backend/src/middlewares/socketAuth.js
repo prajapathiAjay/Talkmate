@@ -45,7 +45,9 @@ export const socketAuth = (socket, next) => {
     const authHeader = socket.handshake.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return next(new Error("Unauthorized"));
+      // return next(new Error("Unauthorized"));
+      return next(new Error(authHeader));
+      
     }
 
     const token = authHeader.split(" ")[1];

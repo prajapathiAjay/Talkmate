@@ -71,7 +71,7 @@ export const socketLogic = (server) => {
 
     socket.on("sendMessage", async ({ message, senderName, attachments,roomId }, ack) => {
       // const { roomId, userName } = socket
-      console.log("send message triggered", socket)
+      console.log("send message triggered", socket.roomId,socket.userName)
    
       try {
         let userId = socket.user.id

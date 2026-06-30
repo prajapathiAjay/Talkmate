@@ -36,7 +36,7 @@ const navigate=useNavigate()
         localStorage.removeItem("token");
         logout();
         // localStorage.removeItem("userData");
-        navigate("/signin", { replace: true });
+        navigate("/signIn", { replace: true });
       } else {
         toast.error(response.message );
       }

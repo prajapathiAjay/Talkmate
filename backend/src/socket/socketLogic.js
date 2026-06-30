@@ -75,7 +75,7 @@ export const socketLogic = (server) => {
       try {
         let userId = socket.user.id
         const messageData = { roomId, senderId: userId, senderName, message, attachments }
-        const messageSaved = await createMessage(messageData)
+        const messageSaved = await createMessageRepository(messageData)
         io.to(roomId).emit("message", messageSaved)
 
 

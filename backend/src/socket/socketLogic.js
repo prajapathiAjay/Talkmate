@@ -77,13 +77,18 @@ export const socketLogic = (server) => {
         let userId = socket.user.id
         const messageData = { roomId, senderId: userId, senderName, message, attachments }
         const messageSaved = await createMessageRepository(messageData)
-        console.log("messagesaved",messageSaved)
+        console.log("messagesaved",messageSaved.success)
         io.to(roomId).emit("message", messageSaved)
 
-
-        ack?.({
+        if(messageSaved?.success){
+          console.log("messaged saved block triggered")
+ ack?.({
           messageSaved
         })
+
+        }
+
+       
 
 
       } catch (error) {

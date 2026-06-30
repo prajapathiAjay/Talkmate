@@ -52,8 +52,8 @@ const Chat = () => {
   };
 
   const handleJoinRoom = (res) => {
-  console.log("joinroom outside loop success",res)
-    if (res.success) {
+  console.log("joinroom outside loop success",res,res?.message?.success)
+    if (res?.message?.success) {
           console.log("handleJoinRoom response:", res);
       setMessages((prevMessages) => [...prevMessages, res.data]);
     } else {

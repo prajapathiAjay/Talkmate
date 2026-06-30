@@ -11,6 +11,7 @@ import MessageTypingIndicator from "./MessageTypingIndicator.jsx";
 import OnlineUsers from "./OnlineUsers.jsx";
 import { Trophy } from "lucide-react";
 import FormLayoOut from "../components/FormLayoOut.jsx";
+import { toast } from "sonner";
 
 
 const Chat = () => {
@@ -23,6 +24,7 @@ const Chat = () => {
   console.log("User Data in Chat Component:", userData);
   const [currentUser, setCurrentUser] = useState(userData?.user?.userId);
   const [messages, setMessages] = useState([]);
+  console.log("messagesss",messages)
   const [editRoom,setEditRoom] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [roomType, setRoomType] = useState("public");
@@ -33,29 +35,30 @@ const Chat = () => {
   // console.log("sendt message", newMsg);
 
   // Socket event handlers
-  const handleUserJoined = ({ userName }) => {
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      {
-        type: "joining message",
-        text: `${userName} has joined df;gfdthe chat.`,
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      },
-    ]);
-  };
+  // const handleUserJoined = ({ userName }) => {
+  //   setMessages((prevMessages) => [
+  //     ...prevMessages,
+  //     {
+  //       type: "joining message",
+  //       text: `${userName} has joined df;gfdthe chat.`,
+  //       time: new Date().toLocaleTimeString([], {
+  //         hour: "2-digit",
+  //         minute: "2-digit",
+  //       }),
+  //     },
+  //   ]);
+  // };
 
   const handleJoinSuccess = ({ userName }) => {
     setCurrentUser(userName);
   };
 
   const handleJoinRoom = (res) => {
-  console.log("joinroom outside loop success",res,res?.message?.success)
+ 
     if (res?.message?.success) {
-          console.log("handleJoinRoom response:", res);
-      setMessages((prevMessages) => [...prevMessages, res.data]);
+
+          //  toast.success(`${res?.message?.data?.message}`);
+      setMessages((prevMessages) => [...prevMessages, res?.message?.data]);
     } else {
       console.log("unable to join room");
     }

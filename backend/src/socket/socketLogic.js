@@ -71,11 +71,13 @@ export const socketLogic = (server) => {
 
     socket.on("sendMessage", async ({ message, senderName, attachments,roomId }, ack) => {
       // const { roomId, userName } = socket
+      console.log("")
    
       try {
         let userId = socket.user.id
         const messageData = { roomId, senderId: userId, senderName, message, attachments }
         const messageSaved = await createMessageRepository(messageData)
+        console.log("messagesaved",messageSaved)
         io.to(roomId).emit("message", messageSaved)
 
 

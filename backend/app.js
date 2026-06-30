@@ -13,7 +13,7 @@ const app = express()
 app.use(
   cors({
     // origin: process.env.FRONTEND_URI,
-    origin:"https://talkmate-ezzq.onrender.com",
+    origin:["http://localhost:5173","https://talkmate-ezzq.onrender.com"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,

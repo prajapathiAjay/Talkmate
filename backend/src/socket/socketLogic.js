@@ -11,7 +11,7 @@ export const socketLogic = (server) => {
   const io = new Server(server, {
     cors: {
       // origin: process.env.FRONTEND_URI,
-         origin:"https://talkmate-ezzq.onrender.com",
+         origin:["http://localhost:5173","https://talkmate-ezzq.onrender.com"],
       methods: ["GET", "POST"],
       // credentials: true,
     },

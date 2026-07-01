@@ -25,10 +25,10 @@ app.use(
 
 app.use(express.json())
 app.use(cookieParser())
-app.use((req, res, next) => {
-  console.log("Incoming Cookie Header:", req.headers.cookie);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log("Incoming Cookie Header:", req.headers.cookie);
+//   next();
+// });
 
 app.use("/api/messages",messageRouter)
 app.use("/api/user", userRouter)

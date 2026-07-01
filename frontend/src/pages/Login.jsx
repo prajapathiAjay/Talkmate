@@ -568,6 +568,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthProvider";
+import socket from "../Socket.jsx"; // Import your socket instance
 import Cookies from "js-cookie";
 import { 
   Mail, 
@@ -669,6 +670,11 @@ const Login = () => {
   if(response.success){
       localStorage.setItem("token",response.token)
     login(response.data);
+   
+socket.auth = {
+  token:response.token,
+};
+socket.connect();
   
       navigate("/chat")
     toast.success(response.message || (type === "login" ? "Logged in successfully!" : "Account created successfully!"));

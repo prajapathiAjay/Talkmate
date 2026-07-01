@@ -129,7 +129,7 @@ const MessageInput = ({ roomType, disabled = false }) => {
     }
   };
   return (
-    <div className="bg-white border-t border-gray-200 p-4">
+    <div className="bg-white border-t border-gray-200 p-1 md:p-2 lg:p-3">
       <div className=" relative max-w-6xl mx-auto">
         <div className="flex items-center space-x-3">
           <label

@@ -14,7 +14,6 @@ const messageSchema = new mongoose.Schema({
             return this.type === "user"
         }
 
-
     },
 
     senderName: {

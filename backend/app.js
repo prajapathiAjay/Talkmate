@@ -4,9 +4,11 @@ import express from "express"
 import cors from "cors"
 import userRouter from "./src/features/user/user.routes.js"
 import roomRouter from "./src/features/room/room.routes.js"
+import friendRouter from "./src/features/friend/friend.routes.js"
 import messageRouter from "./src/features/message/message.routes.js"
 import cloudinaryRouter from "./src/features/cloudinaryupload/cloudinary.routes.js"
 import { appLevelErrorHandlerMiddleware } from "./src/middlewares/errorHandler.js"
+
 import cookieParser from "cookie-parser"
 const app = express()
 
@@ -34,6 +36,7 @@ app.use("/api/messages",messageRouter)
 app.use("/api/user", userRouter)
 app.use("/api/room", roomRouter)
 app.use("/api/upload", cloudinaryRouter)
+app.use("/api/friend", friendRouter)
 app.use(appLevelErrorHandlerMiddleware)
 
 

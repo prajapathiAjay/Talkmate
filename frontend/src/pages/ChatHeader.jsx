@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import React, { useState, useRef, useEffect } from "react";
-
+import publicLogo from "../assets/logo/publiclogo.png";
 import socket from "../Socket.jsx";
 import {
   Settings,
@@ -63,8 +63,9 @@ const navigate=useNavigate()
           <div className="relative group">
             <div className="w-10 h-10 bg-gradient-to-tr from-violet-600 to-indigo-500 rounded-[12px] flex items-center justify-center text-white shadow-inner transition-transform duration-500 group-hover:scale-105 group-hover:rotate-6">
               <span className="font-black text-lg">
+                <img src={publicLogo} alt="Public Logo" className="w-8 h-8 object-cover" />
                
-                {"A"}
+                {/* {"A"} */}
               </span>
             </div>
             <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-500 border-[2.5px] border-white rounded-full shadow-sm" />
@@ -75,14 +76,14 @@ const navigate=useNavigate()
               <h1 className="text-[15px] font-bold text-gray-900 tracking-tight leading-none">
                {"public Roommm"}
               </h1>
-              <span className="flex items-center gap-1 bg-gray-100 px-1.5 py-0.5 rounded-md border border-gray-200/50">
+              {/* <span className="flex items-center gap-1 bg-gray-100 px-1.5 py-0.5 rounded-md border border-gray-200/50">
                 <Shield className="w-2.5 h-2.5 text-gray-500" />
                 <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">
                   Public
                 </span>
-              </span>
+              </span> */}
             </div>
-            <div className="flex items-center gap-2 mt-1.5">
+            {/* <div className="flex items-center gap-2 mt-1.5">
               <div className="flex -space-x-1.5 overflow-hidden">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                   <div
@@ -101,7 +102,7 @@ const navigate=useNavigate()
                 <span className="text-indigo-600 font-bold">12 active</span>{" "}
                 contributors
               </p>
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -168,7 +169,7 @@ const navigate=useNavigate()
                   className="w-full flex items-center gap-3 px-3.5 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors mx-auto w-[94%] rounded-lg"
                 >
                   <LogOut className="w-4 h-4" />
-                  Leave Room
+                  Log Out
                 </button>
               </div>
             )}

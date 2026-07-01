@@ -17,7 +17,7 @@ export const socketLogic = (server) => {
       // credentials: true,
     },
   });
-  // io.use(socketAuth);
+  io.use(socketAuth);
   io.on("connection", async (socket) => {
       // console.log("CONNECTED", socket.id);
 
@@ -27,7 +27,7 @@ export const socketLogic = (server) => {
 
     console.log("socket connected")
     try {
-      await handleOnlineUsers(socket)
+      // await handleOnlineUsers(socket)
     } catch (error) {
       console.log(error)
     }

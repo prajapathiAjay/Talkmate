@@ -6,7 +6,6 @@ import {
   Settings,
   LogOut,
   ArrowLeftRightIcon,
-  LucideContact2,
   ChevronDown,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +14,7 @@ import CustomApiService from "../services/CustomApiService";
 import { useAuth } from "../contexts/AuthProvider.jsx";
 import Modal from "../components/Modal.jsx";
 
-const ChatHeader = ({ handleShowOnlineUsers }) => {
+const ChatHeader = () => {
   const { POST } = CustomApiService();
   const {
     userData,
@@ -24,7 +23,10 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
     currentPartner,
     handleRoomTypeChange,
     handleChatRoomIdChange,
+    unreadCounts,
   } = useAuth();
+
+  const publicUnread = unreadCounts?.[userData?.user?.publicRoomId] || 0;
 
   const [openMenu, setOpenMenu] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
@@ -115,20 +117,15 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
             <button
               onClick={switchPublicRoom}
               title="Back to public chat"
-              className={`${roomType === "public" ? "hidden" : "flex"} items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white p-2 sm:px-3 sm:py-1.5 rounded-xl transition-all shadow-md shadow-violet-100 active:scale-95`}
+              className={`${roomType === "public" ? "hidden" : "flex"} relative items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white p-2 sm:px-3 sm:py-1.5 rounded-xl transition-all shadow-md shadow-violet-100 active:scale-95`}
             >
               <ArrowLeftRightIcon className="w-4 h-4" />
               <span className="sr-only sm:not-sr-only text-xs font-bold">public chat</span>
-            </button>
-
-            {/* Users panel toggle (the panel is a slide-over below lg) */}
-            <button
-              onClick={handleShowOnlineUsers}
-              title="Users"
-              className="lg:hidden flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white p-2 sm:px-3 sm:py-1.5 rounded-xl transition-all shadow-md shadow-violet-100 active:scale-95"
-            >
-              <LucideContact2 className="w-4 h-4" />
-              <span className="sr-only sm:not-sr-only text-xs font-bold">Users</span>
+              {publicUnread > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold leading-none ring-2 ring-white animate-[pop_0.25s_ease-out]">
+                  {publicUnread > 99 ? "99+" : publicUnread}
+                </span>
+              )}
             </button>
 
             {/* User Menu */}

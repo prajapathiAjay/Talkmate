@@ -73,7 +73,7 @@ const buildTimeline = (messages) => {
 
 const Chat = () => {
   const { GET } = CustomeApiService();
-  const { userData, chatRoomId, roomType } = useAuth();
+  const { userData, chatRoomId, roomType, addUnread, clearUnread } = useAuth();
   const userName = userData?.user?.name;
   const [currentUser] = useState(userData?.user?.userId);
   const [messages, setMessages] = useState([]);
@@ -124,10 +124,31 @@ const Chat = () => {
   }, []);
 
   const handleMessage = (message) => {
-    if (message?.success) {
+    // The socket stays in rooms opened earlier, so ignore other rooms' messages here
+    if (message?.success && String(message.data?.roomId) === String(chatRoomId)) {
       setMessages((prevMessages) => [...prevMessages, message.data]);
     }
   };
+
+  // Count messages that arrive for chats other than the open one
+  const chatRoomIdRef = useRef(chatRoomId);
+  chatRoomIdRef.current = chatRoomId;
+
+  useEffect(() => {
+    const myId = userData?.user?.userId;
+    const handleNotification = (notification) => {
+      if (notification?.senderId === myId) return;
+      if (notification?.roomId === chatRoomIdRef.current) return;
+      addUnread(notification.roomId);
+    };
+    socket.on("message-notification", handleNotification);
+    return () => socket.off("message-notification", handleNotification);
+  }, []);
+
+  // Opening a chat marks it as read
+  useEffect(() => {
+    if (chatRoomId) clearUnread(chatRoomId);
+  }, [chatRoomId]);
 
   const fetchAllMessages = async () => {
     const params = {
@@ -221,7 +242,7 @@ const Chat = () => {
       <div
         className={`flex-1 min-w-0 flex flex-col ${!currentUser ? "opacity-50 pointer-events-none" : ""}`}
       >
-        <ChatHeader handleShowOnlineUsers={handleShowOnlineUsers} />
+        <ChatHeader />
 
         {/* Messages - scrolling container */}
         <div
@@ -293,7 +314,10 @@ const Chat = () => {
         </div>
 
         {/* Input Area */}
-        <MessageInput disabled={!currentUser} roomType={roomType} />
+        <MessageInput
+          disabled={!currentUser}
+          handleShowOnlineUsers={handleShowOnlineUsers}
+        />
       </div>
       <OnlineUsers
         showOnlineUsers={showOnlineUsers}

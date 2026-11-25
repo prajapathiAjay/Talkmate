@@ -2,6 +2,33 @@ import { Server } from "socket.io";
 import { socketAuth } from "../middlewares/socketAuth.js";
 import { handleOnlineUsers, handleOfflineUser } from "../realTime/user.socket.js";
 import { createMessageRepository } from "../features/message/message.repository.js";
+import { RoomModel } from "../features/room/room.schema.js";
+
+// Personal channel per user, used for unread-message notifications
+const userChannel = (userId) => `user:${userId}`;
+
+// Tell everyone who should know about a new message, wherever they are in the app
+const notifyNewMessage = async (io, socket, saved) => {
+  const room = await RoomModel.findById(saved.roomId).select("type participants");
+  if (!room) return;
+
+  const notification = {
+    roomId: saved.roomId.toString(),
+    roomType: room.type,
+    senderId: saved.senderId?.toString(),
+    senderName: saved.senderName,
+    preview: saved.message?.slice(0, 80) || (saved.attachments?.length ? "📷 Photo" : ""),
+  };
+
+  if (room.type === "private") {
+    room.participants
+      .map((id) => id.toString())
+      .filter((id) => id !== notification.senderId)
+      .forEach((id) => io.to(userChannel(id)).emit("message-notification", notification));
+  } else {
+    socket.broadcast.emit("message-notification", notification);
+  }
+};
 
 export const socketLogic = (server) => {
   const io = new Server(server, {
@@ -15,6 +42,7 @@ export const socketLogic = (server) => {
 
   io.on("connection", async (socket) => {
     console.log("socket connected");
+    socket.join(userChannel(socket.user.id));
 
     // Typing indicators
     socket.on("typing", ({ name, roomId, userId }) => {
@@ -44,6 +72,12 @@ export const socketLogic = (server) => {
         const messageSaved = await createMessageRepository(messageData);
 
         io.to(roomId).emit("message", messageSaved);
+
+        if (messageSaved?.success) {
+          notifyNewMessage(io, socket, messageSaved.data).catch((error) =>
+            console.error("Failed to send message notification:", error)
+          );
+        }
 
         if (messageSaved?.success) {
           ack?.({

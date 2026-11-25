@@ -4,16 +4,51 @@ import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import socket from "../Socket";
 import CustomeApiService from "../services/CustomApiService.jsx";
-import { SendHorizonal, Loader2, ImagePlusIcon } from "lucide-react";
+import { SendHorizonal, Loader2, Paperclip, MessagesSquare, Camera, Image as ImageIcon } from "lucide-react";
+import CameraCapture from "../components/CameraCapture.jsx";
 
-const MessageInput = ({ disabled = false }) => {
+const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
   const { POST } = CustomeApiService();
 
-  const { userData, chatRoomId } = useAuth();
+  const { userData, chatRoomId, totalUnread } = useAuth();
   const [newMsg, setNewMsg] = useState("");
   const [files, setFiles] = useState([]);
   const [sending, setSending] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
+  const attachMenuRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
+
+  // Add to the current selection (so several camera shots can be sent together)
+  const addFiles = (newFiles) => {
+    if (!newFiles?.length) return;
+    setFiles((prev) => [...prev, ...newFiles]);
+  };
+
+  const handlePickedFiles = (e) => {
+    addFiles([...e.target.files]);
+    e.target.value = ""; // allow picking the same file again
+    setShowAttachMenu(false);
+  };
+
+  const openFiles = () => {
+    setShowAttachMenu(false);
+    setShowCamera(false);
+    fileInputRef.current?.click();
+  };
+
+  // Phones open their own camera from <input capture>; elsewhere use the in-app camera
+  const openCamera = () => {
+    setShowAttachMenu(false);
+    const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+    if (isTouchDevice) {
+      cameraInputRef.current?.click();
+    } else {
+      setShowCamera(true);
+    }
+  };
   const userName = userData?.user?.name;
   const userId = userData?.user?.userId;
   const TypingTimeOutRef = useRef(null);
@@ -38,9 +73,12 @@ const MessageInput = ({ disabled = false }) => {
     el.style.height = `${Math.min(el.scrollHeight, 128)}px`;
   }, [newMsg]);
 
-  // Close the emoji picker on outside click (the toggle button handles itself)
+  // Close the emoji picker / attach menu on outside click (toggle buttons handle themselves)
   useEffect(() => {
     const handleClickOutside = (event) => {
+      if (attachMenuRef.current && !attachMenuRef.current.contains(event.target)) {
+        setShowAttachMenu(false);
+      }
       if (
         emojiPickerRef.current &&
         !emojiPickerRef.current.contains(event.target) &&
@@ -150,20 +188,20 @@ const MessageInput = ({ disabled = false }) => {
     <div className="bg-white border-t border-gray-200 px-2 py-2 sm:px-3 lg:py-3 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
       <div className="relative max-w-6xl mx-auto">
         <div className="flex items-end gap-1 sm:gap-2">
-          <label
-            htmlFor="file-upload"
-            title="Attach images"
-            className="shrink-0 p-2 mb-0.5 text-gray-500 hover:bg-violet-50 rounded-xl transition-colors cursor-pointer"
+          {/* Chats: opens the people panel (it's always visible on lg+) */}
+          <button
+            onClick={handleShowOnlineUsers}
+            title="Chats"
+            aria-label={totalUnread ? `Chats, ${totalUnread} unread` : "Chats"}
+            className="lg:hidden relative shrink-0 p-2 mb-0.5 rounded-xl hover:bg-violet-50 transition-colors"
           >
-            <input
-              type="file"
-              multiple
-              onChange={(e) => setFiles([...e.target.files])}
-              className="hidden"
-              id="file-upload"
-            />
-            <ImagePlusIcon className="h-5 w-5 sm:h-6 sm:w-6 text-violet-600" />
-          </label>
+            <MessagesSquare className="w-5 h-5 sm:w-6 sm:h-6 text-violet-600" />
+            {totalUnread > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold leading-none ring-2 ring-white animate-[pop_0.25s_ease-out]">
+                {totalUnread > 99 ? "99+" : totalUnread}
+              </span>
+            )}
+          </button>
           <button
             ref={emojiButtonRef}
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
@@ -258,24 +296,66 @@ const MessageInput = ({ disabled = false }) => {
               onChange={(e) => handleTypingMessage(e.target.value)}
               onKeyDown={onKeyDown}
               disabled={disabled}
-              className={`block w-full resize-none overflow-y-auto max-h-32 placeholder:whitespace-nowrap placeholder:overflow-hidden placeholder:text-ellipsis px-4 py-2.5 sm:py-3 pl-10 sm:pl-12 leading-6 text-base sm:text-[15px] bg-gray-50 border text-black border-gray-200 rounded-3xl focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition-[box-shadow,border-color] ${
+              className={`block w-full resize-none overflow-y-auto max-h-32 placeholder:whitespace-nowrap placeholder:overflow-hidden placeholder:text-ellipsis pl-4 pr-11 py-2.5 sm:py-3 leading-6 text-base sm:text-[15px] bg-gray-50 border text-black border-gray-200 rounded-3xl focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition-[box-shadow,border-color] ${
                 disabled ? "opacity-50 cursor-not-allowed" : ""
               }`}
             />
-            <div className="absolute left-3.5 sm:left-4 bottom-3 sm:bottom-3.5 text-gray-400 pointer-events-none">
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            {/* Attach: camera or photos, inside the box like WhatsApp's paperclip */}
+            <div ref={attachMenuRef} className="absolute right-1.5 bottom-1 sm:bottom-1.5">
+              <button
+                type="button"
+                onClick={() => setShowAttachMenu((open) => !open)}
+                title="Attach images"
+                className={`p-2 rounded-full transition-colors ${
+                  showAttachMenu ? "text-violet-600 bg-violet-50" : "text-gray-400 hover:text-violet-600 hover:bg-violet-50"
+                }`}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                />
-              </svg>
+                <Paperclip className="w-5 h-5 -rotate-45" />
+              </button>
+
+              {showAttachMenu && (
+                <div className="absolute bottom-full right-0 mb-3 w-52 bg-white border border-gray-100 rounded-2xl shadow-xl p-1.5 z-50 animate-[pop_0.15s_ease-out] origin-bottom-right">
+                  <button
+                    type="button"
+                    onClick={openCamera}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    <span className="w-9 h-9 rounded-full bg-pink-500 text-white flex items-center justify-center">
+                      <Camera className="w-4 h-4" />
+                    </span>
+                    Camera
+                  </button>
+                  <button
+                    type="button"
+                    onClick={openFiles}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    <span className="w-9 h-9 rounded-full bg-violet-600 text-white flex items-center justify-center">
+                      <ImageIcon className="w-4 h-4" />
+                    </span>
+                    Photos &amp; files
+                  </button>
+                </div>
+              )}
+
+              <input
+                ref={fileInputRef}
+                id="file-upload"
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handlePickedFiles}
+                className="hidden"
+              />
+              <input
+                ref={cameraInputRef}
+                id="camera-upload"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handlePickedFiles}
+                className="hidden"
+              />
             </div>
           </div>
 
@@ -326,6 +406,17 @@ const MessageInput = ({ disabled = false }) => {
           </button>
         </div>
       </div>
+
+      {showCamera && (
+        <CameraCapture
+          onCapture={(file) => {
+            addFiles([file]);
+            setShowCamera(false);
+          }}
+          onClose={() => setShowCamera(false)}
+          onUseFiles={openFiles}
+        />
+      )}
     </div>
   );
 };

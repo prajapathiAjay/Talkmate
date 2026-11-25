@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Users,
   X,
@@ -24,6 +24,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
     handleChatRoomIdChange,
     handleRoomTypeChange,
     handlePartnerChange,
+    unreadCounts,
   } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
@@ -175,6 +176,22 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
     getPrivateRoom();
   }, []);
 
+  // A message from a chat we don't know yet (someone just added us as a friend):
+  // reload the rooms so that person's row can show its unread count
+  const lastUnknownRooms = useRef("");
+  useEffect(() => {
+    const knownRooms = new Set(friendRoom.map((room) => room._id));
+    const unknownRooms = Object.keys(unreadCounts || {})
+      .filter((roomId) => roomId !== userData?.user?.publicRoomId && !knownRooms.has(roomId))
+      .sort()
+      .join(",");
+    if (unknownRooms && unknownRooms !== lastUnknownRooms.current) {
+      lastUnknownRooms.current = unknownRooms;
+      getPrivateRoom();
+      getAllUsers();
+    }
+  }, [unreadCounts, friendRoom]);
+
   const findRoomWith = (rooms, userId) =>
     rooms.find((room) => room?.friend?._id === userId);
 
@@ -230,6 +247,23 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
       Number(!!b.isOnline) - Number(!!a.isOnline) ||
       new Date(b.lastSeen || 0) - new Date(a.lastSeen || 0),
   );
+
+  const unreadFor = (roomId) => (roomId ? unreadCounts?.[roomId] || 0 : 0);
+  const publicRoomId = userData?.user?.publicRoomId;
+  const friendsUnread = friendRoom.reduce((sum, room) => sum + unreadFor(room._id), 0);
+
+  const badge = (count) =>
+    count > 0 && (
+      <span className="shrink-0 min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-bold leading-none">
+        {count > 99 ? "99+" : count}
+      </span>
+    );
+
+  const openPublicRoom = () => {
+    handleRoomTypeChange("public");
+    handleChatRoomIdChange(publicRoomId);
+    closeOnlineUsers?.();
+  };
 
   const tabClass = (active) =>
     `flex-1 flex items-center justify-center gap-1.5 text-sm font-semibold py-1.5 rounded-lg transition-all cursor-pointer ${
@@ -312,6 +346,11 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
             >
               <Handshake className="w-4 h-4" />
               Friends
+              {friendsUnread > 0 && (
+                <span className="min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold leading-none">
+                  {friendsUnread > 99 ? "99+" : friendsUnread}
+                </span>
+              )}
             </button>
           </div>
 
@@ -338,6 +377,27 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
 
         {/* Users List */}
         <div className="flex-1 overflow-y-auto px-2 py-2">
+          {/* Public room, always reachable from here */}
+          <div
+            onClick={openPublicRoom}
+            title="Open Public Room"
+            className={`flex items-center gap-3 px-3 py-2.5 mb-1 rounded-xl cursor-pointer transition-colors ${
+              roomType === "public" ? "bg-violet-50 ring-1 ring-violet-200" : "hover:bg-gray-50"
+            }`}
+          >
+            <div className="w-11 h-11 shrink-0 rounded-full bg-gradient-to-br from-violet-600 to-indigo-500 flex items-center justify-center text-white">
+              <Users className="w-5 h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className={`text-sm truncate ${unreadFor(publicRoomId) ? "font-bold text-gray-900" : "font-semibold text-gray-800"}`}>
+                Public Room
+              </h3>
+              <p className="text-xs text-gray-400 truncate">Open for everyone</p>
+            </div>
+            {badge(unreadFor(publicRoomId))}
+          </div>
+          <div className="mx-3 mb-1 border-t border-gray-100" />
+
           {isLoading ? (
             Array(6)
               .fill(0)
@@ -364,19 +424,23 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
                 >
                   {avatar(room?.friend?.name, room?.friend?.isOnline)}
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-sm font-semibold text-gray-800 truncate">
+                    <h3 className={`text-sm truncate ${unreadFor(room._id) ? "font-bold text-gray-900" : "font-semibold text-gray-800"}`}>
                       {room?.friend?.name}
                     </h3>
                     {status(room?.friend?.isOnline, room?.friend?.lastSeen)}
                   </div>
-                  <MessageCircle className="w-4 h-4 text-gray-300 group-hover:text-violet-500 transition-colors" />
+                  {badge(unreadFor(room._id)) || (
+                    <MessageCircle className="w-4 h-4 text-gray-300 group-hover:text-violet-500 transition-colors" />
+                  )}
                 </div>
               ))}
             </div>
           ) : selectedFilter === "all" && allUsers.length > 0 ? (
             <div className="space-y-1">
               {sortedUsers.map((user, index) => {
-                const canChat = user?.isFriend || !!findRoomWith(friendRoom, user._id);
+                const userRoom = findRoomWith(friendRoom, user._id);
+                const canChat = user?.isFriend || !!userRoom;
+                const userUnread = unreadFor(userRoom?._id);
                 return (
                 <div
                   key={user._id || index}
@@ -389,12 +453,14 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
                 >
                   {avatar(user.name || user?.friendId?.name, user.isOnline)}
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-sm font-semibold text-gray-800 truncate">
+                    <h3 className={`text-sm truncate ${userUnread ? "font-bold text-gray-900" : "font-semibold text-gray-800"}`}>
                       {user.name || user?.friendId?.name}
                     </h3>
                     {status(user.isOnline, user.lastSeen)}
                   </div>
-                  {!user?.isFriend ? (
+                  {userUnread > 0 ? (
+                    badge(userUnread)
+                  ) : !user?.isFriend ? (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();

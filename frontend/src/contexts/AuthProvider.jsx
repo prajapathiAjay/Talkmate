@@ -27,6 +27,34 @@ const AuthProvider = ({ children }) => {
     localStorage.getItem("chatRoomId")
   );
 
+  // Unread message counts per room id, e.g. { "<roomId>": 3 }
+  const [unreadCounts, setUnreadCounts] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("unreadCounts")) || {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem("unreadCounts", JSON.stringify(unreadCounts));
+  }, [unreadCounts]);
+
+  const addUnread = (roomId) => {
+    setUnreadCounts((prev) => ({ ...prev, [roomId]: (prev[roomId] || 0) + 1 }));
+  };
+
+  const clearUnread = (roomId) => {
+    setUnreadCounts((prev) => {
+      if (!prev[roomId]) return prev;
+      const next = { ...prev };
+      delete next[roomId];
+      return next;
+    });
+  };
+
+  const totalUnread = Object.values(unreadCounts).reduce((sum, n) => sum + n, 0);
+
   useEffect(() => {
     if (userData) {
       localStorage.setItem("userData", JSON.stringify(userData));
@@ -73,6 +101,7 @@ const AuthProvider = ({ children }) => {
     setUserData(null);
     setChatRoomId(null);
     setRoomType(null);
+    setUnreadCounts({});
     localStorage.clear();
   };
 
@@ -91,6 +120,10 @@ const AuthProvider = ({ children }) => {
         handleChatRoomIdChange,
         handlePartnerChange,
         currentPartner,
+        unreadCounts,
+        totalUnread,
+        addUnread,
+        clearUnread,
       }}
     >
       {children}

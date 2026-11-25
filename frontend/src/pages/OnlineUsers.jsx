@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import {
   Users,
   X,
-  ChevronRight,
   ChevronLeft,
   UserPlus2,
   Users2Icon,
   Handshake,
+  Search,
+  MessageCircle,
 } from "lucide-react";
 import { FormatLastSeen } from "../utils/FormatLastSeen.js";
 import CustomApiService from "../services/CustomApiService";
@@ -14,7 +15,7 @@ import socket from "../Socket.jsx";
 import { useAuth } from "../contexts/AuthProvider.jsx";
 import { toast } from "sonner";
 
-const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
+const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers }) => {
   const { GET, POST } = CustomApiService();
   const [allUsers, setAllUsers] = useState([]);
   const {
@@ -41,7 +42,10 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
       setIsLoading(true);
       const res = await GET("user/allUsers", params, {}, {});
       if (res?.success) {
-        const allUsersData = res?.data;
+        // The signed-in user shouldn't appear in their own list
+        const allUsersData = res?.data?.filter(
+          (user) => user._id !== userData?.user?.userId,
+        );
         setAllUsers(allUsersData);
       }
     } catch (error) {
@@ -52,7 +56,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
   };
 
   const handleStatusChange = (response) => {
-    if (response.success) {
+    if (response.success && response?.data?._id !== userData?.user?.userId) {
       const newJoinedUsers = response?.data;
       setAllUsers((prevUsers) => {
         const existingUser = prevUsers.some(
@@ -93,6 +97,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
 
       if (roomResponse && friendResponse) {
         getAllUsers();
+        getPrivateRoom();
       }
     } catch (error) {
       console.error("Error:", error);
@@ -125,6 +130,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
 
   useEffect(() => {
     socket.on("user-status-changed", handleStatusChange);
+    return () => socket.off("user-status-changed", handleStatusChange);
   }, []);
 
   useEffect(() => {
@@ -164,14 +170,41 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
     }
   }, [selectedFilter]);
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case true:
-        return "bg-gradient-to-r from-green-400 to-emerald-500";
-      case false:
-        return "bg-gradient-to-r from-yellow-400 to-amber-500";
-      default:
-        return "bg-gradient-to-r from-gray-400 to-gray-500";
+  // Private rooms are also needed on the All Users tab, to open a chat from there
+  useEffect(() => {
+    getPrivateRoom();
+  }, []);
+
+  const findRoomWith = (rooms, userId) =>
+    rooms.find((room) => room?.friend?._id === userId);
+
+  // Open the private chat with someone from the All Users list
+  const openChatWith = async (user) => {
+    let room = findRoomWith(friendRoom, user._id);
+
+    if (!room) {
+      // Rooms may be stale (e.g. just added as a friend), so fetch them fresh
+      try {
+        const response = await GET(
+          "room/private",
+          { type: "private", participants: [userData?.user?.userId] },
+          {},
+          {},
+        );
+        if (response?.success) {
+          const rooms = response.data.map((r) => ({ ...r, isCurrent: false }));
+          setFriendRoom(rooms);
+          room = findRoomWith(rooms, user._id);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    if (room) {
+      handleChatRoomChange(room);
+    } else {
+      toast.info(`Add ${user.name} as a friend to start chatting`);
     }
   };
 
@@ -185,239 +218,223 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
         isCurrent: friend._id === room._id,
       })),
     );
+    // On small screens the panel covers the chat, so get out of the way
+    closeOnlineUsers?.();
   };
 
   const onlineCount = allUsers.filter((u) => u.isOnline === true);
   const awayCount = allUsers.filter((u) => u.isOnline === false);
+  // Online people first, then the rest by most recently seen
+  const sortedUsers = [...allUsers].sort(
+    (a, b) =>
+      Number(!!b.isOnline) - Number(!!a.isOnline) ||
+      new Date(b.lastSeen || 0) - new Date(a.lastSeen || 0),
+  );
+
+  const tabClass = (active) =>
+    `flex-1 flex items-center justify-center gap-1.5 text-sm font-semibold py-1.5 rounded-lg transition-all cursor-pointer ${
+      active
+        ? "bg-white text-violet-700 shadow-sm"
+        : "text-gray-500 hover:text-gray-700"
+    }`;
+
+  const avatar = (name, isOnline) => (
+    <div className="relative shrink-0">
+      <div
+        className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br ${
+          isOnline ? "from-violet-500 to-indigo-500" : "from-gray-300 to-gray-400"
+        }`}
+      >
+        {name?.charAt(0)?.toUpperCase()}
+      </div>
+      <span
+        className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ring-2 ring-white ${
+          isOnline ? "bg-green-500" : "bg-gray-300"
+        }`}
+      />
+    </div>
+  );
+
+  const status = (isOnline, lastSeen) => (
+    <p className={`text-xs truncate ${isOnline ? "text-green-600" : "text-gray-400"}`}>
+      {isOnline ? "Online" : FormatLastSeen(lastSeen)}
+    </p>
+  );
 
   return (
-    <div
-      className={`fixed inset-y-0 right-0 
-        w-full md:w-96
-        transform ${showOnlineUsers ? "translate-x-0" : "translate-x-full"}
-        transition-all duration-400 ease-out
-        bg-gradient-to-br from-indigo-50 via-white to-purple-50
-        shadow-2xl
-        md:relative md:translate-x-0
-        flex flex-col
-        border-l border-indigo-100
-      `}
-    >
-      {/* Header with Gradient */}
-      <div className="flex items-center   border-5 border-indigo-200 px-2 py-1 relative overflow-hidden">
-        <div
-          onClick={handleShowOnlineUsers}
-          className="block md:hidden flex items-center h-full w-8 text-[#7736FB]  rounded-lg bg-white border-2 border-indigo-200 hover:bg-indigo-50 cursor-pointer justify-center mr-3"
-        >
-          <ChevronLeft className="w-5 h-4 " />
-        </div>
-
-        <div className="flex w-full justify-between gap-3">
-          <button
-            onClick={() => setSelectedFilter("all")}
-            className={`flex-1 flex items-center justify-center text-sm cursor-pointer px-4 py-2 rounded-xl ${
-              selectedFilter === "all"
-                ? "bg-[#7736FB] border border-[#7736FB]/30 text-white"
-                : "bg-white/20 border border-[#7736FB]/30 text-[#7736FB]"
-            } font-semibold shadow-lg hover:bg-[#7736FB]/30 hover:scale-105 transition-all duration-300`}
-          >
-            <Users2Icon className="w-4 h-4 mr-2" />
-            All Users
-          </button>
-
-          <button
-            onClick={() => setSelectedFilter("friends")}
-            className={`flex-1 flex items-center justify-center text-sm cursor-pointer px-4 py-2 rounded-xl ${
-              selectedFilter === "friends"
-                ? "bg-[#7736FB] border border-[#7736FB]/30 text-white"
-                : "bg-white/20 border border-[#7736FB]/30 text-[#7736FB]"
-            } font-semibold shadow-lg hover:bg-[#7736FB]/30 hover:scale-105 transition-all duration-300`}
-          >
-            <Handshake className="w-4 h-4 mr-2" />
-            Friends
-          </button>
-        </div>
-      </div>
-
-      {/* Search Section */}
-      <div className="py-2 px-3 bg-[#7736FB]/20 rounded-b-2xl">
-        <div className="relative group">
-          <input
-            type="text"
-            placeholder="Search amazing people..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white border-2 border-gray-100 text-gray-800 placeholder-gray-400 rounded-2xl px-3 text-xs  py-2 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition-all shadow-sm"
-          />
-          {searchTerm && (
+    <>
+      {/* Backdrop behind the slide-over panel (below lg) */}
+      <div
+        onClick={closeOnlineUsers}
+        className={`fixed inset-0 z-30 bg-black/30 backdrop-blur-[1px] transition-opacity duration-300 lg:hidden ${
+          showOnlineUsers ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      />
+      <aside
+        className={`fixed inset-y-0 right-0 z-40
+          w-full sm:w-96 lg:w-80 xl:w-96
+          transform ${showOnlineUsers ? "translate-x-0" : "translate-x-full"}
+          transition-transform duration-300 ease-out
+          bg-white
+          ${showOnlineUsers ? "shadow-2xl" : ""} lg:shadow-none
+          lg:static lg:translate-x-0 lg:shrink-0
+          flex flex-col
+          border-l border-gray-100
+        `}
+      >
+        {/* Header: title, tabs, search */}
+        <div className="px-4 pt-4 pb-3 space-y-3 border-b border-gray-100">
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => setSearchTerm("")}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              onClick={handleShowOnlineUsers}
+              title="Close"
+              className="lg:hidden shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 cursor-pointer"
             >
-              <X className="w-4 h-4" />
+              <ChevronLeft className="w-5 h-5" />
             </button>
-          )}
-        </div>
-      </div>
+            <h2 className="text-lg font-semibold text-gray-800">People</h2>
+            <span className="text-xs font-medium text-violet-700 bg-violet-50 rounded-full px-2 py-0.5">
+              {allUsers.length}
+            </span>
+          </div>
 
-      {/* Users List */}
-      <div className="flex-1 overflow-y-auto px-5">
-        <div className="space-y-2 pb-4">
+          <div className="flex gap-1 p-1 bg-gray-100 rounded-xl">
+            <button
+              onClick={() => setSelectedFilter("all")}
+              className={tabClass(selectedFilter === "all")}
+            >
+              <Users2Icon className="w-4 h-4" />
+              All Users
+            </button>
+            <button
+              onClick={() => setSelectedFilter("friends")}
+              className={tabClass(selectedFilter === "friends")}
+            >
+              <Handshake className="w-4 h-4" />
+              Friends
+            </button>
+          </div>
+
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search people..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full h-10 bg-gray-50 border border-gray-200 text-gray-800 placeholder-gray-400 rounded-xl pl-9 pr-9 text-base lg:text-sm focus:outline-none focus:bg-white focus:border-violet-400 focus:ring-4 focus:ring-violet-100 transition-all"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                title="Clear search"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Users List */}
+        <div className="flex-1 overflow-y-auto px-2 py-2">
           {isLoading ? (
-            // Animated loading skeletons
             Array(6)
               .fill(0)
               .map((_, i) => (
-                <div
-                  key={i}
-                  className="flex items-center space-x-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm animate-pulse"
-                >
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-r from-gray-200 to-gray-300"></div>
-                  <div className="flex-1 space-y-3">
-                    <div className="h-4 w-32 bg-gradient-to-r from-gray-200 to-gray-300 rounded"></div>
-                    <div className="h-3 w-20 bg-gradient-to-r from-gray-200 to-gray-300 rounded"></div>
+                <div key={i} className="flex items-center gap-3 px-3 py-2.5 animate-pulse">
+                  <div className="w-11 h-11 rounded-full bg-gray-200" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3.5 w-28 bg-gray-200 rounded" />
+                    <div className="h-3 w-16 bg-gray-100 rounded" />
                   </div>
                 </div>
               ))
           ) : selectedFilter === "friends" && friendRoom.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-1">
               {friendRoom.map((room) => (
                 <div
                   key={room._id}
                   onClick={() => handleChatRoomChange(room)}
-                  className={`group ${room.isCurrent === false ? "bg-white" : "bg-gray-300"} rounded-2xl border  border-gray-100 shadow-sm hover:shadow-lg hover:border-purple-200 cursor-pointer transition-all duration-300 p-4`}
+                  className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-colors ${
+                    room.isCurrent
+                      ? "bg-violet-50 ring-1 ring-violet-200"
+                      : "hover:bg-gray-50"
+                  }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      {/* Avatar */}
-                      <div className="relative">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#7736FB] to-[#4F7CFF] flex items-center justify-center text-white text-xl font-bold">
-                          {room?.friend?.name?.charAt(0)?.toUpperCase()}
-                        </div>
-
-                        <span
-                          className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white ${
-                            room?.friend?.isOnline
-                              ? "bg-green-500"
-                              : "bg-gray-400"
-                          }`}
-                        />
-                      </div>
-
-                      {/* Name */}
-                      <div>
-                        <h2 className="font-bold text-lg text-gray-800">
-                          {room?.friend?.name}
-                        </h2>
-
-                        <p
-                          className={`text-sm ${
-                            room?.friend?.isOnline
-                              ? "text-green-500 font-medium"
-                              : "text-gray-500"
-                          }`}
-                        >
-                          {room?.friend?.isOnline
-                            ? "Online"
-                            : ` ${FormatLastSeen(room?.friend?.lastSeen)}`}
-                        </p>
-                      </div>
-                    </div>
+                  {avatar(room?.friend?.name, room?.friend?.isOnline)}
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-semibold text-gray-800 truncate">
+                      {room?.friend?.name}
+                    </h3>
+                    {status(room?.friend?.isOnline, room?.friend?.lastSeen)}
                   </div>
+                  <MessageCircle className="w-4 h-4 text-gray-300 group-hover:text-violet-500 transition-colors" />
                 </div>
               ))}
             </div>
           ) : selectedFilter === "all" && allUsers.length > 0 ? (
-            allUsers.map((user, index) => (
-              <div
-                key={user.id || index}
-                className="group relative bg-white rounded-2xl p-4 hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-blue-100 cursor-pointer animate-fadeIn"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <div className="flex items-center space-x-4">
-                  {/* Avatar with fancy ring */}
-                  <div className="relative">
-                    <div
-                      className={`absolute inset-0 ${getStatusColor(user.isOnline)} rounded-2xl  opacity-50 group-hover:opacity-70 transition-opacity`}
-                    ></div>
-                    {user.avatar ? (
-                      <img
-                        src={user.avatar}
-                        alt={user.name}
-                        className="relative w-14 h-14 rounded-2xl object-cover border-3 border-white "
-                      />
-                    ) : (
-                      <div
-                        className={`relative w-14 h-14 rounded-2xl bg-gradient-to-br ${user.isOnline ? "from-green-400 to-blue-500" : "from-gray-400 to-gray-500"} flex items-center justify-center text-white font-bold text-xl `}
-                      >
-                        {user?.name?.charAt(0).toUpperCase() ||
-                          user?.friendId?.name?.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    <div
-                      className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(user.isOnline)} rounded-full border-3 border-white `}
-                    ></div>
+            <div className="space-y-1">
+              {sortedUsers.map((user, index) => {
+                const canChat = user?.isFriend || !!findRoomWith(friendRoom, user._id);
+                return (
+                <div
+                  key={user._id || index}
+                  onClick={canChat ? () => openChatWith(user) : undefined}
+                  title={canChat ? `Chat with ${user.name}` : undefined}
+                  className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors animate-fadeIn ${
+                    canChat ? "cursor-pointer" : ""
+                  }`}
+                  style={{ animationDelay: `${index * 40}ms` }}
+                >
+                  {avatar(user.name || user?.friendId?.name, user.isOnline)}
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-semibold text-gray-800 truncate">
+                      {user.name || user?.friendId?.name}
+                    </h3>
+                    {status(user.isOnline, user.lastSeen)}
                   </div>
-
-                  {/* User Info */}
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
-                        {user.name || user?.friendId?.name}
-                      </h3>
-                    </div>
-                    {/* Activity or last seen */}
-                    <p
-                      className={`text-sm flex items-center gap-1 ${
-                        user.isOnline ? "text-green-500" : "text-gray-500"
-                      }`}
-                    >
-                      {user.isOnline ? (
-                        <>
-                          <span>Online</span>
-                        </>
-                      ) : (
-                        <span>{FormatLastSeen(user.lastSeen)}</span>
-                      )}
-                    </p>
-                  </div>
-
-                  {selectedFilter !== "friends" && !user?.isFriend && (
+                  {!user?.isFriend ? (
                     <button
-                      onClick={() => handleAddFriend(user._id)}
-                      className="absolute right-4 opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddFriend(user._id);
+                      }}
                       title="Add Friend"
+                      className="shrink-0 w-9 h-9 flex items-center justify-center rounded-full text-violet-600 border border-violet-200 hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-colors"
                     >
-                      <div className="text-[#7736FB] p-3 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-110">
-                        <UserPlus2 className="w-4 h-4" />
-                      </div>
+                      <UserPlus2 className="w-4 h-4" />
                     </button>
+                  ) : (
+                    <span className="shrink-0 flex items-center gap-1 text-[11px] font-medium text-violet-700 bg-violet-50 group-hover:bg-violet-100 rounded-full px-2 py-0.5 transition-colors">
+                      <MessageCircle className="w-3 h-3" />
+                      Chat
+                    </span>
                   )}
                 </div>
-              </div>
-            ))
+                );
+              })}
+            </div>
           ) : (
-            // Empty state with illustration
+            // Empty state
             <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-              <div className="relative mb-6">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full blur-3xl opacity-20 animate-pulse"></div>
-                <div className="relative bg-white rounded-full p-6 shadow-xl border-4 border-blue-50">
-                  <Users className="w-16 h-16 text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text" />
-                </div>
+              <div className="w-16 h-16 mb-4 rounded-full bg-violet-50 flex items-center justify-center">
+                <Users className="w-8 h-8 text-violet-400" />
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">
-                {selectedFilter === "all" ? "No Users" : "Add user as friend from all users list"}
-                No users found
+              <h3 className="text-base font-semibold text-gray-800 mb-1">
+                {selectedFilter === "all" ? "No users found" : "No friends yet"}
               </h3>
-              <p className="text-gray-500 max-w-[220px]">
+              <p className="text-sm text-gray-500 max-w-[240px]">
                 {searchTerm
                   ? "No matches for your search"
-                  : "Be the first to join the community!"}
+                  : selectedFilter === "all"
+                    ? "Be the first to join the community!"
+                    : "Add someone as a friend from All Users"}
               </p>
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm("")}
-                  className="mt-4 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                  className="mt-4 px-4 py-2 text-sm font-medium text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-lg transition-colors"
                 >
                   Clear search
                 </button>
@@ -425,90 +442,31 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
             </div>
           )}
         </div>
-      </div>
 
-      {/* Footer with stats */}
-      <div className="bg-white border-t border-gray-100 px-5 py-4 shadow-lg">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 bg-gradient-to-r from-green-400 to-green-500 rounded-full animate-pulse"></div>
-              <span className="text-sm font-medium text-gray-700">
-                {onlineCount?.length} online
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full"></div>
-              <span className="text-sm font-medium text-gray-700">
-                {awayCount?.length} away
-              </span>
-            </div>
-
-          </div>
-          <div className="flex items-center gap-1 text-sm">
-            <span className="font-bold text-blue-600">{allUsers.length}</span>
-            <span className="text-gray-400">/ {allUsers.length}</span>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-          </div>
+        {/* Footer with stats */}
+        <div className="flex items-center gap-4 px-5 py-3 border-t border-gray-100 text-xs text-gray-500 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <span className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-green-500" />
+            {onlineCount.length} online
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-gray-300" />
+            {awayCount.length} away
+          </span>
         </div>
-      </div>
 
-      {/* Custom Styles */}
-      <style>{`
-        @keyframes fadeIn {
-          from {
+        <style>{`
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .animate-fadeIn {
+            animation: fadeIn 0.35s ease-out forwards;
             opacity: 0;
-            transform: translateY(20px);
           }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes slide {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
-        }
-
-        .animate-fadeIn {
-          animation: fadeIn 0.6s ease-out forwards;
-          opacity: 0;
-        }
-
-        .animate-slide {
-          animation: slide 2s infinite;
-        }
-
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-
-        /* Custom Scrollbar */
-        .overflow-y-auto::-webkit-scrollbar {
-          width: 6px;
-        }
-        .overflow-y-auto::-webkit-scrollbar-track {
-          background: #f1f5f9;
-          border-radius: 20px;
-        }
-        .overflow-y-auto::-webkit-scrollbar-thumb {
-          background: linear-gradient(to bottom, #60a5fa, #a78bfa);
-          border-radius: 20px;
-        }
-        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(to bottom, #3b82f6, #8b5cf6);
-        }
-      `}</style>
-    </div>
+        `}</style>
+      </aside>
+    </>
   );
 };
 

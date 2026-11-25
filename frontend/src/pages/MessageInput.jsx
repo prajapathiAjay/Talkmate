@@ -19,20 +19,32 @@ const MessageInput = ({ disabled = false }) => {
   const TypingTimeOutRef = useRef(null);
   const isTypingRef = useRef(false);
   const emojiPickerRef = useRef(null);
+  const emojiButtonRef = useRef(null);
+  const textareaRef = useRef(null);
 
-  const onKeyPress = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+  // Enter sends, Shift+Enter adds a new line (ignored while an IME is composing)
+  const onKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       onSend();
     }
   };
 
-  // Close the emoji picker on outside click
+  // Grow the textarea with its content, up to ~5 lines
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 128)}px`;
+  }, [newMsg]);
+
+  // Close the emoji picker on outside click (the toggle button handles itself)
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
         emojiPickerRef.current &&
-        !emojiPickerRef.current.contains(event.target)
+        !emojiPickerRef.current.contains(event.target) &&
+        !emojiButtonRef.current?.contains(event.target)
       ) {
         setShowEmojiPicker(false);
       }
@@ -64,6 +76,18 @@ const MessageInput = ({ disabled = false }) => {
           userId: userId,
         });
       }, 2000);
+    }
+  };
+
+  const stopTyping = () => {
+    clearTimeout(TypingTimeOutRef.current);
+    if (isTypingRef.current) {
+      isTypingRef.current = false;
+      socket.emit("stop-typing", {
+        name: userName,
+        roomId: chatRoomId,
+        userId: userId,
+      });
     }
   };
 
@@ -111,6 +135,7 @@ const MessageInput = ({ disabled = false }) => {
       };
 
       socket.emit("sendMessage", messageData);
+      stopTyping();
 
       setNewMsg("");
       setFiles([]);
@@ -122,12 +147,13 @@ const MessageInput = ({ disabled = false }) => {
   };
 
   return (
-    <div className="bg-white border-t border-gray-200 p-1 md:p-2 lg:p-3">
-      <div className=" relative max-w-6xl mx-auto">
-        <div className="flex items-center space-x-3">
+    <div className="bg-white border-t border-gray-200 px-2 py-2 sm:px-3 lg:py-3 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <div className="relative max-w-6xl mx-auto">
+        <div className="flex items-end gap-1 sm:gap-2">
           <label
             htmlFor="file-upload"
-            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors cursor-pointer"
+            title="Attach images"
+            className="shrink-0 p-2 mb-0.5 text-gray-500 hover:bg-violet-50 rounded-xl transition-colors cursor-pointer"
           >
             <input
               type="file"
@@ -136,15 +162,16 @@ const MessageInput = ({ disabled = false }) => {
               className="hidden"
               id="file-upload"
             />
-            <ImagePlusIcon className="h-6 w-6 text-[#7736FB]" />
+            <ImagePlusIcon className="h-5 w-5 sm:h-6 sm:w-6 text-violet-600" />
           </label>
           <button
+            ref={emojiButtonRef}
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             title="Emoji"
-            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
+            className="shrink-0 p-2 mb-0.5 text-gray-500 hover:bg-violet-50 rounded-xl transition-colors"
           >
             <svg
-              className="w-6 h-6 text-[#7736FB]"
+              className="w-5 h-5 sm:w-6 sm:h-6 text-violet-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -210,25 +237,32 @@ const MessageInput = ({ disabled = false }) => {
           )}
           {showEmojiPicker && (
             <div
-              className="absolute bottom-full mb-2 z-9999"
+              className="absolute bottom-full left-0 mb-2 z-50 max-w-full"
               ref={emojiPickerRef}
             >
-              <Picker data={data} onEmojiSelect={handleEmojiSelect} />
+              <Picker
+                data={data}
+                onEmojiSelect={handleEmojiSelect}
+                previewPosition="none"
+                theme="light"
+              />
             </div>
           )}
-          <div className="flex-1 relative">
-            <input
-              type="text"
+          <div className="flex-1 min-w-0 relative">
+            {/* text-base on mobile stops iOS from zooming into the field */}
+            <textarea
+              ref={textareaRef}
+              rows={1}
               placeholder="Type your message..."
               value={newMsg}
               onChange={(e) => handleTypingMessage(e.target.value)}
-              onKeyPress={onKeyPress}
+              onKeyDown={onKeyDown}
               disabled={disabled}
-              className={`w-full px-4 py-3 pl-12 bg-gray-50 border text-black border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all ${
+              className={`block w-full resize-none overflow-y-auto max-h-32 placeholder:whitespace-nowrap placeholder:overflow-hidden placeholder:text-ellipsis px-4 py-2.5 sm:py-3 pl-10 sm:pl-12 leading-6 text-base sm:text-[15px] bg-gray-50 border text-black border-gray-200 rounded-3xl focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition-[box-shadow,border-color] ${
                 disabled ? "opacity-50 cursor-not-allowed" : ""
               }`}
             />
-            <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+            <div className="absolute left-3.5 sm:left-4 bottom-3 sm:bottom-3.5 text-gray-400 pointer-events-none">
               <svg
                 className="w-5 h-5"
                 fill="none"
@@ -250,9 +284,10 @@ const MessageInput = ({ disabled = false }) => {
             disabled={
               (!newMsg.trim() && files.length === 0) || disabled || sending
             }
+            title="Send"
             className={`
-    group relative overflow-hidden
-    w-12 h-12 rounded-full
+    group relative overflow-hidden shrink-0
+    w-11 h-11 sm:w-12 sm:h-12 rounded-full
     flex items-center justify-center
     transition-all duration-300 ease-out
     ${
@@ -276,7 +311,7 @@ const MessageInput = ({ disabled = false }) => {
   `}
           >
             {/* Glow */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-90" />
+            <div className="absolute inset-0 bg-gradient-to-r from-violet-600 to-indigo-500" />
 
             {/* Shine effect */}
             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-linear-to-r from-transparent via-white/30 to-transparent" />

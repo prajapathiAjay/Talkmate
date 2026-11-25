@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import socket from "../Socket";
 
 const MessageTypingIndicator = () => {
   const [typingUsers, setTypingUsers] = useState(new Map());
+  const indicatorRef = useRef(null);
 
   const handleUserTyping = ({ userId, name }) => {
     setTypingUsers((prev) => {
@@ -32,11 +33,37 @@ const MessageTypingIndicator = () => {
 
   const usersArray = [...typingUsers.values()];
 
-  return (
-    <div>
-      {usersArray.length === 1 && <p>{usersArray[0]} is typing...</p>}
+  // Bring the indicator into view, but only if the reader is already near the bottom
+  useEffect(() => {
+    const scroller = indicatorRef.current?.closest(".overflow-y-auto");
+    if (!scroller) return;
+    const distanceFromBottom =
+      scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight;
+    if (distanceFromBottom < 150) {
+      scroller.scrollTo({ top: scroller.scrollHeight, behavior: "smooth" });
+    }
+  }, [usersArray.length]);
 
-      {usersArray.length > 1 && <p>Multiple people are typing...</p>}
+  if (usersArray.length === 0) return null;
+
+  const label =
+    usersArray.length === 1
+      ? `${usersArray[0]} is typing...`
+      : "Multiple people are typing...";
+
+  return (
+    <div ref={indicatorRef} className="flex items-end gap-2 mt-2 mb-1" aria-live="polite">
+      <div className="w-8 h-8 shrink-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+        {usersArray.length === 1 ? usersArray[0]?.charAt(0)?.toUpperCase() : "…"}
+      </div>
+      <div className="flex flex-col items-start min-w-0">
+        <div className="flex items-center gap-1 bg-white border border-gray-100 shadow-sm rounded-2xl rounded-bl-none px-4 py-3">
+          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" />
+        </div>
+        <p className="text-[11px] text-gray-400 mt-1 ml-1 truncate max-w-full">{label}</p>
+      </div>
     </div>
   );
 };

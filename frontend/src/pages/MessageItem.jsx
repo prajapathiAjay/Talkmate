@@ -28,7 +28,7 @@ const Lightbox = ({ images, startIndex, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-blue-500/80 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/85 flex items-center justify-center z-50"
       onClick={handleBackdropClick}
     >
       <button
@@ -90,6 +90,7 @@ const MessageItem = ({ msg, currentUser, prevMessage }) => {
 
   const images = msg?.attachments?.filter(file => file.fileType?.startsWith("image/")) || [];
   const remainingCount = images.length - 4;
+  const imageOnly = images.length > 0 && !msg?.message?.trim();
 
   const handleOpenLightbox = (startIndex) => {
     setLightboxStart(startIndex);
@@ -187,40 +188,50 @@ const MessageItem = ({ msg, currentUser, prevMessage }) => {
 
   return (
     <>
-      <div className={`flex ${isCurrentUser ? "justify-end" : "justify-start"} mb-1 `}>
-        <div className={`flex ${isCurrentUser ? "flex-row-reverse" : "flex-row"} max-w-[90%] md:max-w-[80%]`}>
+      <div className={`flex ${isCurrentUser ? "justify-end" : "justify-start"} ${isSameSenderAsPrev ? "mt-1" : "mt-3"}`}>
+        <div className={`flex ${isCurrentUser ? "flex-row-reverse" : "flex-row"} max-w-[85%] sm:max-w-[75%] lg:max-w-[65%] min-w-0`}>
           {!isCurrentUser && !isSameSenderAsPrev && (
             <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-2 flex-shrink-0">
               {msg?.senderName?.charAt(0)?.toUpperCase() || "U"}
             </div>
           )}
 
-          <div className={`flex flex-col ${isSameSenderAsPrev ? "ml-10" : ""} ${isCurrentUser ? "items-end" : "items-start"} flex-1 min-w-0`}>
+          <div className={`flex flex-col ${!isCurrentUser && isSameSenderAsPrev ? "ml-10" : ""} ${isCurrentUser ? "items-end" : "items-start"} min-w-0`}>
             {!isCurrentUser && !isSameSenderAsPrev && (
               <p className="font-semibold text-gray-700 text-xs mb-1 ml-1">{msg?.senderName}</p>
             )}
 
-            <div className={`${isCurrentUser ? "flex-row" : "flex-row-reverse"} group flex items-center gap-1`}>
-              <span className="text-xs opacity-0 group-hover:opacity-100 text-gray-500 mt-1 px-1 transition-opacity">
-                {formatMessageTime(msg?.createdAt)}
-              </span>
-
-              <div className={`px-4 py-2 rounded-lg shadow-sm max-w-full ${
+            {imageOnly ? (
+              // Photos without text: thin neutral frame, time laid over the image
+              <div className={`relative p-1 bg-white border border-gray-100 shadow-sm rounded-2xl ${isCurrentUser ? "rounded-br-sm" : "rounded-bl-sm"}`}>
+                <div className="w-60 max-w-full sm:w-72 overflow-hidden rounded-xl">
+                  {renderImageGrid()}
+                </div>
+                <span className="absolute bottom-2.5 right-2.5 text-[10px] leading-none text-white bg-black/45 rounded-full px-1.5 py-1 select-none pointer-events-none">
+                  {formatMessageTime(msg?.createdAt)}
+                </span>
+              </div>
+            ) : (
+              <div className={`px-3.5 py-2 rounded-2xl shadow-sm max-w-full ${
                 isCurrentUser
-                  ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-none"
-                  : "bg-white text-gray-800 rounded-bl-none border border-gray-100"
+                  ? "bg-gradient-to-r from-violet-600 to-indigo-500 text-white rounded-br-sm"
+                  : "bg-white text-gray-800 rounded-bl-sm border border-gray-100"
               }`}>
                 {msg?.message && (
-                  <p className="text-sm break-words whitespace-pre-wrap">{msg?.message}</p>
+                  <p className="text-[15px] sm:text-sm leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere]">{msg?.message}</p>
                 )}
 
                 {images.length > 0 && (
-                  <div className="mt-2">
+                  <div className="mt-2 w-60 max-w-full sm:w-72 overflow-hidden rounded-xl">
                     {renderImageGrid()}
                   </div>
                 )}
+
+                <p className={`text-[10px] leading-none mt-1 text-right select-none ${isCurrentUser ? "text-white/70" : "text-gray-400"}`}>
+                  {formatMessageTime(msg?.createdAt)}
+                </p>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

@@ -7,7 +7,7 @@ const RoutingSetup = () => {
   return (
     <BrowserRouter>
       <Toaster
-        position="top-right"
+        position="top-center"
         richColors
         closeButton
         toastOptions={{

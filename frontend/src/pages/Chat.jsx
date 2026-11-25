@@ -9,6 +9,68 @@ import MessageTypingIndicator from "./MessageTypingIndicator.jsx";
 import OnlineUsers from "./OnlineUsers.jsx";
 import FormLayout from "../components/FormLayout.jsx";
 
+const JOIN_SUFFIX = / has joined the chat$/i;
+
+const formatDayLabel = (date) => {
+  const day = new Date(date);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+  if (day.toDateString() === today.toDateString()) return "Today";
+  if (day.toDateString() === yesterday.toDateString()) return "Yesterday";
+  const daysAgo = (today - day) / 86400000;
+  if (daysAgo < 7) return day.toLocaleDateString("en-IN", { weekday: "long" });
+  return day.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+};
+
+const formatJoinLabel = (names) => {
+  if (names.length === 1) return `${names[0]} joined the chat`;
+  if (names.length === 2) return `${names[0]} and ${names[1]} joined the chat`;
+  if (names.length === 3) return `${names[0]}, ${names[1]} and ${names[2]} joined the chat`;
+  return `${names[0]}, ${names[1]} and ${names.length - 2} others joined the chat`;
+};
+
+// Turn the flat message list into what we render: date separators,
+// runs of "joined" notices merged into one line, and regular messages
+const buildTimeline = (messages) => {
+  const items = [];
+  let lastDay = null;
+
+  // Chronological order, so date separators never repeat
+  const ordered = [...messages].sort(
+    (a, b) => new Date(a?.createdAt || 0) - new Date(b?.createdAt || 0),
+  );
+
+  ordered.forEach((msg, index) => {
+    const day = msg?.createdAt ? new Date(msg.createdAt).toDateString() : lastDay;
+    if (day && day !== lastDay) {
+      items.push({ type: "date", key: `date-${day}`, label: formatDayLabel(msg.createdAt) });
+      lastDay = day;
+    }
+
+    const prevItem = items[items.length - 1];
+
+    if (msg?.messageType === "join") {
+      const name = msg?.message?.replace(JOIN_SUFFIX, "") || "Someone";
+      if (prevItem?.type === "join") {
+        if (!prevItem.names.includes(name)) prevItem.names.push(name);
+        return;
+      }
+      items.push({ type: "join", key: `join-${msg?._id || index}`, names: [name] });
+      return;
+    }
+
+    items.push({
+      type: "message",
+      key: msg?._id || index,
+      msg,
+      prevMessage: prevItem?.type === "message" ? prevItem.msg : null,
+    });
+  });
+
+  return items;
+};
+
 const Chat = () => {
   const { GET } = CustomeApiService();
   const { userData, chatRoomId, roomType } = useAuth();
@@ -19,6 +81,22 @@ const Chat = () => {
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [showOnlineUsers, setShowOnlineUsers] = useState(false);
   const messagesEndRef = useRef(null);
+  const scrollerRef = useRef(null);
+  const isAtBottomRef = useRef(true);
+
+  // Keep the newest messages in view when the message area shrinks,
+  // e.g. while the input grows or the mobile keyboard opens
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    const observer = new ResizeObserver(() => {
+      if (isAtBottomRef.current) {
+        scroller.scrollTop = scroller.scrollHeight;
+      }
+    });
+    observer.observe(scroller);
+    return () => observer.disconnect();
+  }, []);
 
   const handleMessage = (message) => {
     if (message?.success) {
@@ -100,25 +178,33 @@ const Chat = () => {
     setShowOnlineUsers((prev) => !prev);
   };
 
+  const closeOnlineUsers = () => {
+    setShowOnlineUsers(false);
+  };
+
   return (
-    <div className="flex h-screen w-screen bg-linear-to-br from-gray-50 to-blue-50">
+    // h-dvh keeps the input visible above mobile browser toolbars
+    <div className="flex h-dvh w-screen overflow-hidden bg-linear-to-br from-gray-50 to-violet-50">
       {/* Main Chat Area */}
       <div
-        className={`flex-1 flex flex-col ${!currentUser ? "opacity-50 pointer-events-none" : ""}`}
+        className={`flex-1 min-w-0 flex flex-col ${!currentUser ? "opacity-50 pointer-events-none" : ""}`}
       >
         <ChatHeader handleShowOnlineUsers={handleShowOnlineUsers} />
 
         {/* Messages - scrolling container */}
         <div
-          className="flex-1   overflow-y-auto bg-linear-to-b from-white to-gray-50 p-6"
+          ref={scrollerRef}
+          className="flex-1 overflow-y-auto overscroll-contain bg-linear-to-b from-white to-gray-50 px-3 py-4 sm:px-6"
           onScroll={(e) => {
             const { scrollTop, scrollHeight, clientHeight } = e.target;
-            setIsAtBottom(scrollHeight - scrollTop <= clientHeight + 50);
+            const atBottom = scrollHeight - scrollTop <= clientHeight + 50;
+            isAtBottomRef.current = atBottom;
+            setIsAtBottom(atBottom);
           }}
         >
           <div className="w-full lg:max-w-4xl mx-auto">
             {messages.length === 0 ? (
-              <div className="h-full flex items-center justify-center">
+              <div className="h-full flex items-center justify-center pt-16">
                 <div className="text-center text-gray-400">
                   <svg
                     className="w-16 h-16 mx-auto mb-4 text-gray-300"
@@ -140,14 +226,34 @@ const Chat = () => {
                 </div>
               </div>
             ) : (
-              messages.map((msg, index) => (
-                <MessageItem
-                  key={index}
-                  msg={msg}
-                  currentUser={currentUser}
-                  prevMessage={messages[index - 1]}
-                />
-              ))
+              buildTimeline(messages).map((item) => {
+                if (item.type === "date") {
+                  return (
+                    <div key={item.key} className="flex justify-center pt-4 pb-1">
+                      <span className="text-[11px] font-medium text-gray-500 bg-white border border-gray-200 rounded-full px-3 py-1">
+                        {item.label}
+                      </span>
+                    </div>
+                  );
+                }
+                if (item.type === "join") {
+                  return (
+                    <div key={item.key} className="flex justify-center my-2">
+                      <span className="max-w-[90%] truncate text-[11px] text-gray-500 bg-gray-100 rounded-full px-3 py-1">
+                        {formatJoinLabel(item.names)}
+                      </span>
+                    </div>
+                  );
+                }
+                return (
+                  <MessageItem
+                    key={item.key}
+                    msg={item.msg}
+                    currentUser={currentUser}
+                    prevMessage={item.prevMessage}
+                  />
+                );
+              })
             )}
             <MessageTypingIndicator />
             <div ref={messagesEndRef} />
@@ -157,7 +263,11 @@ const Chat = () => {
         {/* Input Area */}
         <MessageInput disabled={!currentUser} roomType={roomType} />
       </div>
-      <OnlineUsers showOnlineUsers={showOnlineUsers} handleShowOnlineUsers={handleShowOnlineUsers} />
+      <OnlineUsers
+        showOnlineUsers={showOnlineUsers}
+        handleShowOnlineUsers={handleShowOnlineUsers}
+        closeOnlineUsers={closeOnlineUsers}
+      />
       {editRoom && <FormLayout />}
     </div>
   );

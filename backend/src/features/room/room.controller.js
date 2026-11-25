@@ -1,5 +1,12 @@
 import { customErrorHandler } from "../../middlewares/errorHandler.js";
-import { roomCreationRepo, getRoomDataRepo, roomDatawithseenRepo } from "./room.repository.js";
+import {
+  roomCreationRepo,
+  getRoomDataRepo,
+  roomDatawithseenRepo,
+  canAccessRoomRepo,
+  getUnreadCountsRepo,
+  markRoomReadRepo,
+} from "./room.repository.js";
 
 export const roomCreation = async (req, res, next) => {
   try {
@@ -82,5 +89,30 @@ export const roomDatawithseen = async (req, res, next) => {
       error?.statusCode || 500,
       error?.message || "Error while fetching the room data"
     );
+  }
+};
+
+// GET /api/room/unread -> { data: { "<roomId>": count } }
+export const getUnreadCounts = async (req, res, next) => {
+  try {
+    const counts = await getUnreadCountsRepo(req.user.id);
+    return res.status(200).json({ success: true, data: counts });
+  } catch (error) {
+    return next(new customErrorHandler(500, "Error while counting unread messages"));
+  }
+};
+
+// POST /api/room/:roomId/read
+export const markRoomRead = async (req, res, next) => {
+  try {
+    const { roomId } = req.params;
+    const room = await canAccessRoomRepo(roomId, req.user.id);
+    if (!room) {
+      return next(new customErrorHandler(403, "You don't have access to this chat"));
+    }
+    await markRoomReadRepo(roomId, req.user.id);
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    return next(new customErrorHandler(500, "Error while marking the chat as read"));
   }
 };

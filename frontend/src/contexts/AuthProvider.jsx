@@ -1,10 +1,12 @@
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, useContext, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { SESSION_EXPIRED_EVENT, getTokenExpiry } from "../utils/session.js";
+import CustomApiService from "../services/CustomApiService.jsx";
 
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
+  const { GET, POST } = CustomApiService();
   const [userData, setUserData] = useState(() => {
     const availableUser = localStorage.getItem("userData");
     return availableUser ? JSON.parse(availableUser) : null;
@@ -29,24 +31,31 @@ const AuthProvider = ({ children }) => {
     localStorage.getItem("chatRoomId")
   );
 
-  // Unread message counts per room id, e.g. { "<roomId>": 3 }
-  const [unreadCounts, setUnreadCounts] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("unreadCounts")) || {};
-    } catch {
-      return {};
-    }
-  });
+  // Unread message counts per room id, e.g. { "<roomId>": 3 }.
+  // The server is the source of truth (it remembers what each user last read),
+  // so counts include messages that arrived while the user was offline.
+  const [unreadCounts, setUnreadCounts] = useState({});
 
-  useEffect(() => {
-    localStorage.setItem("unreadCounts", JSON.stringify(unreadCounts));
-  }, [unreadCounts]);
+  const chatRoomIdRef = useRef(chatRoomId);
+  chatRoomIdRef.current = chatRoomId;
+
+  // Tell the server a room has been read. Debounced per room so a burst of
+  // incoming messages in the open chat becomes a single request.
+  const readTimers = useRef({});
+  const markRead = (roomId) => {
+    if (!roomId) return;
+    clearTimeout(readTimers.current[roomId]);
+    readTimers.current[roomId] = setTimeout(() => {
+      POST(`room/${roomId}/read`).catch(() => {});
+    }, 1000);
+  };
 
   const addUnread = (roomId) => {
     setUnreadCounts((prev) => ({ ...prev, [roomId]: (prev[roomId] || 0) + 1 }));
   };
 
   const clearUnread = (roomId) => {
+    markRead(roomId);
     setUnreadCounts((prev) => {
       if (!prev[roomId]) return prev;
       const next = { ...prev };
@@ -54,6 +63,29 @@ const AuthProvider = ({ children }) => {
       return next;
     });
   };
+
+  // Load the real counts from the server (on sign-in, app open and reconnect)
+  const syncUnread = async () => {
+    if (!localStorage.getItem("token")) return;
+    try {
+      const response = await GET("room/unread");
+      if (!response?.success) return;
+      const counts = { ...response.data };
+      // The chat on screen is being read right now
+      const openRoom = chatRoomIdRef.current;
+      if (openRoom && counts[openRoom]) {
+        delete counts[openRoom];
+        markRead(openRoom);
+      }
+      setUnreadCounts(counts);
+    } catch {
+      // keep the current counts; the next sync will correct them
+    }
+  };
+
+  useEffect(() => {
+    if (userData) syncUnread();
+  }, [userData]);
 
   const totalUnread = Object.values(unreadCounts).reduce((sum, n) => sum + n, 0);
 
@@ -151,6 +183,8 @@ const AuthProvider = ({ children }) => {
         totalUnread,
         addUnread,
         clearUnread,
+        markRead,
+        syncUnread,
       }}
     >
       {children}

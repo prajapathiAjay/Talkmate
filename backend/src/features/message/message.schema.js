@@ -48,4 +48,7 @@ const messageSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Loading a room's history and counting unread messages both filter by room + time
+messageSchema.index({ roomId: 1, createdAt: 1 });
+
 export const MessageModel = mongoose.model("Message", messageSchema);

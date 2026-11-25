@@ -74,7 +74,15 @@ const buildTimeline = (messages) => {
 
 const Chat = () => {
   const { GET } = CustomeApiService();
-  const { userData, chatRoomId, roomType, addUnread, clearUnread } = useAuth();
+  const {
+    userData,
+    chatRoomId,
+    roomType,
+    addUnread,
+    clearUnread,
+    markRead,
+    syncUnread,
+  } = useAuth();
   const userName = userData?.user?.name;
   const [currentUser] = useState(userData?.user?.userId);
   const [messages, setMessages] = useState([]);
@@ -128,6 +136,10 @@ const Chat = () => {
     // The socket stays in rooms opened earlier, so ignore other rooms' messages here
     if (message?.success && String(message.data?.roomId) === String(chatRoomId)) {
       setMessages((prevMessages) => [...prevMessages, message.data]);
+      // Seen as it arrives, so it shouldn't count as unread next time
+      if (String(message.data?.senderId) !== String(userData?.user?.userId)) {
+        markRead(chatRoomId);
+      }
     }
   };
 
@@ -143,7 +155,12 @@ const Chat = () => {
       addUnread(notification.roomId);
     };
     socket.on("message-notification", handleNotification);
-    return () => socket.off("message-notification", handleNotification);
+    // After a reconnect (phone woke up, network blip) catch up on missed messages
+    socket.on("connect", syncUnread);
+    return () => {
+      socket.off("message-notification", handleNotification);
+      socket.off("connect", syncUnread);
+    };
   }, []);
 
   // Opening a chat marks it as read

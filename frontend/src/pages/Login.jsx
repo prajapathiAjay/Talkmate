@@ -113,14 +113,14 @@ const Login = () => {
         {/* Right Panel - Full Height Form */}
         <div className="lg:w-1/2 h-full flex items-center justify-center p-4 lg:p-6 xl:p-8 bg-white">
           <div className="w-full max-w-md h-full flex flex-col justify-center py-8">
-            {/* Mobile Header */}
-            <div className="lg:hidden flex items-center justify-center space-x-3 mb-8">
-              <div className="p-3 bg-linear-to-br from-blue-500 to-cyan-400 rounded-xl shadow">
+            {/* Brand header */}
+            <div className="flex items-center justify-center lg:justify-start space-x-3 mb-8 lg:px-8">
+              <div className="p-3 bg-linear-to-br from-violet-600 to-indigo-500 rounded-xl shadow">
                 <MessageSquare size={28} className="text-white" />
               </div>
-              <div className="text-center">
-                <h1 className="text-2xl font-bold text-slate-900">TalkMate</h1>
-                <p className="text-slate-600 text-xs">Professional Communication</p>
+              <div className="text-center lg:text-left">
+                <h1 className="text-2xl font-bold text-slate-900">JubJub</h1>
+                <p className="text-slate-600 text-xs">Where friends jub jub</p>
               </div>
             </div>
 
@@ -132,8 +132,8 @@ const Login = () => {
                 </h2>
                 <p className="text-slate-600 text-sm">
                   {type === "login"
-                    ? "Sign in to your professional workspace"
-                    : "Start your team collaboration journey"}
+                    ? "Sign in to pick up where you left off"
+                    : "Join JubJub and start chatting with friends"}
                 </p>
               </div>
 
@@ -192,7 +192,7 @@ const Login = () => {
                       <input
                         type="text"
                         {...register("name")}
-                        className="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                         placeholder="John Smith"
                       />
                     </div>
@@ -215,7 +215,7 @@ const Login = () => {
                     <input
                       type="email"
                       {...register("email")}
-                      className="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                       placeholder="Enter your Email"
                     />
                   </div>
@@ -237,7 +237,7 @@ const Login = () => {
                     <input
                       type={showPassword ? "text" : "password"}
                       {...register("password")}
-                      className="w-full pl-9 pr-10 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full pl-9 pr-10 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                       placeholder="••••••••"
                     />
                     <button
@@ -271,7 +271,7 @@ const Login = () => {
                       <input
                         type="password"
                         {...register("confirmPassword")}
-                        className="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                         placeholder="••••••••"
                       />
                     </div>
@@ -288,15 +288,15 @@ const Login = () => {
                     <input
                       type="checkbox"
                       {...register("acceptTerms")}
-                      className="mt-0.5 h-3.5 w-3.5 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                      className="mt-0.5 h-3.5 w-3.5 text-violet-600 border-slate-300 rounded focus:ring-violet-500"
                     />
                     <label className="text-xs text-slate-600">
                       I agree to the{" "}
-                      <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">
+                      <a href="#" className="text-violet-600 hover:text-violet-700 font-medium">
                         Terms
                       </a>{" "}
                       and{" "}
-                      <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">
+                      <a href="#" className="text-violet-600 hover:text-violet-700 font-medium">
                         Privacy Policy
                       </a>
                     </label>
@@ -309,13 +309,13 @@ const Login = () => {
                       <input
                         type="checkbox"
                         id="remember"
-                        className="h-3.5 w-3.5 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                        className="h-3.5 w-3.5 text-violet-600 border-slate-300 rounded focus:ring-violet-500"
                       />
                       <label htmlFor="remember" className="ml-1.5 text-xs text-slate-600">
                         Remember me
                       </label>
                     </div>
-                    <a href="#" className="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                    <a href="#" className="text-xs text-violet-600 hover:text-violet-700 font-medium">
                       Forgot password?
                     </a>
                   </div>
@@ -327,7 +327,7 @@ const Login = () => {
                   className={`w-full py-3 text-sm font-semibold rounded-lg transition-all ${
                     loading
                       ? "bg-slate-400 cursor-not-allowed"
-                      : "bg-linear-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white shadow hover:shadow-md active:scale-[0.98]"
+                      : "bg-linear-to-r from-violet-600 to-indigo-500 hover:from-violet-700 hover:to-indigo-600 text-white shadow hover:shadow-md active:scale-[0.98]"
                   }`}
                 >
                   {loading ? (
@@ -350,7 +350,7 @@ const Login = () => {
                       <button
                         type="button"
                         onClick={() => setType("signup")}
-                        className="text-blue-600 hover:text-blue-700 font-medium"
+                        className="text-violet-600 hover:text-violet-700 font-medium"
                       >
                         Sign up
                       </button>
@@ -361,7 +361,7 @@ const Login = () => {
                       <button
                         type="button"
                         onClick={() => setType("login")}
-                        className="text-blue-600 hover:text-blue-700 font-medium"
+                        className="text-violet-600 hover:text-violet-700 font-medium"
                       >
                         Sign in
                       </button>

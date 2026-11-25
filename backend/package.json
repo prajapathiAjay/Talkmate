@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "Backend folder for Talkmate- a real time chat application",
+  "description": "Backend for JubJub - a real-time chat application",
   "license": "ISC",
   "author": "Ajay Prajapathi",
   "type": "module",

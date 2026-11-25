@@ -1,2 +1,2 @@
-# TalkMate
-TalkMate is a real time chat application 
+# JubJub
+JubJub is a real-time chat application

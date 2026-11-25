@@ -193,9 +193,9 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
             onClick={handleShowOnlineUsers}
             title="Chats"
             aria-label={totalUnread ? `Chats, ${totalUnread} unread` : "Chats"}
-            className="lg:hidden relative shrink-0 p-2 mb-0.5 rounded-xl hover:bg-violet-50 transition-colors"
+            className="lg:hidden relative shrink-0 p-2 mb-0.5 rounded-xl hover:bg-gray-50 transition-colors"
           >
-            <MessagesSquare className="w-5 h-5 sm:w-6 sm:h-6 text-violet-600" />
+            <MessagesSquare className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
             {totalUnread > 0 && (
               <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold leading-none ring-2 ring-white animate-[pop_0.25s_ease-out]">
                 {totalUnread > 99 ? "99+" : totalUnread}
@@ -206,10 +206,10 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
             ref={emojiButtonRef}
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             title="Emoji"
-            className="shrink-0 p-2 mb-0.5 text-gray-500 hover:bg-violet-50 rounded-xl transition-colors"
+            className="shrink-0 p-2 mb-0.5 hover:bg-gray-50 rounded-xl transition-colors"
           >
             <svg
-              className="w-5 h-5 sm:w-6 sm:h-6 text-violet-600"
+              className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -224,10 +224,10 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
           </button>
 
           {files.length > 0 && (
-            <div className="absolute bottom-full mb-3 w-full max-w-xl bg-white border border-gray-200 shadow-xl rounded-xl z-50">
+            <div className="absolute bottom-full mb-3 w-full max-w-xl surface-raised shadow-2xl shadow-gray-900/10 rounded-2xl z-50">
               {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50 rounded-t-xl">
-                <h3 className="text-sm font-semibold text-gray-700">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 rounded-t-2xl">
+                <h3 className="text-sm font-semibold text-gray-800">
                   Selected Files ({files.length})
                 </h3>
 
@@ -244,7 +244,7 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
                 {files.map((file, index) => (
                   <div
                     key={index}
-                    className="relative group border rounded-lg overflow-hidden bg-gray-50"
+                    className="relative group border border-gray-200 rounded-xl overflow-hidden bg-gray-50"
                   >
                     {/* Image */}
                     <img
@@ -263,10 +263,10 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
 
                     {/* File Info */}
                     <div className="p-2 text-xs">
-                      <p className="truncate font-medium text-gray-700">
+                      <p className="truncate font-medium text-gray-800">
                         {file.name}
                       </p>
-                      <p className="text-gray-400">{file.type || "file"}</p>
+                      <p className="text-gray-500">{file.type || "file"}</p>
                     </div>
                   </div>
                 ))}
@@ -296,7 +296,7 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
               onChange={(e) => handleTypingMessage(e.target.value)}
               onKeyDown={onKeyDown}
               disabled={disabled}
-              className={`block w-full resize-none overflow-y-auto max-h-32 placeholder:whitespace-nowrap placeholder:overflow-hidden placeholder:text-ellipsis pl-4 pr-11 py-2.5 sm:py-3 leading-6 text-base sm:text-[15px] bg-gray-50 border text-black border-gray-200 rounded-3xl focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition-[box-shadow,border-color] ${
+              className={`block w-full resize-none overflow-y-auto max-h-32 placeholder:whitespace-nowrap placeholder:overflow-hidden placeholder:text-ellipsis pl-4 pr-11 py-2.5 sm:py-3 leading-6 text-base sm:text-[15px] field rounded-3xl ${
                 disabled ? "opacity-50 cursor-not-allowed" : ""
               }`}
             />
@@ -307,20 +307,20 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
                 onClick={() => setShowAttachMenu((open) => !open)}
                 title="Attach images"
                 className={`p-2 rounded-full transition-colors ${
-                  showAttachMenu ? "text-violet-600 bg-violet-50" : "text-gray-400 hover:text-violet-600 hover:bg-violet-50"
+                  showAttachMenu ? "text-blue-600 bg-gray-100" : "text-gray-500 hover:text-blue-600 hover:bg-gray-50"
                 }`}
               >
                 <Paperclip className="w-5 h-5 -rotate-45" />
               </button>
 
               {showAttachMenu && (
-                <div className="absolute bottom-full right-0 mb-3 w-52 bg-white border border-gray-100 rounded-2xl shadow-xl p-1.5 z-50 animate-[pop_0.15s_ease-out] origin-bottom-right">
+                <div className="absolute bottom-full right-0 mb-3 w-52 surface-raised rounded-2xl shadow-2xl shadow-gray-900/10 p-1.5 z-50 animate-[pop_0.15s_ease-out] origin-bottom-right">
                   <button
                     type="button"
                     onClick={openCamera}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-800 hover:bg-gray-50"
                   >
-                    <span className="w-9 h-9 rounded-full bg-pink-500 text-white flex items-center justify-center">
+                    <span className="w-9 h-9 rounded-full bg-gradient-to-br from-fuchsia-500 to-rose-500 text-white flex items-center justify-center">
                       <Camera className="w-4 h-4" />
                     </span>
                     Camera
@@ -328,9 +328,9 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
                   <button
                     type="button"
                     onClick={openFiles}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-800 hover:bg-gray-50"
                   >
-                    <span className="w-9 h-9 rounded-full bg-violet-600 text-white flex items-center justify-center">
+                    <span className="w-9 h-9 rounded-full brand-bg text-white flex items-center justify-center">
                       <ImageIcon className="w-4 h-4" />
                     </span>
                     Photos &amp; files
@@ -372,26 +372,17 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
     transition-all duration-300 ease-out
     ${
       newMsg.trim() || files.length > 0
-        ? `
-          bg-white/10 backdrop-blur-xl
-          border border-white/20
-          text-white
-          shadow-[0_8px_32px_rgba(59,130,246,0.35)]
-          hover:scale-110
-          hover:rotate-12
-          hover:shadow-[0_12px_40px_rgba(168,85,247,0.5)]
-          active:scale-95
-        `
-        : `
-          bg-gray-100
-          text-gray-400
-          cursor-not-allowed
-        `
+        ? "text-white shadow-[0_8px_20px_-8px_rgba(37,99,235,0.6)] hover:scale-105 active:scale-95"
+        : "bg-gray-100 text-gray-400 cursor-not-allowed"
     }
   `}
           >
             {/* Glow */}
-            <div className="absolute inset-0 bg-gradient-to-r from-violet-600 to-indigo-500" />
+            <div
+              className={`absolute inset-0 brand-bg transition-opacity ${
+                newMsg.trim() || files.length > 0 ? "opacity-100" : "opacity-0"
+              }`}
+            />
 
             {/* Shine effect */}
             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-linear-to-r from-transparent via-white/30 to-transparent" />

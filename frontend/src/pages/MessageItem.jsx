@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { avatarGradient } from "../utils/avatarColor.js";
 
 const Lightbox = ({ images, startIndex, onClose }) => {
   const [index, setIndex] = useState(startIndex);
@@ -28,7 +29,7 @@ const Lightbox = ({ images, startIndex, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black/85 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
       onClick={handleBackdropClick}
     >
       <button
@@ -81,7 +82,7 @@ const MessageItem = ({ msg, currentUser, prevMessage }) => {
   if (isJoinMessage) {
     return (
       <div className="flex justify-center my-2">
-        <div className="text-gray-600 px-4 py-1 rounded-full text-xs font-normal ">
+        <div className="text-gray-500 px-4 py-1 rounded-full text-xs font-normal">
           {msg?.message}
         </div>
       </div>
@@ -191,19 +192,19 @@ const MessageItem = ({ msg, currentUser, prevMessage }) => {
       <div className={`flex ${isCurrentUser ? "justify-end" : "justify-start"} ${isSameSenderAsPrev ? "mt-1" : "mt-3"}`}>
         <div className={`flex ${isCurrentUser ? "flex-row-reverse" : "flex-row"} max-w-[85%] sm:max-w-[75%] lg:max-w-[65%] min-w-0`}>
           {!isCurrentUser && !isSameSenderAsPrev && (
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-2 flex-shrink-0">
+            <div className={`w-8 h-8 bg-gradient-to-br ${avatarGradient(msg?.senderName)} rounded-full flex items-center justify-center text-white text-sm font-bold mr-2 flex-shrink-0`}>
               {msg?.senderName?.charAt(0)?.toUpperCase() || "U"}
             </div>
           )}
 
           <div className={`flex flex-col ${!isCurrentUser && isSameSenderAsPrev ? "ml-10" : ""} ${isCurrentUser ? "items-end" : "items-start"} min-w-0`}>
             {!isCurrentUser && !isSameSenderAsPrev && (
-              <p className="font-semibold text-gray-700 text-xs mb-1 ml-1">{msg?.senderName}</p>
+              <p className="font-semibold text-gray-500 text-xs mb-1 ml-1">{msg?.senderName}</p>
             )}
 
             {imageOnly ? (
               // Photos without text: thin neutral frame, time laid over the image
-              <div className={`relative p-1 bg-white border border-gray-100 shadow-sm rounded-2xl ${isCurrentUser ? "rounded-br-sm" : "rounded-bl-sm"}`}>
+              <div className={`relative p-1 bg-white border border-gray-200 rounded-2xl ${isCurrentUser ? "rounded-br-sm" : "rounded-bl-sm"}`}>
                 <div className="w-60 max-w-full sm:w-72 overflow-hidden rounded-xl">
                   {renderImageGrid()}
                 </div>
@@ -214,8 +215,8 @@ const MessageItem = ({ msg, currentUser, prevMessage }) => {
             ) : (
               <div className={`px-3.5 py-2 rounded-2xl shadow-sm max-w-full ${
                 isCurrentUser
-                  ? "bg-gradient-to-r from-violet-600 to-indigo-500 text-white rounded-br-sm"
-                  : "bg-white text-gray-800 rounded-bl-sm border border-gray-100"
+                  ? "brand-bg text-white rounded-br-sm"
+                  : "bg-white text-gray-900 rounded-bl-sm border border-gray-200"
               }`}>
                 {msg?.message && (
                   <p className="select-text text-[15px] sm:text-sm leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere]">{msg?.message}</p>
@@ -227,7 +228,7 @@ const MessageItem = ({ msg, currentUser, prevMessage }) => {
                   </div>
                 )}
 
-                <p className={`text-[10px] leading-none mt-1 text-right select-none ${isCurrentUser ? "text-white/70" : "text-gray-400"}`}>
+                <p className={`text-[10px] leading-none mt-1 text-right select-none ${isCurrentUser ? "text-white/70" : "text-gray-500"}`}>
                   {formatMessageTime(msg?.createdAt)}
                 </p>
               </div>

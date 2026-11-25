@@ -98,7 +98,7 @@ const Login = () => {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden ">
+    <div className="h-dvh w-screen overflow-hidden app-bg text-gray-900">
       <div className="h-full w-full flex flex-col lg:flex-row">
         {/* Left Panel - Full Height Image */}
         <div className="hidden lg:block lg:w-1/2 h-full relative overflow-hidden">
@@ -107,30 +107,38 @@ const Login = () => {
             alt="Login Illustration"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0  flex items-center justify-center" />
+          {/* caption over the image */}
+          <div className="absolute inset-x-0 bottom-0 p-10 xl:p-14 bg-linear-to-t from-black/80 via-black/40 to-transparent">
+            <p className="text-3xl xl:text-4xl font-extrabold leading-tight text-white tracking-tight">
+              Conversations that <span className="text-blue-400">feel alive.</span>
+            </p>
+            <p className="mt-3 text-sm text-gray-200 max-w-sm">
+              Real-time chat with friends - typing indicators, photos and unread badges on every screen.
+            </p>
+          </div>
         </div>
 
         {/* Right Panel - Full Height Form */}
-        <div className="lg:w-1/2 h-full flex items-center justify-center p-4 lg:p-6 xl:p-8 bg-white">
-          <div className="w-full max-w-md h-full flex flex-col justify-center py-8">
+        <div className="lg:w-1/2 h-full overflow-y-auto flex p-4 lg:p-6 xl:p-8">
+          <div className="w-full max-w-md m-auto flex flex-col justify-center py-8">
             {/* Brand header */}
             <div className="flex items-center justify-center lg:justify-start space-x-3 mb-8 lg:px-8">
-              <div className="p-3 bg-linear-to-br from-violet-600 to-indigo-500 rounded-xl shadow">
+              <div className="p-3 brand-bg rounded-2xl shadow-lg shadow-blue-600/20">
                 <MessageSquare size={28} className="text-white" />
               </div>
               <div className="text-center lg:text-left">
-                <h1 className="text-2xl font-bold text-slate-900">JubJub</h1>
-                <p className="text-slate-600 text-xs">Where friends jub jub</p>
+                <h1 className="text-2xl font-extrabold tracking-tight text-gray-900">JubJub</h1>
+                <p className="text-gray-500 text-xs">Where friends jub jub</p>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 lg:p-8">
+            <div className="surface rounded-2xl p-6 lg:p-8 shadow-sm">
               {/* Form Header */}
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">
                   {type === "login" ? "Welcome Back" : "Create Account"}
                 </h2>
-                <p className="text-slate-600 text-sm">
+                <p className="text-gray-500 text-sm">
                   {type === "login"
                     ? "Sign in to pick up where you left off"
                     : "Join JubJub and start chatting with friends"}
@@ -138,7 +146,7 @@ const Login = () => {
               </div>
 
               {/* Authentication Tabs */}
-              <div className="flex mb-6 bg-slate-100 rounded-lg p-1">
+              <div className="flex mb-6 bg-gray-100 rounded-xl p-1">
                 <button
                   type="button"
                   onClick={() => {
@@ -146,10 +154,10 @@ const Login = () => {
                     reset();
                     setError("");
                   }}
-                  className={`flex-1 py-2.5 rounded-md text-sm font-semibold transition-all ${
+                  className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                     type === "login"
-                      ? "bg-white text-slate-900 shadow-sm border border-slate-200"
-                      : "text-slate-600 hover:text-slate-900"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-500 hover:text-gray-800"
                   }`}
                 >
                   Sign In
@@ -161,10 +169,10 @@ const Login = () => {
                     reset();
                     setError("");
                   }}
-                  className={`flex-1 py-2.5 rounded-md text-sm font-semibold transition-all ${
+                  className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                     type === "signup"
-                      ? "bg-white text-slate-900 shadow-sm border border-slate-200"
-                      : "text-slate-600 hover:text-slate-900"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-500 hover:text-gray-800"
                   }`}
                 >
                   Sign Up
@@ -173,7 +181,7 @@ const Login = () => {
 
               {/* Error Display */}
               {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
                   <p className="text-red-600 text-sm">{error}</p>
                 </div>
               )}
@@ -182,17 +190,17 @@ const Login = () => {
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 {type === "signup" && (
                   <div>
-                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">
                       Full Name *
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <User className="w-4 h-4 text-slate-400" />
+                        <User className="w-4 h-4 text-gray-500" />
                       </div>
                       <input
                         type="text"
                         {...register("name")}
-                        className="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                        className="w-full pl-9 pr-3 py-2.5 text-base sm:text-sm field rounded-xl"
                         placeholder="John Smith"
                       />
                     </div>
@@ -205,17 +213,17 @@ const Login = () => {
                 )}
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1.5">
                     Email Address *
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Mail className="w-4 h-4 text-slate-400" />
+                      <Mail className="w-4 h-4 text-gray-500" />
                     </div>
                     <input
                       type="email"
                       {...register("email")}
-                      className="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                      className="w-full pl-9 pr-3 py-2.5 text-base sm:text-sm field rounded-xl"
                       placeholder="Enter your Email"
                     />
                   </div>
@@ -227,17 +235,17 @@ const Login = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1.5">
                     Password *
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Lock className="w-4 h-4 text-slate-400" />
+                      <Lock className="w-4 h-4 text-gray-500" />
                     </div>
                     <input
                       type={showPassword ? "text" : "password"}
                       {...register("password")}
-                      className="w-full pl-9 pr-10 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                      className="w-full pl-9 pr-10 py-2.5 text-base sm:text-sm field rounded-xl"
                       placeholder="••••••••"
                     />
                     <button
@@ -246,9 +254,9 @@ const Login = () => {
                       className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     >
                       {showPassword ? (
-                        <EyeOff className="w-4 h-4 text-slate-400 hover:text-slate-600" />
+                        <EyeOff className="w-4 h-4 text-gray-500 hover:text-gray-700" />
                       ) : (
-                        <Eye className="w-4 h-4 text-slate-400 hover:text-slate-600" />
+                        <Eye className="w-4 h-4 text-gray-500 hover:text-gray-700" />
                       )}
                     </button>
                   </div>
@@ -261,17 +269,17 @@ const Login = () => {
 
                 {type === "signup" && (
                   <div>
-                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">
                       Confirm Password *
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Lock className="w-4 h-4 text-slate-400" />
+                        <Lock className="w-4 h-4 text-gray-500" />
                       </div>
                       <input
                         type="password"
                         {...register("confirmPassword")}
-                        className="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                        className="w-full pl-9 pr-3 py-2.5 text-base sm:text-sm field rounded-xl"
                         placeholder="••••••••"
                       />
                     </div>
@@ -288,15 +296,15 @@ const Login = () => {
                     <input
                       type="checkbox"
                       {...register("acceptTerms")}
-                      className="mt-0.5 h-3.5 w-3.5 text-violet-600 border-slate-300 rounded focus:ring-violet-500"
+                      className="mt-0.5 h-3.5 w-3.5 accent-blue-600 rounded"
                     />
-                    <label className="text-xs text-slate-600">
+                    <label className="text-xs text-gray-500">
                       I agree to the{" "}
-                      <a href="#" className="text-violet-600 hover:text-violet-700 font-medium">
+                      <a href="#" className="text-blue-600 hover:text-blue-600 font-medium">
                         Terms
                       </a>{" "}
                       and{" "}
-                      <a href="#" className="text-violet-600 hover:text-violet-700 font-medium">
+                      <a href="#" className="text-blue-600 hover:text-blue-600 font-medium">
                         Privacy Policy
                       </a>
                     </label>
@@ -309,13 +317,13 @@ const Login = () => {
                       <input
                         type="checkbox"
                         id="remember"
-                        className="h-3.5 w-3.5 text-violet-600 border-slate-300 rounded focus:ring-violet-500"
+                        className="h-3.5 w-3.5 accent-blue-600 rounded"
                       />
-                      <label htmlFor="remember" className="ml-1.5 text-xs text-slate-600">
+                      <label htmlFor="remember" className="ml-1.5 text-xs text-gray-500">
                         Remember me
                       </label>
                     </div>
-                    <a href="#" className="text-xs text-violet-600 hover:text-violet-700 font-medium">
+                    <a href="#" className="text-xs text-blue-600 hover:text-blue-600 font-medium">
                       Forgot password?
                     </a>
                   </div>
@@ -324,11 +332,7 @@ const Login = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full py-3 text-sm font-semibold rounded-lg transition-all ${
-                    loading
-                      ? "bg-slate-400 cursor-not-allowed"
-                      : "bg-linear-to-r from-violet-600 to-indigo-500 hover:from-violet-700 hover:to-indigo-600 text-white shadow hover:shadow-md active:scale-[0.98]"
-                  }`}
+                  className="w-full py-3 text-sm font-semibold rounded-xl btn-primary"
                 >
                   {loading ? (
                     <div className="flex items-center justify-center">
@@ -342,15 +346,15 @@ const Login = () => {
               </form>
 
               {/* Footer Links */}
-              <div className="mt-6 pt-4 border-t border-slate-200">
-                <p className="text-center text-xs text-slate-500">
+              <div className="mt-6 pt-4 border-t border-gray-200">
+                <p className="text-center text-xs text-gray-500">
                   {type === "login" ? (
                     <>
                       Don't have an account?{" "}
                       <button
                         type="button"
                         onClick={() => setType("signup")}
-                        className="text-violet-600 hover:text-violet-700 font-medium"
+                        className="text-blue-600 hover:text-blue-600 font-medium"
                       >
                         Sign up
                       </button>
@@ -361,7 +365,7 @@ const Login = () => {
                       <button
                         type="button"
                         onClick={() => setType("login")}
-                        className="text-violet-600 hover:text-violet-700 font-medium"
+                        className="text-blue-600 hover:text-blue-600 font-medium"
                       >
                         Sign in
                       </button>

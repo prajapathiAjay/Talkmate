@@ -254,7 +254,7 @@ const Chat = () => {
     // Fixed to the visible viewport (see the visualViewport effect above), so the
     // header stays on screen and the input sits right above the mobile keyboard
     <div
-      className="fixed top-0 left-0 flex w-screen overflow-hidden bg-linear-to-br from-gray-50 to-violet-50"
+      className="fixed top-0 left-0 flex w-screen overflow-hidden app-bg text-gray-900"
       style={{
         height: "var(--app-height, 100dvh)",
         transform: "translateY(var(--app-offset, 0px))",
@@ -269,7 +269,7 @@ const Chat = () => {
         {/* Messages - scrolling container */}
         <div
           ref={scrollerRef}
-          className="flex-1 overflow-y-auto overscroll-contain bg-linear-to-b from-white to-gray-50 px-3 py-4 sm:px-6"
+          className="flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6"
           onScroll={(e) => {
             const { scrollTop, scrollHeight, clientHeight } = e.target;
             const atBottom = scrollHeight - scrollTop <= clientHeight + 50;
@@ -280,9 +280,9 @@ const Chat = () => {
           <div className="w-full lg:max-w-4xl mx-auto">
             {messages.length === 0 ? (
               <div className="h-full flex items-center justify-center pt-16">
-                <div className="text-center text-gray-400">
+                <div className="text-center text-gray-500">
                   <svg
-                    className="w-16 h-16 mx-auto mb-4 text-gray-300"
+                    className="w-16 h-16 mx-auto mb-4 text-blue-200"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -294,7 +294,7 @@ const Chat = () => {
                       d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                     />
                   </svg>
-                  <p className="text-lg font-medium">No messages yet</p>
+                  <p className="text-lg font-semibold text-gray-800">No messages yet</p>
                   <p className="text-sm">
                     Start a conversation by sending a message!
                   </p>
@@ -305,7 +305,7 @@ const Chat = () => {
                 if (item.type === "date") {
                   return (
                     <div key={item.key} className="flex justify-center pt-4 pb-1">
-                      <span className="text-[11px] font-medium text-gray-500 bg-white border border-gray-200 rounded-full px-3 py-1">
+                      <span className="text-[11px] font-medium text-gray-500 bg-gray-50 border border-gray-200 backdrop-blur rounded-full px-3 py-1">
                         {item.label}
                       </span>
                     </div>

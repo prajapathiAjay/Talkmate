@@ -1,6 +1,104 @@
 
 @import "tailwindcss";
 
+/* ============================================================
+   JubJub theme - "Clean & minimal"
+   Change the palette here; components use these tokens/classes.
+   ============================================================ */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+:root {
+  color-scheme: light;
+  --app-bg: #f7f8fa;       /* page / chat background */
+  --surface: #ffffff;      /* header, panels, cards */
+  --line: #e5e7eb;         /* hairline borders */
+  --brand: #2563eb;        /* the one accent colour (blue-600) */
+  --brand-hover: #1d4ed8;  /* blue-700 */
+  --text: #111827;         /* gray-900 */
+}
+
+html,
+body {
+  background-color: var(--app-bg);
+  color: var(--text);
+}
+
+/* Page background */
+.app-bg {
+  background-color: var(--app-bg);
+}
+
+/* Cards and panels */
+.surface {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+}
+
+/* Menus and popovers that float above content */
+.surface-raised {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 12px 32px -8px rgba(17, 24, 39, 0.18);
+}
+
+/* Accent fill (your bubbles, logo, highlights) */
+.brand-bg {
+  background-color: var(--brand);
+}
+
+.text-brand {
+  color: var(--brand);
+}
+
+/* Primary button */
+.btn-primary {
+  background-color: var(--brand);
+  color: #fff;
+  transition: background-color 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--brand-hover);
+}
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.btn-primary:disabled {
+  background-color: #93b4f5;
+  cursor: not-allowed;
+}
+
+/* Text inputs */
+.field {
+  background-color: #fff;
+  border: 1px solid #d1d5db;
+  color: var(--text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.field::placeholder {
+  color: #9ca3af;
+}
+.field:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Slim scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 999px;
+}
+
 body {
   margin: 0;
   display: flex;

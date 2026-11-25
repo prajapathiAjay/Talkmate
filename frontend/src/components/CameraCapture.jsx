@@ -99,7 +99,7 @@ const CameraCapture = ({ onCapture, onClose, onUseFiles }) => {
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center p-4">
-      <div className="relative w-full max-w-lg bg-gray-900 rounded-2xl overflow-hidden shadow-2xl">
+      <div className="relative w-full max-w-lg bg-gray-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
         <div className="flex items-center justify-between px-4 py-3 text-white">
           <h3 className="font-semibold">Take a photo</h3>
           <button
@@ -117,7 +117,7 @@ const CameraCapture = ({ onCapture, onClose, onUseFiles }) => {
               <p className="text-sm text-gray-300 mb-4">{error}</p>
               <button
                 onClick={onUseFiles}
-                className="px-4 py-2 text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 rounded-lg"
+                className="px-4 py-2 text-sm font-semibold btn-primary rounded-xl"
               >
                 Choose from files instead
               </button>
@@ -149,7 +149,7 @@ const CameraCapture = ({ onCapture, onClose, onUseFiles }) => {
                 <button
                   onClick={usePhoto}
                   title="Use photo"
-                  className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-full"
+                  className="flex items-center gap-2 px-5 py-2 text-sm font-semibold btn-primary rounded-full"
                 >
                   <Check className="w-4 h-4" />
                   Use photo

@@ -14,6 +14,7 @@ import CustomApiService from "../services/CustomApiService";
 import socket from "../Socket.jsx";
 import { useAuth } from "../contexts/AuthProvider.jsx";
 import { toast } from "sonner";
+import { avatarGradient } from "../utils/avatarColor.js";
 
 const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers }) => {
   const { GET, POST } = CustomApiService();
@@ -254,7 +255,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
 
   const badge = (count) =>
     count > 0 && (
-      <span className="shrink-0 min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-bold leading-none">
+      <span className="shrink-0 min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-bold leading-none shadow-lg shadow-red-500/20">
         {count > 99 ? "99+" : count}
       </span>
     );
@@ -268,29 +269,29 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
   const tabClass = (active) =>
     `flex-1 flex items-center justify-center gap-1.5 text-sm font-semibold py-1.5 rounded-lg transition-all cursor-pointer ${
       active
-        ? "bg-white text-violet-700 shadow-sm"
-        : "text-gray-500 hover:text-gray-700"
+        ? "bg-white text-gray-900 shadow-sm"
+        : "text-gray-500 hover:text-gray-800"
     }`;
 
   const avatar = (name, isOnline) => (
     <div className="relative shrink-0">
       <div
-        className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br ${
-          isOnline ? "from-violet-500 to-indigo-500" : "from-gray-300 to-gray-400"
+        className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br ${avatarGradient(name)} ${
+          isOnline ? "" : "opacity-50 saturate-50"
         }`}
       >
         {name?.charAt(0)?.toUpperCase()}
       </div>
       <span
         className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ring-2 ring-white ${
-          isOnline ? "bg-green-500" : "bg-gray-300"
+          isOnline ? "bg-emerald-500" : "bg-gray-300"
         }`}
       />
     </div>
   );
 
   const status = (isOnline, lastSeen) => (
-    <p className={`text-xs truncate ${isOnline ? "text-green-600" : "text-gray-400"}`}>
+    <p className={`text-xs truncate ${isOnline ? "text-emerald-600" : "text-gray-500"}`}>
       {isOnline ? "Online" : FormatLastSeen(lastSeen)}
     </p>
   );
@@ -300,7 +301,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
       {/* Backdrop behind the slide-over panel (below lg) */}
       <div
         onClick={closeOnlineUsers}
-        className={`fixed inset-0 z-30 bg-black/30 backdrop-blur-[1px] transition-opacity duration-300 lg:hidden ${
+        className={`fixed inset-0 z-30 bg-gray-900/30 backdrop-blur-[2px] transition-opacity duration-300 lg:hidden ${
           showOnlineUsers ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       />
@@ -309,15 +310,15 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
           w-full sm:w-96 lg:w-80 xl:w-96
           transform ${showOnlineUsers ? "translate-x-0" : "translate-x-full"}
           transition-transform duration-300 ease-out
-          bg-white
+          bg-white backdrop-blur-xl lg:bg-white
           ${showOnlineUsers ? "shadow-2xl" : ""} lg:shadow-none
           lg:static lg:translate-x-0 lg:shrink-0
           flex flex-col
-          border-l border-gray-100
+          border-l border-gray-200
         `}
       >
         {/* Header: title, tabs, search */}
-        <div className="px-4 pt-4 pb-3 space-y-3 border-b border-gray-100">
+        <div className="px-4 pt-4 pb-3 space-y-3 border-b border-gray-200">
           <div className="flex items-center gap-2">
             <button
               onClick={handleShowOnlineUsers}
@@ -326,8 +327,8 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <h2 className="text-lg font-semibold text-gray-800">People</h2>
-            <span className="text-xs font-medium text-violet-700 bg-violet-50 rounded-full px-2 py-0.5">
+            <h2 className="text-lg font-bold tracking-tight text-gray-900">People</h2>
+            <span className="text-xs font-semibold text-blue-600 bg-blue-50 rounded-full px-2 py-0.5">
               {allUsers.length}
             </span>
           </div>
@@ -355,19 +356,19 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
           </div>
 
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
             <input
               type="text"
               placeholder="Search people..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full h-10 bg-gray-50 border border-gray-200 text-gray-800 placeholder-gray-400 rounded-xl pl-9 pr-9 text-base lg:text-sm focus:outline-none focus:bg-white focus:border-violet-400 focus:ring-4 focus:ring-violet-100 transition-all"
+              className="w-full h-10 field rounded-xl pl-9 pr-9 text-base lg:text-sm"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm("")}
                 title="Clear search"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -382,31 +383,31 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
             onClick={openPublicRoom}
             title="Open Public Room"
             className={`flex items-center gap-3 px-3 py-2.5 mb-1 rounded-xl cursor-pointer transition-colors ${
-              roomType === "public" ? "bg-violet-50 ring-1 ring-violet-200" : "hover:bg-gray-50"
+              roomType === "public" ? "bg-blue-50 ring-1 ring-blue-200" : "hover:bg-gray-50"
             }`}
           >
-            <div className="w-11 h-11 shrink-0 rounded-full bg-gradient-to-br from-violet-600 to-indigo-500 flex items-center justify-center text-white">
+            <div className="w-11 h-11 shrink-0 rounded-full brand-bg flex items-center justify-center text-white shadow-lg shadow-blue-600/20">
               <Users className="w-5 h-5" />
             </div>
             <div className="min-w-0 flex-1">
               <h3 className={`text-sm truncate ${unreadFor(publicRoomId) ? "font-bold text-gray-900" : "font-semibold text-gray-800"}`}>
                 Public Room
               </h3>
-              <p className="text-xs text-gray-400 truncate">Open for everyone</p>
+              <p className="text-xs text-gray-500 truncate">Open for everyone</p>
             </div>
             {badge(unreadFor(publicRoomId))}
           </div>
-          <div className="mx-3 mb-1 border-t border-gray-100" />
+          <div className="mx-3 mb-1 border-t border-gray-200" />
 
           {isLoading ? (
             Array(6)
               .fill(0)
               .map((_, i) => (
                 <div key={i} className="flex items-center gap-3 px-3 py-2.5 animate-pulse">
-                  <div className="w-11 h-11 rounded-full bg-gray-200" />
+                  <div className="w-11 h-11 rounded-full bg-gray-100" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-3.5 w-28 bg-gray-200 rounded" />
-                    <div className="h-3 w-16 bg-gray-100 rounded" />
+                    <div className="h-3.5 w-28 bg-gray-100 rounded" />
+                    <div className="h-3 w-16 bg-gray-50 rounded" />
                   </div>
                 </div>
               ))
@@ -418,7 +419,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
                   onClick={() => handleChatRoomChange(room)}
                   className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-colors ${
                     room.isCurrent
-                      ? "bg-violet-50 ring-1 ring-violet-200"
+                      ? "bg-blue-50 ring-1 ring-blue-200"
                       : "hover:bg-gray-50"
                   }`}
                 >
@@ -430,7 +431,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
                     {status(room?.friend?.isOnline, room?.friend?.lastSeen)}
                   </div>
                   {badge(unreadFor(room._id)) || (
-                    <MessageCircle className="w-4 h-4 text-gray-300 group-hover:text-violet-500 transition-colors" />
+                    <MessageCircle className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
                   )}
                 </div>
               ))}
@@ -467,12 +468,12 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
                         handleAddFriend(user._id);
                       }}
                       title="Add Friend"
-                      className="shrink-0 w-9 h-9 flex items-center justify-center rounded-full text-violet-600 border border-violet-200 hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-colors"
+                      className="shrink-0 w-9 h-9 flex items-center justify-center rounded-full text-blue-600 border border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors"
                     >
                       <UserPlus2 className="w-4 h-4" />
                     </button>
                   ) : (
-                    <span className="shrink-0 flex items-center gap-1 text-[11px] font-medium text-violet-700 bg-violet-50 group-hover:bg-violet-100 rounded-full px-2 py-0.5 transition-colors">
+                    <span className="shrink-0 flex items-center gap-1 text-[11px] font-semibold text-blue-600 bg-blue-50 group-hover:bg-blue-100 rounded-full px-2 py-0.5 transition-colors">
                       <MessageCircle className="w-3 h-3" />
                       Chat
                     </span>
@@ -484,10 +485,10 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
           ) : (
             // Empty state
             <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-              <div className="w-16 h-16 mb-4 rounded-full bg-violet-50 flex items-center justify-center">
-                <Users className="w-8 h-8 text-violet-400" />
+              <div className="w-16 h-16 mb-4 rounded-full bg-blue-50 flex items-center justify-center">
+                <Users className="w-8 h-8 text-blue-600" />
               </div>
-              <h3 className="text-base font-semibold text-gray-800 mb-1">
+              <h3 className="text-base font-semibold text-gray-900 mb-1">
                 {selectedFilter === "all" ? "No users found" : "No friends yet"}
               </h3>
               <p className="text-sm text-gray-500 max-w-[240px]">
@@ -500,7 +501,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm("")}
-                  className="mt-4 px-4 py-2 text-sm font-medium text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-lg transition-colors"
+                  className="mt-4 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
                 >
                   Clear search
                 </button>
@@ -510,9 +511,9 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
         </div>
 
         {/* Footer with stats */}
-        <div className="flex items-center gap-4 px-5 py-3 border-t border-gray-100 text-xs text-gray-500 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="flex items-center gap-4 px-5 py-3 border-t border-gray-200 text-xs text-gray-500 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-green-500" />
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
             {onlineCount.length} online
           </span>
           <span className="flex items-center gap-1.5">

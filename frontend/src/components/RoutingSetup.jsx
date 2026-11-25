@@ -13,6 +13,7 @@ const RoutingSetup = () => {
       <Toaster
         position="top-center"
         richColors
+        theme="light"
         closeButton
         toastOptions={{
           style: {

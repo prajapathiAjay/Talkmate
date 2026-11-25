@@ -9,6 +9,7 @@ import MessageTypingIndicator from "./MessageTypingIndicator.jsx";
 import OnlineUsers from "./OnlineUsers.jsx";
 import FormLayout from "../components/FormLayout.jsx";
 import { expireSession } from "../utils/session.js";
+import { toast } from "sonner";
 
 const JOIN_SUFFIX = / has joined the chat$/i;
 
@@ -82,6 +83,8 @@ const Chat = () => {
     clearUnread,
     markRead,
     syncUnread,
+    handleRoomTypeChange,
+    handleChatRoomIdChange,
   } = useAuth();
   const userName = userData?.user?.name;
   const [currentUser] = useState(userData?.user?.userId);
@@ -225,10 +228,19 @@ const Chat = () => {
 
     socket.on("connect_error", handleConnectError);
 
+    // The server refused to open this chat (not a participant): back to the public room
+    const handleRoomError = ({ message } = {}) => {
+      toast.error(message || "You don't have access to this chat");
+      handleRoomTypeChange("public");
+      handleChatRoomIdChange(userData?.user?.publicRoomId);
+    };
+    socket.on("room-error", handleRoomError);
+
     return () => {
       socket.off("connect", joinRoom);
       socket.off("message", handleMessage);
       socket.off("connect_error", handleConnectError);
+      socket.off("room-error", handleRoomError);
     };
   }, [currentUser, chatRoomId]);
 

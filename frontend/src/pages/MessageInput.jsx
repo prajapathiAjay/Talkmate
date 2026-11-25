@@ -6,6 +6,7 @@ import socket from "../Socket";
 import CustomeApiService from "../services/CustomApiService.jsx";
 import { SendHorizonal, Loader2, Paperclip, MessagesSquare, Camera, Image as ImageIcon } from "lucide-react";
 import CameraCapture from "../components/CameraCapture.jsx";
+import { toast } from "sonner";
 
 const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
   const { POST } = CustomeApiService();
@@ -172,7 +173,11 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
         roomId: chatRoomId,
       };
 
-      socket.emit("sendMessage", messageData);
+      socket.emit("sendMessage", messageData, (response) => {
+        if (response?.success === false) {
+          toast.error(response.message || "Message could not be sent");
+        }
+      });
       stopTyping();
 
       setNewMsg("");

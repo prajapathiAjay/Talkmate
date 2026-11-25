@@ -1,5 +1,6 @@
 import axios from "axios";
 import qs from "qs";
+import { expireSession } from "../utils/session.js";
 
 // Single shared axios instance
 const apiClient = axios.create({
@@ -27,14 +28,22 @@ apiClient.interceptors.request.use(
 // Normalize error responses
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) =>
-    Promise.reject({
+  (error) => {
+    // A 401 on an authenticated request means the login is no longer valid.
+    // (Sign-in/sign-up also return 401 for wrong credentials - those aren't expiry.)
+    const isAuthForm = /user\/sign(In|Up)/.test(error.config?.url || "");
+    if (error.response?.status === 401 && !isAuthForm && error.config?.headers?.Authorization) {
+      expireSession();
+    }
+
+    return Promise.reject({
       message: error.response?.data?.message || "Something went wrong!",
       status: error.response?.status,
       data: error.response?.data,
       headers: error.response?.headers,
       config: error.config,
-    })
+    });
+  }
 );
 
 // Main service function returning API methods

@@ -8,6 +8,7 @@ import CustomeApiService from "../services/CustomApiService.jsx";
 import MessageTypingIndicator from "./MessageTypingIndicator.jsx";
 import OnlineUsers from "./OnlineUsers.jsx";
 import FormLayout from "../components/FormLayout.jsx";
+import { expireSession } from "../utils/session.js";
 
 const JOIN_SUFFIX = / has joined the chat$/i;
 
@@ -199,6 +200,10 @@ const Chat = () => {
 
     const handleConnectError = (error) => {
       console.error("Socket connection error:", error.message);
+      // The server rejects the socket when the login token is missing or expired
+      if (/unauthorized|expired/i.test(error.message)) {
+        expireSession();
+      }
     };
 
     socket.on("connect_error", handleConnectError);

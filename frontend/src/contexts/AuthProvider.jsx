@@ -1,4 +1,6 @@
 import { createContext, useState, useContext, useEffect } from "react";
+import { toast } from "sonner";
+import { SESSION_EXPIRED_EVENT, getTokenExpiry } from "../utils/session.js";
 
 const AuthContext = createContext();
 
@@ -104,6 +106,31 @@ const AuthProvider = ({ children }) => {
     setUnreadCounts({});
     localStorage.clear();
   };
+
+  // End the session cleanly when the login token expires, instead of leaving
+  // a chat screen that silently can't load or send anything
+  useEffect(() => {
+    if (!userData) return;
+
+    const endSession = () => {
+      logout();
+      toast.error("Your session expired. Please sign in again.", { id: "session-expired" });
+    };
+
+    const expiry = getTokenExpiry(localStorage.getItem("token"));
+    if (!expiry || expiry <= Date.now()) {
+      endSession();
+      return;
+    }
+
+    // setTimeout can't wait longer than ~24.8 days
+    const timer = setTimeout(endSession, Math.min(expiry - Date.now(), 2 ** 31 - 1));
+    window.addEventListener(SESSION_EXPIRED_EVENT, endSession);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener(SESSION_EXPIRED_EVENT, endSession);
+    };
+  }, [userData]);
 
   return (
     <AuthContext.Provider

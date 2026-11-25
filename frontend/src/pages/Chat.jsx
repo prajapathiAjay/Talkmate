@@ -84,6 +84,31 @@ const Chat = () => {
   const scrollerRef = useRef(null);
   const isAtBottomRef = useRef(true);
 
+  // Pin the chat to the part of the screen that's actually visible.
+  // iOS Safari (and some Android browsers) don't shrink the page when the
+  // keyboard opens - they slide it up, which pushed the header off-screen.
+  // visualViewport reports the visible area, so we size and offset to it.
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    const root = document.documentElement;
+
+    const update = () => {
+      root.style.setProperty("--app-height", `${viewport.height}px`);
+      root.style.setProperty("--app-offset", `${viewport.offsetTop}px`);
+    };
+
+    update();
+    viewport.addEventListener("resize", update);
+    viewport.addEventListener("scroll", update);
+    return () => {
+      viewport.removeEventListener("resize", update);
+      viewport.removeEventListener("scroll", update);
+      root.style.removeProperty("--app-height");
+      root.style.removeProperty("--app-offset");
+    };
+  }, []);
+
   // Keep the newest messages in view when the message area shrinks,
   // e.g. while the input grows or the mobile keyboard opens
   useEffect(() => {
@@ -183,8 +208,15 @@ const Chat = () => {
   };
 
   return (
-    // h-dvh keeps the input visible above mobile browser toolbars
-    <div className="flex h-dvh w-screen overflow-hidden bg-linear-to-br from-gray-50 to-violet-50">
+    // Fixed to the visible viewport (see the visualViewport effect above), so the
+    // header stays on screen and the input sits right above the mobile keyboard
+    <div
+      className="fixed top-0 left-0 flex w-screen overflow-hidden bg-linear-to-br from-gray-50 to-violet-50"
+      style={{
+        height: "var(--app-height, 100dvh)",
+        transform: "translateY(var(--app-offset, 0px))",
+      }}
+    >
       {/* Main Chat Area */}
       <div
         className={`flex-1 min-w-0 flex flex-col ${!currentUser ? "opacity-50 pointer-events-none" : ""}`}

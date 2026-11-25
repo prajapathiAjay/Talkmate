@@ -218,7 +218,7 @@ const MessageItem = ({ msg, currentUser, prevMessage }) => {
                   : "bg-white text-gray-800 rounded-bl-sm border border-gray-100"
               }`}>
                 {msg?.message && (
-                  <p className="text-[15px] sm:text-sm leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere]">{msg?.message}</p>
+                  <p className="select-text text-[15px] sm:text-sm leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere]">{msg?.message}</p>
                 )}
 
                 {images.length > 0 && (

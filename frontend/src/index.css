@@ -8,3 +8,45 @@ body {
   min-width: 320px;
   min-height: 100vh;
 }
+
+/* ---- Native-app feel on touch devices ---- */
+
+html,
+body {
+  /* no rubber-band bounce or pull-to-refresh at the page edges */
+  overscroll-behavior: none;
+  /* no grey/blue flash when tapping */
+  -webkit-tap-highlight-color: transparent;
+  /* don't let the phone enlarge text on rotate */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  /* long-press shouldn't select UI text or pop up the callout menu */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* touch-action doesn't inherit, so set it everywhere:
+   allow scrolling, block pinch-zoom and double-tap zoom */
+*,
+*::before,
+*::after {
+  touch-action: pan-x pan-y;
+}
+
+/* places where selecting text is still wanted */
+input,
+textarea,
+[contenteditable="true"],
+.select-text {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+img {
+  -webkit-user-drag: none;
+}

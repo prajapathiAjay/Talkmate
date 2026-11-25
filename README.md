@@ -166,18 +166,20 @@ cd TalkMate
 cd backend
 npm install
 ```
-Create `backend/.env`:
+Create `backend/.env` with **your own** values (placeholders shown):
 ```env
 PORT=5000
-MONGO_URI=mongodb://127.0.0.1:27017/jubjub
-JWT_SECRET=replace-with-a-long-random-string
+MONGO_URI=<your-mongodb-connection-string>
+JWT_SECRET=<a-long-random-secret>
 JWT_EXPIRES_IN=7d
 NODE_ENV=development
 
-CLOUDINARY_CLOUD_NAME=your-cloud-name
-CLOUDINARY_API_KEY=your-api-key
-CLOUDINARY_API_SECRET=your-api-secret
+CLOUDINARY_CLOUD_NAME=<your-cloudinary-cloud-name>
+CLOUDINARY_API_KEY=<your-cloudinary-api-key>
+CLOUDINARY_API_SECRET=<your-cloudinary-api-secret>
 ```
+
+> 🔒 Keep real credentials only in `.env` (it's git-ignored) and in your hosting provider's environment settings. Never commit them or paste them into issues or READMEs.
 ```bash
 npm run dev        # starts on http://localhost:5000
 ```

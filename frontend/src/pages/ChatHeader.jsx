@@ -1,43 +1,44 @@
 import { toast } from "sonner";
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import publicLogo from "../assets/logo/publiclogo.png";
 import socket from "../Socket.jsx";
 import {
   Settings,
   LogOut,
-  Users,
-  Shield,
-  MoreHorizontal,
-  Bell,
-  Search,
   ArrowLeftRightIcon,
   LucideContact2,
   ChevronDown,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { FormatLastSeen } from "../utilityFuntions/FormatLastSeen.js";
+import { FormatLastSeen } from "../utils/FormatLastSeen.js";
 import CustomApiService from "../services/CustomApiService";
 import { useAuth } from "../contexts/AuthProvider.jsx";
 import Modal from "../components/Modal.jsx";
+
 const ChatHeader = ({ handleShowOnlineUsers }) => {
-  const { GET, POST } = CustomApiService();
-  const { userData, login, logout, roomType, currentPartner ,handleRoomTypeChange,handleChatRoomIdChange} = useAuth();
+  const { POST } = CustomApiService();
+  const {
+    userData,
+    logout,
+    roomType,
+    currentPartner,
+    handleRoomTypeChange,
+    handleChatRoomIdChange,
+  } = useAuth();
 
   const [openMenu, setOpenMenu] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
   const menuRef = useRef(null);
 
   const navigate = useNavigate();
+
   const logOut = async () => {
     try {
       const response = await POST("user/logout");
-      console.log("Logout response:", response);
       if (response.success) {
         toast.success("You have left the room.");
         socket.disconnect();
-     
         logout();
-        // localStorage.removeItem("userData");
         navigate("/signIn", { replace: true });
       } else {
         toast.error(response.message);
@@ -56,12 +57,12 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
   const switchPublicRoom = () => {
-    console.log("public room Id", userData);
     handleRoomTypeChange("public");
     handleChatRoomIdChange(userData?.user?.publicRoomId);
-  
   };
+
   return (
     <>
       <header className="sticky top-0  w-full px-4 pt-4 pb-2 bg-transparent pointer-events-none">
@@ -71,14 +72,18 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
             <div className="relative group">
               <div className="w-10 h-10 bg-gradient-to-tr from-violet-600 to-indigo-500 rounded-[12px] flex items-center justify-center text-white shadow-inner transition-transform duration-500 group-hover:scale-105 group-hover:rotate-6">
                 <span className="font-black text-lg">
-                  {roomType==="public"?(<div> <img
-                    src={publicLogo}
-                    alt="Public Logo"
-                    className="w-8 h-8 object-cover"
-                  /></div>):(<div>{currentPartner?.name?.charAt(0)?.toUpperCase()}</div>)}
-                 
-
-                  {/* {"A"} */}
+                  {roomType === "public" ? (
+                    <div>
+                      {" "}
+                      <img
+                        src={publicLogo}
+                        alt="Public Logo"
+                        className="w-8 h-8 object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div>{currentPartner?.name?.charAt(0)?.toUpperCase()}</div>
+                  )}
                 </span>
               </div>
               <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-500 border-[2.5px] border-white rounded-full shadow-sm" />
@@ -109,24 +114,16 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
 
           {/* RIGHT: Global Actions */}
           <div className="flex items-center gap-1.5">
-            {/* Secondary Action: Search */}
-            
-
-            {/* Secondary Action: Notifications */}
-            {/* <button className="hidden sm:flex p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
-            <Bell className="w-4.5 h-4.5" />
-          </button> */}
-
-            {/* <div className="h-4 w-[1px] bg-gray-200 mx-1 hidden sm:block" /> */}
-
-            {/* Mobile Users Toggle */}
-             <button
+            {/* Switch back to public room */}
+            <button
               onClick={switchPublicRoom}
-              className={`${roomType==="public"?"hidden":"visible"} flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl transition-all shadow-md shadow-indigo-100 active:scale-95`}
+              className={`${roomType === "public" ? "hidden" : "visible"} flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl transition-all shadow-md shadow-indigo-100 active:scale-95`}
             >
               <ArrowLeftRightIcon className="w-4 h-4 " />
               <span className="text-xs font-bold">public chat</span>
             </button>
+
+            {/* Mobile Users Toggle */}
             <button
               onClick={handleShowOnlineUsers}
               className="md:hidden flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl transition-all shadow-md shadow-indigo-100 active:scale-95"
@@ -134,7 +131,7 @@ const ChatHeader = ({ handleShowOnlineUsers }) => {
               <LucideContact2 className="w-4 h-4" />
               <span className="text-xs font-bold">Users</span>
             </button>
-          
+
             {/* User Menu */}
             <div className="relative" ref={menuRef}>
               <button

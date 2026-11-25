@@ -1,9 +1,5 @@
-import React from 'react'
-
 const OnlineEmptyState = () => {
-  return (
-    <div>OnlineEmptyState</div>
-  )
-}
+  return <div>OnlineEmptyState</div>;
+};
 
-export default OnlineEmptyState
+export default OnlineEmptyState;

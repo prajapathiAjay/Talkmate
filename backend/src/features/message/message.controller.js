@@ -1,28 +1,23 @@
+import { getMessageRepo } from "./message.repository.js";
+import { customErrorHandler } from "../../middlewares/errorHandler.js";
 
-import { getMessageRepo } from "./message.repository.js"
-import { customErrorHandler } from "../../middlewares/errorHandler.js"
-
-export const getMessage= async (req,res,next)=>{
-
-const payload=req?.query
-try{
-
-    const messages=await getMessageRepo(payload)
-    if(messages.success){
-
-        return res.status(200).json({
-            success:messages.success,
-            status:messages.status,
-            messages:messages.message,
-            data:messages.data,
-        })
+export const getMessage = async (req, res, next) => {
+  const payload = req?.query;
+  try {
+    const messages = await getMessageRepo(payload);
+    if (messages.success) {
+      return res.status(200).json({
+        success: messages.success,
+        status: messages.status,
+        messages: messages.message,
+        data: messages.data,
+      });
     }
-}catch(error){
-return error
-}
- new customErrorHandler(
-        res.error?.statusCode || 400,
-        res.error?.msg || "message fetching failed"
-      )
-
-}
+  } catch (error) {
+    return error;
+  }
+  new customErrorHandler(
+    res.error?.statusCode || 400,
+    res.error?.msg || "message fetching failed"
+  );
+};

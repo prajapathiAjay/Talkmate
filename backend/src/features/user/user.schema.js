@@ -1,36 +1,29 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, "Name is Required"],
+    minLength: [3, "The name should be at least 3 characters long"],
+  },
+  email: {
+    type: String,
+    required: [true, "Email Is required"],
+    unique: true,
+    match: [/^([a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/],
+  },
+  password: {
+    type: String,
+    required: [true, "Password is required"],
+  },
+  isOnline: {
+    type: Boolean,
+    default: false,
+  },
+  lastSeen: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
-
- const userSchema=new mongoose.Schema({
-name:{
-    type:String,
-    required:[true,"Name is Required"],
-    minLength:[3,"The name should be at least 3 characters long"]
-},
-email:{
-    type:String,
-    required:[true,"Email Is required"],
-    match:[/^([a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/],
-},
-password:{
-    type:String,
-    required:[true,"Password is required"]
-},
-isOnline:{
-    type:Boolean,
-    default:false
-},
-lastSeen:{
-    type:Date,
-    default:Date.now
-}
-
-
-
-})
-export const UserModel=mongoose.model("User",userSchema)
-
-
-
-
+export const UserModel = mongoose.model("User", userSchema);

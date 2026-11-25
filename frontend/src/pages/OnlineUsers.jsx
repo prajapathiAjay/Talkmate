@@ -1,28 +1,14 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Users,
-  Circle,
-  Search,
-  MoreVertical,
-  MessageCircle,
-  Wifi,
-  WifiOff,
-  Clock,
-  Filter,
   X,
-  Star,
-  Crown,
-  Zap,
   ChevronRight,
   ChevronLeft,
-  Activity,
-  Coffee,
   UserPlus2,
   Users2Icon,
-  MessageSquareText,
   Handshake,
 } from "lucide-react";
-import { FormatLastSeen } from "../utilityFuntions/FormatLastSeen.js";
+import { FormatLastSeen } from "../utils/FormatLastSeen.js";
 import CustomApiService from "../services/CustomApiService";
 import socket from "../Socket.jsx";
 import { useAuth } from "../contexts/AuthProvider.jsx";
@@ -33,22 +19,15 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
   const [allUsers, setAllUsers] = useState([]);
   const {
     userData,
-    chatRoomId,
     roomType,
     handleChatRoomIdChange,
     handleRoomTypeChange,
     handlePartnerChange,
-    // friendRoom,
-    // handleFriendRoom
-
   } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(false);
   const [friendRoom, setFriendRoom] = useState([]);
-  console.log("friendRoom", friendRoom);
-
-  // search functionality
 
   const getAllUsers = async () => {
     try {
@@ -66,7 +45,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
         setAllUsers(allUsersData);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -74,7 +53,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
 
   const handleStatusChange = (response) => {
     if (response.success) {
-      let newJoinedUsers = response?.data;
+      const newJoinedUsers = response?.data;
       setAllUsers((prevUsers) => {
         const existingUser = prevUsers.some(
           (user) => user._id === newJoinedUsers._id,
@@ -88,26 +67,9 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
         }
       });
     }
-    console.log("handleStatus", response);
-  };
-  const createChatRoom = async (friendId) => {
-    try {
-      const payload = {
-        type: "private",
-        participants: [userData?.user?.userId, friendId],
-      };
-
-      const response = await POST("room/createRoom", {}, {}, payload);
-      if (response?.success) {
-        console.log("Chat room created successfully", response.data);
-      }
-    } catch (error) {
-      console.log("Error creating chat room:", error);
-    }
   };
 
-  // Add as Friend Functionality
-
+  // Add as friend (also creates the private room)
   const handleAddFriend = async (friendId) => {
     try {
       const payload = {
@@ -125,13 +87,8 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
         POST("friend/add", {}, {}, payload),
       ]);
 
-      if (roomResponse?.success) {
-        console.log("Chat room created successfully", roomResponse.data);
-      }
-
       if (friendResponse?.success) {
         toast.success(friendResponse.message);
-        console.log("Friend added successfully", friendResponse);
       }
 
       if (roomResponse && friendResponse) {
@@ -139,18 +96,6 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
       }
     } catch (error) {
       console.error("Error:", error);
-    }
-  };
-
-  const getAllFriends = async () => {
-    try {
-      const response = await GET("friend/getFriends", {}, {}, {});
-
-      if (response?.success) {
-        setAllUsers(response?.data);
-      }
-    } catch (error) {
-      console.log(error);
     }
   };
 
@@ -173,7 +118,9 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
           })),
         );
       }
-    } catch (error) {}
+    } catch {
+      // Errors are intentionally ignored here
+    }
   };
 
   useEffect(() => {
@@ -228,60 +175,20 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
     }
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "online":
-        return <Zap className="w-3 h-3 text-green-500" />;
-      case "away":
-        return <Coffee className="w-3 h-3 text-yellow-500" />;
-      default:
-        return <WifiOff className="w-3 h-3 text-gray-400" />;
-    }
-  };
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case "online":
-        return "Active now";
-      case "away":
-        return "Away";
-      default:
-        return "Offline";
-    }
-  };
-
-  const getBadgeColor = (status) => {
-    switch (status) {
-      case true:
-        return "bg-green-100 text-green-700 border-green-200";
-      case false:
-        return "bg-yellow-100 text-yellow-700 border-yellow-200";
-      default:
-        return "bg-gray-100 text-gray-600 border-gray-200";
-    }
-  };
-
   const handleChatRoomChange = (room) => {
     handleChatRoomIdChange(room._id);
     handleRoomTypeChange("private");
-    console.log("currentPartner", room);
     handlePartnerChange(room?.friend);
     setFriendRoom((prevFriends) =>
       prevFriends.map((friend) => ({
         ...friend,
-        isCurrent: friend._id === room._id, // or friend._id === _id
+        isCurrent: friend._id === room._id,
       })),
     );
   };
 
   const onlineCount = allUsers.filter((u) => u.isOnline === true);
   const awayCount = allUsers.filter((u) => u.isOnline === false);
-  const offlineCount = allUsers.filter((u) => u.status === "offline");
-
-  // Featured users (for demo - you can modify based on your data)
-  const featuredUsers = allUsers
-    .filter((u) => u.isFeatured || u.isOnline === true)
-    .slice(0, 3);
 
   return (
     <div
@@ -306,36 +213,35 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
         </div>
 
         <div className="flex w-full justify-between gap-3">
-  <button
-    onClick={() => setSelectedFilter("all")}
-    className={`flex-1 flex items-center justify-center text-sm cursor-pointer px-4 py-2 rounded-xl ${
-      selectedFilter === "all"
-        ? "bg-[#7736FB] border border-[#7736FB]/30 text-white"
-        : "bg-white/20 border border-[#7736FB]/30 text-[#7736FB]"
-    } font-semibold shadow-lg hover:bg-[#7736FB]/30 hover:scale-105 transition-all duration-300`}
-  >
-    <Users2Icon className="w-4 h-4 mr-2" />
-    All Users
-  </button>
+          <button
+            onClick={() => setSelectedFilter("all")}
+            className={`flex-1 flex items-center justify-center text-sm cursor-pointer px-4 py-2 rounded-xl ${
+              selectedFilter === "all"
+                ? "bg-[#7736FB] border border-[#7736FB]/30 text-white"
+                : "bg-white/20 border border-[#7736FB]/30 text-[#7736FB]"
+            } font-semibold shadow-lg hover:bg-[#7736FB]/30 hover:scale-105 transition-all duration-300`}
+          >
+            <Users2Icon className="w-4 h-4 mr-2" />
+            All Users
+          </button>
 
-  <button
-    onClick={() => setSelectedFilter("friends")}
-    className={`flex-1 flex items-center justify-center text-sm cursor-pointer px-4 py-2 rounded-xl ${
-      selectedFilter === "friends"
-        ? "bg-[#7736FB] border border-[#7736FB]/30 text-white"
-        : "bg-white/20 border border-[#7736FB]/30 text-[#7736FB]"
-    } font-semibold shadow-lg hover:bg-[#7736FB]/30 hover:scale-105 transition-all duration-300`}
-  >
-    <Handshake className="w-4 h-4 mr-2" />
-    Friends
-  </button>
-</div>
+          <button
+            onClick={() => setSelectedFilter("friends")}
+            className={`flex-1 flex items-center justify-center text-sm cursor-pointer px-4 py-2 rounded-xl ${
+              selectedFilter === "friends"
+                ? "bg-[#7736FB] border border-[#7736FB]/30 text-white"
+                : "bg-white/20 border border-[#7736FB]/30 text-[#7736FB]"
+            } font-semibold shadow-lg hover:bg-[#7736FB]/30 hover:scale-105 transition-all duration-300`}
+          >
+            <Handshake className="w-4 h-4 mr-2" />
+            Friends
+          </button>
+        </div>
       </div>
 
       {/* Search Section */}
       <div className="py-2 px-3 bg-[#7736FB]/20 rounded-b-2xl">
         <div className="relative group">
-          {/* <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 group-focus-within:text-blue-500 transition-colors" /> */}
           <input
             type="text"
             placeholder="Search amazing people..."
@@ -352,8 +258,6 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
             </button>
           )}
         </div>
-
-        {/* Filter Pills */}
       </div>
 
       {/* Users List */}
@@ -502,7 +406,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
                 </div>
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-2">
-                {selectedFilter==="all"?"No Users":"Add user as friend from all users list"}
+                {selectedFilter === "all" ? "No Users" : "Add user as friend from all users list"}
                 No users found
               </h3>
               <p className="text-gray-500 max-w-[220px]">
@@ -539,7 +443,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers }) => {
                 {awayCount?.length} away
               </span>
             </div>
-           
+
           </div>
           <div className="flex items-center gap-1 text-sm">
             <span className="font-bold text-blue-600">{allUsers.length}</span>

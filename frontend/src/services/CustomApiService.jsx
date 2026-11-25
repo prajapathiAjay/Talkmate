@@ -1,41 +1,16 @@
 import axios from "axios";
-import qs from "qs"
-// Create a single axios instance (singleton)
+import qs from "qs";
 
-// const apiClient = axios.create({
-//   baseURL: `${import.meta.env.VITE_API_URL}/${import.meta.env.VITE_APP_NAME}`,
-//   // headers: {
-//   //   "Content-Type": "application/json",
-//   // },
-//   withCredentials: true, // Include cookies in requests
-// });
-
-// // Intercept responses globally
-// apiClient.interceptors.response.use(
-//   (response) => response,
-//   (error) =>
-//     Promise.reject({
-//       message: error.response?.data?.message || "Something went wrong!",
-//       status: error.response?.status,
-//       data: error.response?.data,
-//       headers: error.response?.headers,
-//       config: error.config,
-//     })
-// );
-
-
-
-
-
+// Single shared axios instance
 const apiClient = axios.create({
   baseURL: `${import.meta.env.VITE_API_URL}/${import.meta.env.VITE_APP_NAME}`,
-    paramsSerializer: (params) =>
+  paramsSerializer: (params) =>
     qs.stringify(params, {
       arrayFormat: "repeat",
     }),
 });
 
-// ✅ Request Interceptor
+// Attach the auth token to every request
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -49,7 +24,7 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ✅ Response Interceptor
+// Normalize error responses
 apiClient.interceptors.response.use(
   (response) => response,
   (error) =>
@@ -64,44 +39,24 @@ apiClient.interceptors.response.use(
 
 // Main service function returning API methods
 const CustomApiService = () => {
-  // GET request
-  const GET = async (endpoint, params = {}, headers = {},data) => {
-    try {
-      const res = await apiClient.get(`/${endpoint}`, { params, headers });
-      return { ...res.data, headers: res.headers };
-    } catch (error) {
-      throw error;
-    }
+  const GET = async (endpoint, params = {}, headers = {}) => {
+    const res = await apiClient.get(`/${endpoint}`, { params, headers });
+    return { ...res.data, headers: res.headers };
   };
 
-  // POST request
   const POST = async (endpoint, params = {}, headers = {}, data) => {
-    try {
-      const res = await apiClient.post(`/${endpoint}`, data, { params, headers });
-      return { ...res.data, headers: res.headers };
-    } catch (error) {
-      throw error;
-    }
+    const res = await apiClient.post(`/${endpoint}`, data, { params, headers });
+    return { ...res.data, headers: res.headers };
   };
 
-  // PATCH request
   const PATCH = async (endpoint, params = {}, headers = {}, data, id) => {
-    try {
-      const res = await apiClient.patch(`/${endpoint}/${id}`, data, { params, headers });
-      return { ...res.data, headers: res.headers };
-    } catch (error) {
-      throw error;
-    }
+    const res = await apiClient.patch(`/${endpoint}/${id}`, data, { params, headers });
+    return { ...res.data, headers: res.headers };
   };
 
-  // DELETE request
   const DELETE = async (endpoint, params = {}, headers = {}, id) => {
-    try {
-      const res = await apiClient.delete(`/${endpoint}/${id}`, { params, headers });
-      return { ...res.data, headers: res.headers };
-    } catch (error) {
-      throw error;
-    }
+    const res = await apiClient.delete(`/${endpoint}/${id}`, { params, headers });
+    return { ...res.data, headers: res.headers };
   };
 
   return { GET, POST, PATCH, DELETE };

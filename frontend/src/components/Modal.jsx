@@ -3,12 +3,7 @@ import { Dialog, DialogPanel, Transition } from "@headlessui/react";
 import { useForm } from "react-hook-form";
 
 const Modal = ({ isOpen, onClose, title, children, width = "max-w-md" }) => {
-  const {
-    register,
-    handleSubmit,
-    clearErrors,
-    formState: { errors },
-  } = useForm();
+  const { register, handleSubmit } = useForm();
 
   const formFields = [
     {
@@ -32,14 +27,11 @@ const Modal = ({ isOpen, onClose, title, children, width = "max-w-md" }) => {
       type: "text",
       required: true,
     },
-   
   ];
 
-
-const onSubmit = (data) => {
+  const onSubmit = (data) => {
     console.log(data);
-    // onClose(); // Close the modal after submission
-  }
+  };
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -73,21 +65,25 @@ const onSubmit = (data) => {
             >
               {/* Header */}
               <div className="flex flex-col justify-between items-center p-5 border-b">
-               
                 <div className="flex  justify-between w-full bg-red-200">
- <h2 className="font-bold text-lg">{title}</h2>
- <button
-                  onClick={onClose}
-                  className="w-8 h-8 rounded-lg hover:bg-gray-100"
-                >
-                  ✕
-                </button>
+                  <h2 className="font-bold text-lg">{title}</h2>
+                  <button
+                    onClick={onClose}
+                    className="w-8 h-8 rounded-lg hover:bg-gray-100"
+                  >
+                    ✕
+                  </button>
                 </div>
 
                 <div>
                   <form onSubmit={handleSubmit(onSubmit)}>
-                    {formFields.map((field,index) => {
-                      if (field.type === "text"|| field.type === "email" || field.type === "password"||field.type === "number") {
+                    {formFields.map((field, index) => {
+                      if (
+                        field.type === "text" ||
+                        field.type === "email" ||
+                        field.type === "password" ||
+                        field.type === "number"
+                      ) {
                         return (
                           <div key={index}>
                             <label
@@ -111,7 +107,6 @@ const onSubmit = (data) => {
                       }
                     })}
 
-
                     <footer className="flex justify-end gap-2 mt-4">
                       <button
                         type="button"
@@ -129,7 +124,7 @@ const onSubmit = (data) => {
                     </footer>
                   </form>
                 </div>
-               
+
               </div>
 
               {/* Content */}

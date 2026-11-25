@@ -1,5 +1,3 @@
-import React from "react";
-
 const UserList = ({ usersOnline }) => {
   const getStatusColor = (status) => {
     switch (status) {
@@ -25,7 +23,7 @@ const UserList = ({ usersOnline }) => {
       {/* Online Users */}
       <div className="p-4 flex-1 overflow-y-auto">
         <h3 className="font-semibold text-gray-700 mb-4 text-lg">
-          Online Users ({usersOnline.filter(u => u.status === 'online').length})
+          Online Users ({usersOnline.filter((u) => u.status === "online").length})
         </h3>
         <div className="space-y-3">
           {usersOnline.map((user, index) => (

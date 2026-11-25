@@ -1,4 +1,3 @@
-import React from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -9,7 +8,6 @@ const JoinRoom = ({ onJoin, currentUser }) => {
       .string()
       .required("Name is required")
       .min(2, "Name must be at least 2 characters"),
-    // roomId: yup.string().required("Room ID is required"),
   });
 
   const {
@@ -28,14 +26,6 @@ const JoinRoom = ({ onJoin, currentUser }) => {
       type: "text",
       placeholder: "Enter Room Name",
     },
-    // {
-    //   id: "roomId",
-    //   label: "Room ID",
-    //   name: "roomId",
-    //   type:"text",
-    //   placeholder: "Enter Room ID",
-    // },
-    // { id: "type", label: "Type of ChatRoom", name: "type", type: "checkbox" },
   ];
 
   if (currentUser) {
@@ -101,27 +91,8 @@ const JoinRoom = ({ onJoin, currentUser }) => {
                     )}
                   </div>
                 );
-              } else  {
+              } else {
                 return null;
-                // return (
-                //   <div key={field.id} className="flex items-center">
-                //     <label> {field.label}</label>
-                //     <input
-                //       type="checkbox"
-                //       {...register(field?.name)}
-                //       className={`w-full px-4 py-3 rounded-xl border bg-white/10 backdrop-blur-sm text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/50 ${
-                //         errors[field?.name]
-                //           ? "border-red-300"
-                //           : "border-white/30"
-                //       }`}
-                //     />
-                //     {errors[field?.name] && (
-                //       <p className="text-red-200 text-sm mt-1">
-                //         {errors[field?.name]?.message}
-                //       </p>
-                //     )}
-                //   </div>
-                // );
               }
             })}
           </div>

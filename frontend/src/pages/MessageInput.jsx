@@ -1,28 +1,24 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthProvider";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import socket from "../Socket";
 import CustomeApiService from "../services/CustomApiService.jsx";
-import { Send, SendHorizonal, Loader2, ImagePlusIcon } from "lucide-react";
+import { SendHorizonal, Loader2, ImagePlusIcon } from "lucide-react";
 
-const MessageInput = ({ roomType, disabled = false }) => {
+const MessageInput = ({ disabled = false }) => {
   const { POST } = CustomeApiService();
 
   const { userData, chatRoomId } = useAuth();
   const [newMsg, setNewMsg] = useState("");
   const [files, setFiles] = useState([]);
   const [sending, setSending] = useState(false);
-  let userName = userData?.user?.name;
-  let userId = userData?.user?.userId;
-  // let chatRoomId = userData?.user?.chatRoomId;
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const userName = userData?.user?.name;
+  const userId = userData?.user?.userId;
   const TypingTimeOutRef = useRef(null);
   const isTypingRef = useRef(false);
   const emojiPickerRef = useRef(null);
-  const [showFilePreview, setShowFilePreview] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  console.log("all files", files);
-  //
 
   const onKeyPress = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -31,8 +27,7 @@ const MessageInput = ({ roomType, disabled = false }) => {
     }
   };
 
-  // Emoji Outside Click Handler
-
+  // Close the emoji picker on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -72,20 +67,20 @@ const MessageInput = ({ roomType, disabled = false }) => {
     }
   };
 
-  useEffect(() => {}, []);
   const handleEmojiSelect = (emoji) => {
     const emojiChar = emoji.native;
     setNewMsg((prev) => prev + emojiChar);
-    // setShowEmojiPicker(false);
   };
+
   const handleRemoveFile = (indexToRemove) => {
     setFiles((prev) => prev.filter((_, index) => index !== indexToRemove));
   };
-  const handleRevomeAllFiles = () => {
+
+  const handleRemoveAllFiles = () => {
     setFiles([]);
   };
+
   const onSend = async () => {
-    console.log("onsend", newMsg);
     setShowEmojiPicker(false);
 
     if (!newMsg.trim() && files.length === 0) return;
@@ -115,10 +110,6 @@ const MessageInput = ({ roomType, disabled = false }) => {
         roomId: chatRoomId,
       };
 
-      // if (roomType === "public") {
-      //   messageData.roomId = chatRoomId;
-      // }
-      console.log("message Data", messageData);
       socket.emit("sendMessage", messageData);
 
       setNewMsg("");
@@ -129,6 +120,7 @@ const MessageInput = ({ roomType, disabled = false }) => {
       setSending(false);
     }
   };
+
   return (
     <div className="bg-white border-t border-gray-200 p-1 md:p-2 lg:p-3">
       <div className=" relative max-w-6xl mx-auto">
@@ -175,7 +167,7 @@ const MessageInput = ({ roomType, disabled = false }) => {
                 </h3>
 
                 <button
-                  onClick={handleRevomeAllFiles}
+                  onClick={handleRemoveAllFiles}
                   className="text-xs px-3 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-md transition"
                 >
                   Clear All

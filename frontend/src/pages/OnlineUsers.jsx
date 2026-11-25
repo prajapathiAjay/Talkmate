@@ -255,7 +255,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
 
   const badge = (count) =>
     count > 0 && (
-      <span className="shrink-0 min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-bold leading-none shadow-lg shadow-red-500/20">
+      <span className="shrink-0 min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-rose-500 text-white text-[11px] font-bold leading-none shadow-lg shadow-rose-500/30">
         {count > 99 ? "99+" : count}
       </span>
     );
@@ -310,30 +310,30 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
           w-full sm:w-96 lg:w-80 xl:w-96
           transform ${showOnlineUsers ? "translate-x-0" : "translate-x-full"}
           transition-transform duration-300 ease-out
-          bg-white backdrop-blur-xl lg:bg-white
+          glass-pane glass-pane--overlay
           ${showOnlineUsers ? "shadow-2xl" : ""} lg:shadow-none
           lg:static lg:translate-x-0 lg:shrink-0
           flex flex-col
-          border-l border-gray-200
+          border-l border-white/60
         `}
       >
         {/* Header: title, tabs, search */}
-        <div className="px-4 pt-4 pb-3 space-y-3 border-b border-gray-200">
+        <div className="px-4 pt-4 pb-3 space-y-3 border-b border-white/60">
           <div className="flex items-center gap-2">
             <button
               onClick={handleShowOnlineUsers}
               title="Close"
-              className="lg:hidden shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 cursor-pointer"
+              className="lg:hidden shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-gray-600 hover:bg-white/60 cursor-pointer"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <h2 className="text-lg font-bold tracking-tight text-gray-900">People</h2>
-            <span className="text-xs font-semibold text-blue-600 bg-blue-50 rounded-full px-2 py-0.5">
+            <span className="text-xs font-semibold text-violet-700 bg-violet-100/80 rounded-full px-2 py-0.5">
               {allUsers.length}
             </span>
           </div>
 
-          <div className="flex gap-1 p-1 bg-gray-100 rounded-xl">
+          <div className="flex gap-1 p-1 bg-white/40 border border-white/60 rounded-xl">
             <button
               onClick={() => setSelectedFilter("all")}
               className={tabClass(selectedFilter === "all")}
@@ -348,7 +348,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
               <Handshake className="w-4 h-4" />
               Friends
               {friendsUnread > 0 && (
-                <span className="min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold leading-none">
+                <span className="min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-rose-500 text-white text-[10px] font-bold leading-none">
                   {friendsUnread > 99 ? "99+" : friendsUnread}
                 </span>
               )}
@@ -356,7 +356,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
           </div>
 
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none z-10" />
             <input
               type="text"
               placeholder="Search people..."
@@ -383,10 +383,10 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
             onClick={openPublicRoom}
             title="Open Public Room"
             className={`flex items-center gap-3 px-3 py-2.5 mb-1 rounded-xl cursor-pointer transition-colors ${
-              roomType === "public" ? "bg-blue-50 ring-1 ring-blue-200" : "hover:bg-gray-50"
+              roomType === "public" ? "bg-white/75 ring-1 ring-violet-200 shadow-sm" : "hover:bg-white/50"
             }`}
           >
-            <div className="w-11 h-11 shrink-0 rounded-full brand-bg flex items-center justify-center text-white shadow-lg shadow-blue-600/20">
+            <div className="w-11 h-11 shrink-0 rounded-full brand-bg flex items-center justify-center text-white shadow-lg shadow-violet-500/30">
               <Users className="w-5 h-5" />
             </div>
             <div className="min-w-0 flex-1">
@@ -397,17 +397,17 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
             </div>
             {badge(unreadFor(publicRoomId))}
           </div>
-          <div className="mx-3 mb-1 border-t border-gray-200" />
+          <div className="mx-3 mb-1 border-t border-white/60" />
 
           {isLoading ? (
             Array(6)
               .fill(0)
               .map((_, i) => (
                 <div key={i} className="flex items-center gap-3 px-3 py-2.5 animate-pulse">
-                  <div className="w-11 h-11 rounded-full bg-gray-100" />
+                  <div className="w-11 h-11 rounded-full bg-white/60" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-3.5 w-28 bg-gray-100 rounded" />
-                    <div className="h-3 w-16 bg-gray-50 rounded" />
+                    <div className="h-3.5 w-28 bg-white/60 rounded" />
+                    <div className="h-3 w-16 bg-white/40 rounded" />
                   </div>
                 </div>
               ))
@@ -419,8 +419,8 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
                   onClick={() => handleChatRoomChange(room)}
                   className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-colors ${
                     room.isCurrent
-                      ? "bg-blue-50 ring-1 ring-blue-200"
-                      : "hover:bg-gray-50"
+                      ? "bg-white/75 ring-1 ring-violet-200 shadow-sm"
+                      : "hover:bg-white/50"
                   }`}
                 >
                   {avatar(room?.friend?.name, room?.friend?.isOnline)}
@@ -431,7 +431,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
                     {status(room?.friend?.isOnline, room?.friend?.lastSeen)}
                   </div>
                   {badge(unreadFor(room._id)) || (
-                    <MessageCircle className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                    <MessageCircle className="w-4 h-4 text-gray-400 group-hover:text-violet-600 transition-colors" />
                   )}
                 </div>
               ))}
@@ -447,7 +447,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
                   key={user._id || index}
                   onClick={canChat ? () => openChatWith(user) : undefined}
                   title={canChat ? `Chat with ${user.name}` : undefined}
-                  className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors animate-fadeIn ${
+                  className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/50 transition-colors animate-fadeIn ${
                     canChat ? "cursor-pointer" : ""
                   }`}
                   style={{ animationDelay: `${index * 40}ms` }}
@@ -468,12 +468,12 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
                         handleAddFriend(user._id);
                       }}
                       title="Add Friend"
-                      className="shrink-0 w-9 h-9 flex items-center justify-center rounded-full text-blue-600 border border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors"
+                      className="shrink-0 w-9 h-9 flex items-center justify-center rounded-full text-violet-600 bg-white/60 border border-white/80 hover:bg-violet-600 hover:text-white hover:border-violet-600 transition-colors"
                     >
                       <UserPlus2 className="w-4 h-4" />
                     </button>
                   ) : (
-                    <span className="shrink-0 flex items-center gap-1 text-[11px] font-semibold text-blue-600 bg-blue-50 group-hover:bg-blue-100 rounded-full px-2 py-0.5 transition-colors">
+                    <span className="shrink-0 flex items-center gap-1 text-[11px] font-semibold text-violet-700 bg-violet-100/80 group-hover:bg-violet-200/80 rounded-full px-2 py-0.5 transition-colors">
                       <MessageCircle className="w-3 h-3" />
                       Chat
                     </span>
@@ -485,8 +485,8 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
           ) : (
             // Empty state
             <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-              <div className="w-16 h-16 mb-4 rounded-full bg-blue-50 flex items-center justify-center">
-                <Users className="w-8 h-8 text-blue-600" />
+              <div className="w-16 h-16 mb-4 rounded-full bg-white/60 flex items-center justify-center">
+                <Users className="w-8 h-8 text-violet-600" />
               </div>
               <h3 className="text-base font-semibold text-gray-900 mb-1">
                 {selectedFilter === "all" ? "No users found" : "No friends yet"}
@@ -501,7 +501,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm("")}
-                  className="mt-4 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                  className="mt-4 px-4 py-2 text-sm font-medium text-violet-700 bg-violet-100/80 hover:bg-violet-200/80 rounded-lg transition-colors"
                 >
                   Clear search
                 </button>
@@ -511,7 +511,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
         </div>
 
         {/* Footer with stats */}
-        <div className="flex items-center gap-4 px-5 py-3 border-t border-gray-200 text-xs text-gray-500 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="flex items-center gap-4 px-5 py-3 border-t border-white/60 text-xs text-gray-500 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
             {onlineCount.length} online

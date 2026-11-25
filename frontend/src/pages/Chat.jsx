@@ -282,7 +282,7 @@ const Chat = () => {
               <div className="h-full flex items-center justify-center pt-16">
                 <div className="text-center text-gray-500">
                   <svg
-                    className="w-16 h-16 mx-auto mb-4 text-blue-200"
+                    className="w-16 h-16 mx-auto mb-4 text-violet-300"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -305,7 +305,7 @@ const Chat = () => {
                 if (item.type === "date") {
                   return (
                     <div key={item.key} className="flex justify-center pt-4 pb-1">
-                      <span className="text-[11px] font-medium text-gray-500 bg-gray-50 border border-gray-200 backdrop-blur rounded-full px-3 py-1">
+                      <span className="text-[11px] font-medium text-gray-600 glass-bubble rounded-full px-3 py-1">
                         {item.label}
                       </span>
                     </div>
@@ -314,7 +314,7 @@ const Chat = () => {
                 if (item.type === "join") {
                   return (
                     <div key={item.key} className="flex justify-center my-2">
-                      <span className="max-w-[90%] truncate text-[11px] text-gray-500 bg-gray-100 rounded-full px-3 py-1">
+                      <span className="max-w-[90%] truncate text-[11px] text-gray-600 bg-white/50 backdrop-blur rounded-full px-3 py-1">
                         {formatJoinLabel(item.names)}
                       </span>
                     </div>

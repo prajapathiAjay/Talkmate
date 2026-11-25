@@ -204,7 +204,7 @@ const MessageItem = ({ msg, currentUser, prevMessage }) => {
 
             {imageOnly ? (
               // Photos without text: thin neutral frame, time laid over the image
-              <div className={`relative p-1 bg-white border border-gray-200 rounded-2xl ${isCurrentUser ? "rounded-br-sm" : "rounded-bl-sm"}`}>
+              <div className={`relative p-1 glass-bubble rounded-2xl ${isCurrentUser ? "rounded-br-sm" : "rounded-bl-sm"}`}>
                 <div className="w-60 max-w-full sm:w-72 overflow-hidden rounded-xl">
                   {renderImageGrid()}
                 </div>
@@ -215,8 +215,8 @@ const MessageItem = ({ msg, currentUser, prevMessage }) => {
             ) : (
               <div className={`px-3.5 py-2 rounded-2xl shadow-sm max-w-full ${
                 isCurrentUser
-                  ? "brand-bg text-white rounded-br-sm"
-                  : "bg-white text-gray-900 rounded-bl-sm border border-gray-200"
+                  ? "brand-bg text-white rounded-br-sm shadow-[0_8px_20px_-10px_rgba(139,92,246,0.7)]"
+                  : "glass-bubble text-gray-900 rounded-bl-sm"
               }`}>
                 {msg?.message && (
                   <p className="select-text text-[15px] sm:text-sm leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere]">{msg?.message}</p>

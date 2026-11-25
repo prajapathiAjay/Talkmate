@@ -58,10 +58,10 @@ const MessageTypingIndicator = () => {
         {usersArray.length === 1 ? usersArray[0]?.charAt(0)?.toUpperCase() : "…"}
       </div>
       <div className="flex flex-col items-start min-w-0">
-        <div className="flex items-center gap-1 bg-white border border-gray-200 backdrop-blur rounded-2xl rounded-bl-sm px-4 py-3">
-          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" />
+        <div className="flex items-center gap-1 glass-bubble rounded-2xl rounded-bl-sm px-4 py-3">
+          <span className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+          <span className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+          <span className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" />
         </div>
         <p className="text-[11px] text-gray-500 mt-1 ml-1 truncate max-w-full">{label}</p>
       </div>

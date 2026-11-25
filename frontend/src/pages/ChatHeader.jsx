@@ -69,11 +69,11 @@ const ChatHeader = () => {
   return (
     <>
       <header className="sticky top-0 z-20 w-full px-2 pt-2 pb-1 sm:px-4 sm:pt-4 sm:pb-2 bg-transparent pointer-events-none">
-        <div className="max-w-7xl mx-auto h-14 sm:h-16 pointer-events-auto surface rounded-2xl shadow-sm flex items-center justify-between gap-2 px-3 sm:px-4">
+        <div className="max-w-7xl mx-auto h-14 sm:h-16 pointer-events-auto surface rounded-2xl flex items-center justify-between gap-2 px-3 sm:px-4">
           {/* LEFT: Room Identity */}
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             <div className="relative group shrink-0">
-              <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] flex items-center justify-center text-white shadow-lg shadow-blue-600/20 transition-transform duration-500 group-hover:scale-105 group-hover:rotate-6 ${roomType === "public" ? "brand-bg" : `bg-gradient-to-br ${avatarGradient(currentPartner?.name)}`}`}>
+              <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] flex items-center justify-center text-white shadow-lg shadow-violet-500/30 transition-transform duration-500 group-hover:scale-105 group-hover:rotate-6 ${roomType === "public" ? "brand-bg" : `bg-gradient-to-br ${avatarGradient(currentPartner?.name)}`}`}>
                 <span className="font-black text-lg">
                   {roomType === "public" ? (
                     <img
@@ -125,7 +125,7 @@ const ChatHeader = () => {
               <ArrowLeftRightIcon className="w-4 h-4" />
               <span className="sr-only sm:not-sr-only text-xs font-bold">public chat</span>
               {publicUnread > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold leading-none ring-2 ring-white animate-[pop_0.25s_ease-out]">
+                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-rose-500 text-white text-[10px] font-bold leading-none ring-2 ring-white animate-[pop_0.25s_ease-out]">
                   {publicUnread > 99 ? "99+" : publicUnread}
                 </span>
               )}
@@ -137,12 +137,12 @@ const ChatHeader = () => {
                 onClick={() => setOpenMenu(!openMenu)}
                 className={`group flex items-center gap-1 p-1.5 pl-2 rounded-xl transition-all border ${
                   openMenu
-                    ? "bg-gray-100 border-gray-300"
-                    : "border-transparent hover:bg-gray-50 hover:border-gray-200"
+                    ? "bg-white/70 border-white/80"
+                    : "border-transparent hover:bg-white/50 hover:border-white/70"
                 }`}
               >
-                <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center">
-                  <Settings className="w-3.5 h-3.5 text-blue-600" />
+                <div className="w-6 h-6 rounded-lg bg-violet-100/80 flex items-center justify-center">
+                  <Settings className="w-3.5 h-3.5 text-violet-600" />
                 </div>
                 <ChevronDown
                   className={`w-3.5 h-3.5 text-gray-500 transition-transform duration-300 ${openMenu ? "rotate-180" : ""}`}
@@ -152,12 +152,12 @@ const ChatHeader = () => {
               {/* Menu Dropdown */}
               {openMenu && (
                 <div className="absolute right-0 mt-2 w-52 surface-raised rounded-2xl shadow-2xl shadow-gray-900/10 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
-                  <div className="px-4 py-2 border-b border-gray-100 mb-1">
+                  <div className="px-4 py-2 border-b border-gray-200/60 mb-1">
                     <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                       Manage
                     </p>
                   </div>
-                  <button className="w-full flex items-center gap-3 px-3.5 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors mx-auto w-[94%] rounded-lg">
+                  <button className="w-full flex items-center gap-3 px-3.5 py-2 text-sm text-gray-700 hover:bg-white/70 hover:text-gray-900 transition-colors mx-auto w-[94%] rounded-lg">
                     <Settings className="w-4 h-4" />
                     Room Settings
                   </button>

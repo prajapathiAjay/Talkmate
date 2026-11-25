@@ -185,7 +185,7 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
   };
 
   return (
-    <div className="bg-white border-t border-gray-200 px-2 py-2 sm:px-3 lg:py-3 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+    <div className="glass-pane border-t border-white/60 px-2 py-2 sm:px-3 lg:py-3 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
       <div className="relative max-w-6xl mx-auto">
         <div className="flex items-end gap-1 sm:gap-2">
           {/* Chats: opens the people panel (it's always visible on lg+) */}
@@ -193,11 +193,11 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
             onClick={handleShowOnlineUsers}
             title="Chats"
             aria-label={totalUnread ? `Chats, ${totalUnread} unread` : "Chats"}
-            className="lg:hidden relative shrink-0 p-2 mb-0.5 rounded-xl hover:bg-gray-50 transition-colors"
+            className="lg:hidden relative shrink-0 p-2 mb-0.5 rounded-xl hover:bg-white/60 transition-colors"
           >
-            <MessagesSquare className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+            <MessagesSquare className="w-5 h-5 sm:w-6 sm:h-6 text-violet-600" />
             {totalUnread > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold leading-none ring-2 ring-white animate-[pop_0.25s_ease-out]">
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-rose-500 text-white text-[10px] font-bold leading-none ring-2 ring-white animate-[pop_0.25s_ease-out]">
                 {totalUnread > 99 ? "99+" : totalUnread}
               </span>
             )}
@@ -206,10 +206,10 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
             ref={emojiButtonRef}
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             title="Emoji"
-            className="shrink-0 p-2 mb-0.5 hover:bg-gray-50 rounded-xl transition-colors"
+            className="shrink-0 p-2 mb-0.5 hover:bg-white/60 rounded-xl transition-colors"
           >
             <svg
-              className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600"
+              className="w-5 h-5 sm:w-6 sm:h-6 text-violet-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -226,7 +226,7 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
           {files.length > 0 && (
             <div className="absolute bottom-full mb-3 w-full max-w-xl surface-raised shadow-2xl shadow-gray-900/10 rounded-2xl z-50">
               {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 rounded-t-2xl">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-white/60 rounded-t-2xl">
                 <h3 className="text-sm font-semibold text-gray-800">
                   Selected Files ({files.length})
                 </h3>
@@ -244,7 +244,7 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
                 {files.map((file, index) => (
                   <div
                     key={index}
-                    className="relative group border border-gray-200 rounded-xl overflow-hidden bg-gray-50"
+                    className="relative group border border-white/70 rounded-xl overflow-hidden bg-white/50"
                   >
                     {/* Image */}
                     <img
@@ -307,7 +307,7 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
                 onClick={() => setShowAttachMenu((open) => !open)}
                 title="Attach images"
                 className={`p-2 rounded-full transition-colors ${
-                  showAttachMenu ? "text-blue-600 bg-gray-100" : "text-gray-500 hover:text-blue-600 hover:bg-gray-50"
+                  showAttachMenu ? "text-violet-600 bg-white/70" : "text-gray-500 hover:text-violet-600 hover:bg-white/60"
                 }`}
               >
                 <Paperclip className="w-5 h-5 -rotate-45" />
@@ -318,7 +318,7 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
                   <button
                     type="button"
                     onClick={openCamera}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-800 hover:bg-gray-50"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-800 hover:bg-white/60"
                   >
                     <span className="w-9 h-9 rounded-full bg-gradient-to-br from-fuchsia-500 to-rose-500 text-white flex items-center justify-center">
                       <Camera className="w-4 h-4" />
@@ -328,7 +328,7 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
                   <button
                     type="button"
                     onClick={openFiles}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-800 hover:bg-gray-50"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-800 hover:bg-white/60"
                   >
                     <span className="w-9 h-9 rounded-full brand-bg text-white flex items-center justify-center">
                       <ImageIcon className="w-4 h-4" />
@@ -373,7 +373,7 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
     ${
       newMsg.trim() || files.length > 0
         ? "text-white shadow-[0_8px_20px_-8px_rgba(37,99,235,0.6)] hover:scale-105 active:scale-95"
-        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+        : "bg-white/60 text-gray-400 cursor-not-allowed"
     }
   `}
           >

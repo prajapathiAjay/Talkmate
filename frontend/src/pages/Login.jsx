@@ -123,7 +123,7 @@ const Login = () => {
           <div className="w-full max-w-md m-auto flex flex-col justify-center py-8">
             {/* Brand header */}
             <div className="flex items-center justify-center lg:justify-start space-x-3 mb-8 lg:px-8">
-              <div className="p-3 brand-bg rounded-2xl shadow-lg shadow-blue-600/20">
+              <div className="p-3 brand-bg rounded-2xl shadow-lg shadow-violet-500/30">
                 <MessageSquare size={28} className="text-white" />
               </div>
               <div className="text-center lg:text-left">
@@ -132,7 +132,7 @@ const Login = () => {
               </div>
             </div>
 
-            <div className="surface rounded-2xl p-6 lg:p-8 shadow-sm">
+            <div className="surface rounded-3xl p-6 lg:p-8">
               {/* Form Header */}
               <div className="mb-6">
                 <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">
@@ -146,7 +146,7 @@ const Login = () => {
               </div>
 
               {/* Authentication Tabs */}
-              <div className="flex mb-6 bg-gray-100 rounded-xl p-1">
+              <div className="flex mb-6 bg-white/40 border border-white/60 rounded-xl p-1">
                 <button
                   type="button"
                   onClick={() => {
@@ -194,7 +194,7 @@ const Login = () => {
                       Full Name *
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                         <User className="w-4 h-4 text-gray-500" />
                       </div>
                       <input
@@ -217,7 +217,7 @@ const Login = () => {
                     Email Address *
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                       <Mail className="w-4 h-4 text-gray-500" />
                     </div>
                     <input
@@ -239,7 +239,7 @@ const Login = () => {
                     Password *
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                       <Lock className="w-4 h-4 text-gray-500" />
                     </div>
                     <input
@@ -273,7 +273,7 @@ const Login = () => {
                       Confirm Password *
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                         <Lock className="w-4 h-4 text-gray-500" />
                       </div>
                       <input
@@ -300,11 +300,11 @@ const Login = () => {
                     />
                     <label className="text-xs text-gray-500">
                       I agree to the{" "}
-                      <a href="#" className="text-blue-600 hover:text-blue-600 font-medium">
+                      <a href="#" className="text-violet-600 hover:text-violet-600 font-medium">
                         Terms
                       </a>{" "}
                       and{" "}
-                      <a href="#" className="text-blue-600 hover:text-blue-600 font-medium">
+                      <a href="#" className="text-violet-600 hover:text-violet-600 font-medium">
                         Privacy Policy
                       </a>
                     </label>
@@ -323,7 +323,7 @@ const Login = () => {
                         Remember me
                       </label>
                     </div>
-                    <a href="#" className="text-xs text-blue-600 hover:text-blue-600 font-medium">
+                    <a href="#" className="text-xs text-violet-600 hover:text-violet-600 font-medium">
                       Forgot password?
                     </a>
                   </div>
@@ -346,7 +346,7 @@ const Login = () => {
               </form>
 
               {/* Footer Links */}
-              <div className="mt-6 pt-4 border-t border-gray-200">
+              <div className="mt-6 pt-4 border-t border-white/60">
                 <p className="text-center text-xs text-gray-500">
                   {type === "login" ? (
                     <>
@@ -354,7 +354,7 @@ const Login = () => {
                       <button
                         type="button"
                         onClick={() => setType("signup")}
-                        className="text-blue-600 hover:text-blue-600 font-medium"
+                        className="text-violet-600 hover:text-violet-600 font-medium"
                       >
                         Sign up
                       </button>
@@ -365,7 +365,7 @@ const Login = () => {
                       <button
                         type="button"
                         onClick={() => setType("login")}
-                        className="text-blue-600 hover:text-blue-600 font-medium"
+                        className="text-violet-600 hover:text-violet-600 font-medium"
                       >
                         Sign in
                       </button>

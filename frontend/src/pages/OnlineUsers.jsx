@@ -12,7 +12,7 @@ import {
 import { FormatLastSeen } from "../utils/FormatLastSeen.js";
 import CustomApiService from "../services/CustomApiService";
 import socket from "../Socket.jsx";
-import { useAuth } from "../contexts/AuthProvider.jsx";
+import { useAuth } from "../contexts/AuthContext.js";
 import { toast } from "sonner";
 import { avatarGradient } from "../utils/avatarColor.js";
 
@@ -77,30 +77,26 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
 
   // Add as friend (also creates the private room)
   const handleAddFriend = async (friendId) => {
-    try {
-      const payload = { friendId };
+    const payload = { friendId };
 
-      const roomPayload = {
-        type: "private",
-        participants: [userData?.user?.userId, friendId],
-      };
+    // allSettled: one request failing mustn't hide the other's result
+    const [roomResult, friendResult] = await Promise.allSettled([
+      POST("room/createRoom", {}, {}, payload),
+      POST("friend/add", {}, {}, payload),
+    ]);
 
-      const [roomResponse, friendResponse] = await Promise.all([
-        POST("room/createRoom", {}, {}, roomPayload),
-        POST("friend/add", {}, {}, payload),
-      ]);
-
-      if (friendResponse?.success) {
-        toast.success(friendResponse.message);
-      }
-
-      if (roomResponse && friendResponse) {
-        getAllUsers();
-        getPrivateRoom();
-      }
-    } catch (error) {
-      console.error("Error:", error);
+    if (friendResult.status === "fulfilled") {
+      toast.success(friendResult.value?.message || "Friend added");
+    } else {
+      toast.error(friendResult.reason?.message || "Couldn't add friend");
     }
+    if (roomResult.status === "rejected") {
+      toast.error(roomResult.reason?.message || "Couldn't start the chat");
+    }
+
+    // Whatever happened, show what's actually saved now
+    getAllUsers();
+    getPrivateRoom();
   };
 
   const getPrivateRoom = async () => {

@@ -6,17 +6,15 @@ export const getFriends = async (req, res, next) => {
     const response = await getFriendsRepo(req?.user?.id);
 
     if (response?.success) {
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         data: response?.data,
         message: "Friends fetched successfully",
       });
     }
+    return next(new customErrorHandler(500, "Error while fetching friends"));
   } catch (error) {
-    new customErrorHandler(
-      res.error?.statusCode || 400,
-      res.error?.msg || "message fetching failed"
-    );
+    return next(new customErrorHandler(500, "Error while fetching friends"));
   }
 };
 

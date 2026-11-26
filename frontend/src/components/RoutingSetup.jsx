@@ -2,7 +2,7 @@ import Login from "../pages/Login.jsx";
 import Chat from "../pages/Chat.jsx";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
-import { useAuth } from "../contexts/AuthProvider.jsx";
+import { useAuth } from "../contexts/AuthContext.js";
 
 const RoutingSetup = () => {
   const { userData } = useAuth();

@@ -1,12 +1,20 @@
-import { useState, useEffect, useRef } from "react";
-import { useAuth } from "../contexts/AuthProvider";
-import data from "@emoji-mart/data";
-import Picker from "@emoji-mart/react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { useAuth } from "../contexts/AuthContext.js";
 import socket from "../Socket";
 import CustomeApiService from "../services/CustomApiService.jsx";
 import { SendHorizonal, Loader2, Paperclip, MessagesSquare, Camera, Image as ImageIcon } from "lucide-react";
 import CameraCapture from "../components/CameraCapture.jsx";
 import { toast } from "sonner";
+
+// The emoji picker and its emoji list are large, so they load the first time
+// the picker is opened instead of with the app
+const Picker = lazy(() => import("@emoji-mart/react"));
+const loadEmojiData = () => import("@emoji-mart/data").then((module) => module.default);
+
+// Must match the backend's upload limits (backend/src/middlewares/upload.js)
+const MAX_FILES = 3;
+const MAX_FILE_SIZE_MB = 10;
+const ACCEPTED_IMAGES = "image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif";
 
 const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
   const { POST } = CustomeApiService();
@@ -25,7 +33,18 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
   // Add to the current selection (so several camera shots can be sent together)
   const addFiles = (newFiles) => {
     if (!newFiles?.length) return;
-    setFiles((prev) => [...prev, ...newFiles]);
+
+    const fitting = newFiles.filter((file) => file.size <= MAX_FILE_SIZE_MB * 1024 * 1024);
+    if (fitting.length < newFiles.length) {
+      toast.error(`Each photo must be under ${MAX_FILE_SIZE_MB} MB`);
+    }
+
+    setFiles((prev) => {
+      if (prev.length + fitting.length > MAX_FILES) {
+        toast.error(`You can send up to ${MAX_FILES} photos at a time`, { id: "max-files" });
+      }
+      return [...prev, ...fitting].slice(0, MAX_FILES);
+    });
   };
 
   const handlePickedFiles = (e) => {
@@ -183,7 +202,8 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
       setNewMsg("");
       setFiles([]);
     } catch (err) {
-      console.error(err);
+      // e.g. a photo too large or in a format the server doesn't accept
+      toast.error(err?.message || "Photo could not be sent");
     } finally {
       setSending(false);
     }
@@ -283,12 +303,20 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
               className="absolute bottom-full left-0 mb-2 z-50 max-w-full"
               ref={emojiPickerRef}
             >
-              <Picker
-                data={data}
-                onEmojiSelect={handleEmojiSelect}
-                previewPosition="none"
-                theme="light"
-              />
+              <Suspense
+                fallback={
+                  <div className="w-[352px] max-w-full h-[435px] rounded-xl glass-pane flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 animate-spin text-violet-500" />
+                  </div>
+                }
+              >
+                <Picker
+                  data={loadEmojiData}
+                  onEmojiSelect={handleEmojiSelect}
+                  previewPosition="none"
+                  theme="light"
+                />
+              </Suspense>
             </div>
           )}
           <div className="flex-1 min-w-0 relative">
@@ -348,7 +376,7 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
                 id="file-upload"
                 type="file"
                 multiple
-                accept="image/*"
+                accept={ACCEPTED_IMAGES}
                 onChange={handlePickedFiles}
                 className="hidden"
               />
@@ -356,7 +384,7 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
                 ref={cameraInputRef}
                 id="camera-upload"
                 type="file"
-                accept="image/*"
+                accept={ACCEPTED_IMAGES}
                 capture="environment"
                 onChange={handlePickedFiles}
                 className="hidden"

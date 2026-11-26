@@ -1,9 +1,8 @@
-import { createContext, useState, useContext, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { SESSION_EXPIRED_EVENT, getTokenExpiry } from "../utils/session.js";
 import CustomApiService from "../services/CustomApiService.jsx";
-
-const AuthContext = createContext();
+import { AuthContext } from "./AuthContext.js";
 
 const AuthProvider = ({ children }) => {
   const { GET, POST } = CustomApiService();
@@ -193,7 +192,3 @@ const AuthProvider = ({ children }) => {
 };
 
 export default AuthProvider;
-
-export const useAuth = () => {
-  return useContext(AuthContext);
-};

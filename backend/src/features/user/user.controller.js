@@ -118,6 +118,7 @@ export const getAllUsers = async (req, res, next) => {
         data: allUsers?.data,
       });
     }
+    return next(new customErrorHandler(500, "Error while fetching users"));
   } catch (error) {
     return next(new customErrorHandler(500, error.message || "internal Server error"));
   }

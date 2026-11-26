@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import "./App.css";
 import socket from "./Socket.jsx";
 import RoutingSetup from "./components/RoutingSetup.jsx";
-import { useAuth } from "./contexts/AuthProvider.jsx";
+import { useAuth } from "./contexts/AuthContext.js";
 
 function App() {
   const { userData } = useAuth();

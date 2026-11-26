@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import { UserModel } from "./user.schema.js";
 import { RoomModel } from "../room/room.schema.js";
 import { FriendModel } from "../friend/friend.schema.js";
+import { startsWithRegex } from "../../utils/searchRegex.js";
 
 export const userRegisterationRepo = async (userData) => {
   try {
@@ -113,11 +114,8 @@ export const getAllUsersRepo = async (id, isOnline, name = "") => {
       filter.isOnline = isOnline === "true";
     }
 
-    if (name?.trim()) {
-      filter.name = {
-        $regex: `^${name}`, // Starts with the entered text
-        $options: "i",
-      };
+    if (String(name ?? "").trim()) {
+      filter.name = startsWithRegex(name);
     }
 
     const getAllUser = await UserModel.find(filter).select("-password");
@@ -150,8 +148,6 @@ export const getAllUsersRepo = async (id, isOnline, name = "") => {
 // Socket repo functions
 
 export const handleOnlineUsersrepo = async (onlineStatus, userId) => {
-  const publicRoomData = await RoomModel.findOne({ type: "public" });
-
   try {
     const updatedUser = await UserModel.findByIdAndUpdate(
       userId,

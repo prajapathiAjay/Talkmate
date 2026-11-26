@@ -1,6 +1,6 @@
 import { customErrorHandler } from "../../middlewares/errorHandler.js";
 import {
-  roomCreationRepo,
+  createPrivateRoomRepo,
   getRoomDataRepo,
   roomDatawithseenRepo,
   canAccessRoomRepo,
@@ -8,13 +8,14 @@ import {
   markRoomReadRepo,
 } from "./room.repository.js";
 
+// POST /api/room/createRoom { friendId } -> private chat with that user
 export const roomCreation = async (req, res, next) => {
   try {
-    const resp = await roomCreationRepo(req.body);
+    const resp = await createPrivateRoomRepo(req.user.id, req.body?.friendId);
 
     if (resp.success) {
-      return res.status(201).json({
-        successs: true,
+      return res.status(resp.status).json({
+        success: true,
         message: resp?.message,
         data: resp.data,
       });
@@ -37,11 +38,10 @@ export const roomCreation = async (req, res, next) => {
 };
 
 export const getRoomData = async (req, res, next) => {
-  const { type, participants } = req.query;
-  const participantIds = Array.isArray(participants) ? participants : [participants];
+  const { type } = req.query;
 
   try {
-    const resp = await getRoomDataRepo({ type, participantIds }, req.user.id);
+    const resp = await getRoomDataRepo({ type }, req.user.id);
 
     if (resp.success) {
       return res.status(resp?.status).json({
@@ -53,15 +53,12 @@ export const getRoomData = async (req, res, next) => {
 
     return next(
       new customErrorHandler(
-        resp.error?.statusCode,
+        resp.error?.statusCode || 500,
         resp.error?.message || "Error while fetching the room data"
       )
     );
   } catch (error) {
-    new customErrorHandler(
-      error?.statusCode || 500,
-      error?.message || "Error while fetching the room data"
-    );
+    return next(new customErrorHandler(500, "Error while fetching the room data"));
   }
 };
 
@@ -80,15 +77,12 @@ export const roomDatawithseen = async (req, res, next) => {
     }
     return next(
       new customErrorHandler(
-        resp.error?.statusCode,
-        resp.error?.message || "Error while fetching the privateroom data"
+        response?.error?.statusCode || 500,
+        response?.error?.message || "Error while fetching private chats"
       )
     );
   } catch (error) {
-    new customErrorHandler(
-      error?.statusCode || 500,
-      error?.message || "Error while fetching the room data"
-    );
+    return next(new customErrorHandler(500, "Error while fetching private chats"));
   }
 };
 

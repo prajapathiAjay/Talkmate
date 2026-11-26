@@ -2,6 +2,8 @@ import { RoomModel } from "./room.schema.js";
 import mongoose from "mongoose";
 import { ReadStateModel } from "./readState.schema.js";
 import { MessageModel } from "../message/message.schema.js";
+import { UserModel } from "../user/user.schema.js";
+import { startsWithRegex } from "../../utils/searchRegex.js";
 
 // The room if this user may read/post in it (the public room, or a private room
 // they're a participant of), otherwise null
@@ -13,70 +15,62 @@ export const canAccessRoomRepo = async (roomId, userId) => {
   return room.type === "public" || isParticipant ? room : null;
 };
 
-export const roomCreationRepo = async (roomData) => {
+const roomError = (statusCode, message) => ({ success: false, error: { statusCode, message } });
+
+// A private chat between the logged-in user and one other user. The server builds
+// the room itself; nothing from the request body is saved except the friend's id.
+export const createPrivateRoomRepo = async (userId, friendId) => {
   try {
-    if (!roomData?.type) {
-      return {
-        success: false,
-        error: {
-          statusCode: 400,
-          message: "Room  type is required",
-        },
-      };
+    if (!mongoose.isValidObjectId(friendId)) {
+      return roomError(400, "A valid friendId is required");
+    }
+    if (String(friendId) === String(userId)) {
+      return roomError(400, "You can't start a chat with yourself");
+    }
+    if (!(await UserModel.exists({ _id: friendId }))) {
+      return roomError(404, "User not found");
     }
 
-    let existingRoom;
-
-    if (roomData?.type === "private") {
-      existingRoom = await RoomModel.findOne({
-        type: "private",
-        participants: {
-          $all: roomData.participants,
-        },
-      });
-    }
-
+    // Exactly these two people, so a room with extra people doesn't count.
+    // Already chatting is not an error: hand back the existing room.
+    const existingRoom = await RoomModel.findOne({
+      type: "private",
+      participants: { $all: [userId, friendId], $size: 2 },
+    });
     if (existingRoom) {
       return {
-        success: false,
-        error: {
-          statusCode: 400,
-          message: "Room already exists for chat",
-        },
+        success: true,
+        status: 200,
+        message: "Private chat already exists",
+        data: existingRoom,
       };
     }
 
-    const newRoom = new RoomModel(roomData);
-    await newRoom.save();
+    const newRoom = await RoomModel.create({
+      type: "private",
+      participants: [userId, friendId],
+      createdBy: userId,
+    });
 
     return {
       success: true,
       status: 201,
-      message: `New room with name:${newRoom?.roomName} has been created uccessfully`,
+      message: "Private chat created successfully",
       data: newRoom,
     };
   } catch (error) {
-    if (error.code === 11000) {
-      return {
-        success: false,
-        error: {
-          statusCode: 409, // Conflict
-          message: "Room name already exists",
-        },
-      };
-    }
-
-    return {
-      success: false,
-      error: {
-        statusCode: 500,
-        message: error,
-      },
-    };
+    return roomError(500, "Error while creating the chat");
   }
 };
 
-export const getRoomDataRepo = async (data) => {
+// The app has exactly one public room; create it on first start
+export const ensurePublicRoomRepo = async () => {
+  const publicRoom = await RoomModel.findOne({ type: "public" });
+  if (publicRoom) return publicRoom;
+  return RoomModel.create({ roomName: "Public Room", type: "public" });
+};
+
+export const getRoomDataRepo = async (data, userId) => {
   try {
     if (data?.type === "public") {
       const roomData = await RoomModel.findOne({ type: data?.type });
@@ -87,7 +81,8 @@ export const getRoomDataRepo = async (data) => {
         data: roomData,
       };
     } else if (data?.type === "private") {
-      const roomData = await RoomModel.find({ type: "private", participants: { $in: data?.participantIds } });
+      // Only your own private chats; who "you" are comes from the login token
+      const roomData = await RoomModel.find({ type: "private", participants: userId });
 
       return {
         success: true,
@@ -95,14 +90,10 @@ export const getRoomDataRepo = async (data) => {
         data: roomData,
       };
     }
+
+    return roomError(400, "Room type must be public or private");
   } catch (error) {
-    return {
-      success: false,
-      error: {
-        statusCode: 500,
-        message: error,
-      },
-    };
+    return roomError(500, "Error while fetching the room data");
   }
 };
 
@@ -132,10 +123,7 @@ export const roomDatawithseenRepo = async (name = "", Id) => {
                     { $ne: ["$_id", myId] },
                   ],
                 },
-                name: {
-                  $regex: `^${name.trim()}`,
-                  $options: "i",
-                },
+                name: startsWithRegex(name),
               },
             },
             {
@@ -160,6 +148,7 @@ export const roomDatawithseenRepo = async (name = "", Id) => {
     };
   } catch (error) {
     console.error("error", error);
+    return roomError(500, "Error while fetching private chats");
   }
 };
 

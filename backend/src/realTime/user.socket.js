@@ -33,7 +33,6 @@ export const handleOnlineUsers = async (socket) => {
       const response = await handleOnlineUsersrepo(true, userId);
 
       if (response.success && socket.roomType !== "private") {
-        const publicRoomId = response.publicRoomId;
         const userName = response.data.name;
 
         const message = await createMessageRepository({
@@ -43,7 +42,8 @@ export const handleOnlineUsers = async (socket) => {
         });
 
         if (message.success) {
-          socket.broadcast.to(publicRoomId).emit("message", message);
+          // Same room the message was saved in (the public room the user just joined)
+          socket.broadcast.to(socket.roomId).emit("message", message);
         }
       }
 

@@ -138,7 +138,7 @@ flowchart LR
 │   ├── index.html
 │   └── src/
 │       ├── pages/              # Login, Chat, ChatHeader, MessageItem, MessageInput, OnlineUsers…
-│       ├── components/         # routing, camera capture, modal
+│       ├── components/         # routing, camera capture
 │       ├── contexts/           # AuthProvider: session, current room, unread counts
 │       ├── services/           # Axios client
 │       ├── utils/              # session expiry, avatar colours, date formatting
@@ -198,14 +198,7 @@ VITE_APP_NAME=api
 npm run dev        # opens on http://localhost:5173
 ```
 
-### 4. Create the public room (first run only)
-Sign up in the app, then create the shared public room once:
-```bash
-curl -X POST http://localhost:5000/api/room/createRoom \
-  -H "Authorization: Bearer <your token from localStorage>" \
-  -H "Content-Type: application/json" \
-  -d '{"roomName":"Public Room","type":"public"}'
-```
+The shared public room is created automatically the first time the backend starts.
 
 > 📱 To try it on your phone, run `npm run dev -- --host` in `frontend/` and open the *Network* URL on the same Wi-Fi.
 
@@ -220,14 +213,14 @@ All endpoints except sign-up / sign-in need `Authorization: Bearer <token>`.
 | `POST` | `/api/user/signUp` | Create an account (returns a token) |
 | `POST` | `/api/user/signIn` | Sign in (returns a token) |
 | `GET` | `/api/user/allUsers?name=&isOnline=` | List / search users |
-| `POST` | `/api/room/createRoom` | Create a public room or a private chat you're part of |
+| `POST` | `/api/room/createRoom` | Start a private chat with a user (`{ friendId }`) |
 | `GET` | `/api/room/private?name=` | Your private chats, with the other person's details |
 | `GET` | `/api/room/unread` | Unread counts per chat `{ roomId: count }` |
 | `POST` | `/api/room/:roomId/read` | Mark a chat as read |
 | `GET` | `/api/messages/getMessages?roomId=` | Messages of a room you belong to |
 | `POST` | `/api/friend/add` | Add a friend |
 | `GET` | `/api/friend/getFriends` | Your friends |
-| `POST` | `/api/upload/messages` | Upload up to 5 images (multipart `files`) |
+| `POST` | `/api/upload/messages` | Upload up to 3 images, 10 MB each (multipart `files`) |
 
 **Socket.IO events** (the connection is authenticated with the JWT in `auth.token`)
 

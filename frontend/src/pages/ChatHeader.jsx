@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { useState, useRef, useEffect } from "react";
-import publicLogo from "../assets/logo/publiclogo.png";
+import publicLogo from "../assets/logo/publiclogo.webp";
 import socket from "../Socket.jsx";
 import {
   Settings,
@@ -11,8 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { FormatLastSeen } from "../utils/FormatLastSeen.js";
 import CustomApiService from "../services/CustomApiService";
-import { useAuth } from "../contexts/AuthProvider.jsx";
-import Modal from "../components/Modal.jsx";
+import { useAuth } from "../contexts/AuthContext.js";
 import { avatarGradient } from "../utils/avatarColor.js";
 
 const ChatHeader = () => {
@@ -30,7 +29,6 @@ const ChatHeader = () => {
   const publicUnread = unreadCounts?.[userData?.user?.publicRoomId] || 0;
 
   const [openMenu, setOpenMenu] = useState(false);
-  const [openProfile, setOpenProfile] = useState(false);
   const menuRef = useRef(null);
 
   const navigate = useNavigate();
@@ -174,12 +172,6 @@ const ChatHeader = () => {
           </div>
         </div>
       </header>
-      <Modal
-        isOpen={openProfile}
-        onClose={() => setOpenProfile(false)}
-        title="Edit Profile"
-        width="max-w-2xl"
-      ></Modal>
     </>
   );
 };

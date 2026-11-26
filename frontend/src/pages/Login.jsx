@@ -3,11 +3,11 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthProvider";
+import { useAuth } from "../contexts/AuthContext.js";
 import { Mail, Lock, User, Eye, EyeOff, MessageSquare } from "lucide-react";
 import CustomApiServices from "../services/CustomApiService";
 import { toast } from "sonner";
-import loginImage from "../assets/image/login.png";
+import loginImage from "../assets/image/login.webp";
 
 const Login = () => {
   const { login } = useAuth();
@@ -105,6 +105,8 @@ const Login = () => {
           <img
             src={loginImage}
             alt="Login Illustration"
+            // Lazy images inside a hidden panel aren't downloaded, so phones skip it
+            loading="lazy"
             className="w-full h-full object-cover"
           />
           {/* caption over the image */}

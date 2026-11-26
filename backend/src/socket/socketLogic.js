@@ -7,18 +7,20 @@ import { canAccessRoomRepo } from "../features/room/room.repository.js";
 import { UserModel } from "../features/user/user.schema.js";
 
 const MAX_MESSAGE_LENGTH = 4000;
-const MAX_ATTACHMENTS = 5;
+const MAX_ATTACHMENTS = 3;
 
-// Only keep attachments that came from our own Cloudinary uploads
-const cleanAttachments = (attachments) =>
-  (Array.isArray(attachments) ? attachments : [])
-    .filter((file) => typeof file?.fileUrl === "string" && file.fileUrl.startsWith("https://res.cloudinary.com/"))
+// Only keep attachments that came from our own Cloudinary account's uploads
+const cleanAttachments = (attachments) => {
+  const ownCloudinary = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/`;
+  return (Array.isArray(attachments) ? attachments : [])
+    .filter((file) => typeof file?.fileUrl === "string" && file.fileUrl.startsWith(ownCloudinary))
     .slice(0, MAX_ATTACHMENTS)
     .map(({ fileUrl, fileName, fileType }) => ({
       fileUrl,
       fileName: String(fileName || "").slice(0, 200),
       fileType: String(fileType || "").slice(0, 100),
     }));
+};
 
 // Personal channel per user, used for unread-message notifications
 const userChannel = (userId) => `user:${userId}`;

@@ -3,11 +3,10 @@ import socket from "../Socket.jsx";
 import ChatHeader from "./ChatHeader";
 import MessageItem from "./MessageItem";
 import MessageInput from "./MessageInput";
-import { useAuth } from "../contexts/AuthProvider.jsx";
+import { useAuth } from "../contexts/AuthContext.js";
 import CustomeApiService from "../services/CustomApiService.jsx";
 import MessageTypingIndicator from "./MessageTypingIndicator.jsx";
 import OnlineUsers from "./OnlineUsers.jsx";
-import FormLayout from "../components/FormLayout.jsx";
 import { expireSession } from "../utils/session.js";
 import { toast } from "sonner";
 
@@ -89,7 +88,6 @@ const Chat = () => {
   const userName = userData?.user?.name;
   const [currentUser] = useState(userData?.user?.userId);
   const [messages, setMessages] = useState([]);
-  const [editRoom] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [showOnlineUsers, setShowOnlineUsers] = useState(false);
   const messagesEndRef = useRef(null);
@@ -358,7 +356,6 @@ const Chat = () => {
         handleShowOnlineUsers={handleShowOnlineUsers}
         closeOnlineUsers={closeOnlineUsers}
       />
-      {editRoom && <FormLayout />}
     </div>
   );
 };

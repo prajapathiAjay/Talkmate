@@ -78,10 +78,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
   // Add as friend (also creates the private room)
   const handleAddFriend = async (friendId) => {
     try {
-      const payload = {
-        friendId,
-        userId: userData?.user?.userId,
-      };
+      const payload = { friendId };
 
       const roomPayload = {
         type: "private",

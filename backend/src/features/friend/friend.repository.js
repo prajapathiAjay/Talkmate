@@ -1,4 +1,6 @@
+import mongoose from "mongoose";
 import { FriendModel } from "./friend.schema.js";
+import { UserModel } from "../user/user.schema.js";
 
 export const getFriendsRepo = async (userId) => {
   try {
@@ -19,8 +21,20 @@ export const getFriendsRepo = async (userId) => {
   }
 };
 
+const friendError = (statusCode, message) => ({ success: false, error: { statusCode, message } });
+
 export const addFriendRepo = async (userId, friendId) => {
   try {
+    if (!mongoose.isValidObjectId(friendId)) {
+      return friendError(400, "A valid friendId is required");
+    }
+    if (String(friendId) === String(userId)) {
+      return friendError(400, "You can't add yourself as a friend");
+    }
+    if (!(await UserModel.exists({ _id: friendId }))) {
+      return friendError(404, "User not found");
+    }
+
     const existingFriend = await FriendModel.findOne({ userId, friendId });
     if (existingFriend) {
       return {
@@ -39,12 +53,6 @@ export const addFriendRepo = async (userId, friendId) => {
       data: response,
     };
   } catch (error) {
-    return {
-      success: false,
-      error: {
-        statusCode: 500,
-        message: error,
-      },
-    };
+    return friendError(500, "Adding friend failed");
   }
 };

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>JubJub</title>
+  <defs>
+    <!-- Brand gradient: same colours as the app buttons (src/index.css) -->
+    <linearGradient id="jj-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3b82f6"/>
+      <stop offset=".52" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#ec4899"/>
+    </linearGradient>
+    <linearGradient id="jj-face" gradientUnits="userSpaceOnUse" x1="150" y1="150" x2="370" y2="370">
+      <stop offset="0" stop-color="#3b82f6"/>
+      <stop offset=".52" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#ec4899"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="url(#jj-bg)"/>
+  <!-- Speech bubble -->
+  <rect x="96" y="112" width="320" height="250" rx="112" fill="#fff"/>
+  <path d="M150 330 C142 380 120 404 96 414 C150 422 206 402 236 360 Z" fill="#fff"/>
+  <!-- Smile -->
+  <ellipse cx="204" cy="218" rx="22" ry="30" fill="url(#jj-face)"/>
+  <ellipse cx="308" cy="218" rx="22" ry="30" fill="url(#jj-face)"/>
+  <path d="M190 280 Q256 336 322 280" fill="none" stroke="url(#jj-face)" stroke-width="28" stroke-linecap="round"/>
+</svg>

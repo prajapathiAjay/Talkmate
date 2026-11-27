@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Lock, Eye, EyeOff, MessageSquare } from "lucide-react";
+import { Lock, Eye, EyeOff } from "lucide-react";
+import logo from "../assets/logo/jubjub-logo.svg";
 import { toast } from "sonner";
 import CustomApiService from "../services/CustomApiService";
 import { passwordProblem } from "../utils/validation.js";
@@ -43,9 +44,7 @@ const ResetPassword = () => {
     <div className="h-dvh w-screen overflow-y-auto app-bg text-gray-900 flex p-4">
       <div className="w-full max-w-md m-auto">
         <div className="flex items-center justify-center space-x-3 mb-8">
-          <div className="p-3 brand-bg rounded-2xl shadow-lg shadow-violet-500/30">
-            <MessageSquare size={28} className="text-white" />
-          </div>
+          <img src={logo} alt="" className="w-[52px] h-[52px] rounded-[12px] shadow-lg shadow-violet-500/30" />
           <h1 className="text-2xl font-extrabold tracking-tight">JubJub</h1>
         </div>
 

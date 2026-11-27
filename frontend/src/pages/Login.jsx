@@ -4,7 +4,8 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext.js";
-import { Mail, Lock, User, Eye, EyeOff, MessageSquare, ArrowLeft, MailCheck } from "lucide-react";
+import { Mail, Lock, User, Eye, EyeOff, ArrowLeft, MailCheck } from "lucide-react";
+import logo from "../assets/logo/jubjub-logo.svg";
 import CustomApiServices from "../services/CustomApiService";
 import { toast } from "sonner";
 import loginImage from "../assets/image/login.webp";
@@ -216,9 +217,7 @@ const Login = () => {
           <div className="w-full max-w-md m-auto flex flex-col justify-center py-8">
             {/* Brand header */}
             <div className="flex items-center justify-center lg:justify-start space-x-3 mb-8 lg:px-8">
-              <div className="p-3 brand-bg rounded-2xl shadow-lg shadow-violet-500/30">
-                <MessageSquare size={28} className="text-white" />
-              </div>
+              <img src={logo} alt="" className="w-[52px] h-[52px] rounded-[12px] shadow-lg shadow-violet-500/30" />
               <div className="text-center lg:text-left">
                 <h1 className="text-2xl font-extrabold tracking-tight text-gray-900">JubJub</h1>
                 <p className="text-gray-500 text-xs">Where friends jub jub</p>

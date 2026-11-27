@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, MessageSquare } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import logo from "../assets/logo/jubjub-logo.svg";
 
 const LAST_UPDATED = "27 November 2026";
 
@@ -15,9 +16,7 @@ const LegalPage = ({ title, intro, sections }) => (
           Back to JubJub
         </Link>
         <div className="flex items-center gap-2">
-          <div className="p-2 brand-bg rounded-xl">
-            <MessageSquare size={18} className="text-white" />
-          </div>
+          <img src={logo} alt="" className="w-[34px] h-[34px] rounded-[8px]" />
           <span className="font-extrabold tracking-tight">JubJub</span>
         </div>
       </div>

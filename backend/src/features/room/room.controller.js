@@ -7,6 +7,7 @@ import {
   getUnreadCountsRepo,
   markRoomReadRepo,
 } from "./room.repository.js";
+import { getMutedRoomsRepo, setRoomMutedRepo } from "../user/user.repository.js";
 
 // POST /api/room/createRoom { friendId } -> private chat with that user
 export const roomCreation = async (req, res, next) => {
@@ -86,11 +87,13 @@ export const roomDatawithseen = async (req, res, next) => {
   }
 };
 
-// GET /api/room/unread -> { data: { "<roomId>": count } }
+// GET /api/room/unread -> { data: { "<roomId>": count }, muted: ["<roomId>", ...] }
+// Muted chats are left out of the counts.
 export const getUnreadCounts = async (req, res, next) => {
   try {
-    const counts = await getUnreadCountsRepo(req.user.id);
-    return res.status(200).json({ success: true, data: counts });
+    const muted = await getMutedRoomsRepo(req.user.id);
+    const counts = await getUnreadCountsRepo(req.user.id, muted);
+    return res.status(200).json({ success: true, data: counts, muted });
   } catch (error) {
     return next(new customErrorHandler(500, "Error while counting unread messages"));
   }
@@ -108,5 +111,23 @@ export const markRoomRead = async (req, res, next) => {
     return res.status(200).json({ success: true });
   } catch (error) {
     return next(new customErrorHandler(500, "Error while marking the chat as read"));
+  }
+};
+
+// POST /api/room/:roomId/mute { muted: true|false } -> { muted: ["<roomId>", ...] }
+export const muteRoom = async (req, res, next) => {
+  try {
+    const { roomId } = req.params;
+    if (typeof req.body?.muted !== "boolean") {
+      return next(new customErrorHandler(400, "muted must be true or false"));
+    }
+    const room = await canAccessRoomRepo(roomId, req.user.id);
+    if (!room) {
+      return next(new customErrorHandler(403, "You don't have access to this chat"));
+    }
+    const muted = await setRoomMutedRepo(req.user.id, roomId, req.body.muted);
+    return res.status(200).json({ success: true, muted });
+  } catch (error) {
+    return next(new customErrorHandler(500, "Error while changing notifications for this chat"));
   }
 };

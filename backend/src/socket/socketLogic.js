@@ -65,7 +65,14 @@ export const socketLogic = (server) => {
     // Who this socket is, from the database - never trust ids/names sent by the client.
     // Started now (not awaited) so no events are missed while it loads; .exec() makes it
     // a real promise that runs once, and .catch keeps a DB error from crashing the server.
-    const me = UserModel.findById(socket.user.id).select("name").lean().exec().catch(() => null);
+    const loadMe = () => UserModel.findById(socket.user.id).select("name").lean().exec().catch(() => null);
+    let me = loadMe();
+
+    // The user renamed themselves in Settings: use the new name from now on
+    socket.on("refresh-profile", async () => {
+      me = loadMe();
+      socket.userName = (await me)?.name;
+    });
 
     // Typing indicators: only into the room this socket is in, under the real name.
     // socket.typingIn remembers the room this user is typing in, so the server can

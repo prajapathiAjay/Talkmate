@@ -127,8 +127,14 @@ export const roomDatawithseenRepo = async (name = "", Id) => {
               },
             },
             {
+              // Aggregations ignore the schema's select: false, so hide private fields here
               $project: {
                 password: 0,
+                passwordChangedAt: 0,
+                resetPasswordTokenHash: 0,
+                resetPasswordExpires: 0,
+                mutedRooms: 0,
+                tokenVersion: 0,
               },
             },
           ],
@@ -155,7 +161,8 @@ export const roomDatawithseenRepo = async (name = "", Id) => {
 // Unread counts for every room the user belongs to: { "<roomId>": count }.
 // Counts other people's chat messages newer than the user's last read time;
 // with no read record yet, counting starts from when the account was created.
-export const getUnreadCountsRepo = async (userId) => {
+export const getUnreadCountsRepo = async (userId, mutedRoomIds = []) => {
+  const muted = new Set(mutedRoomIds.map(String));
   const me = new mongoose.Types.ObjectId(userId);
   const accountCreatedAt = me.getTimestamp();
 
@@ -167,7 +174,9 @@ export const getUnreadCountsRepo = async (userId) => {
 
   const counts = {};
   await Promise.all(
-    rooms.map(async (room) => {
+    rooms
+      .filter((room) => !muted.has(room._id.toString()))
+      .map(async (room) => {
       const since = lastReadByRoom.get(room._id.toString()) || accountCreatedAt;
       const count = await MessageModel.countDocuments({
         roomId: room._id,

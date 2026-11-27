@@ -8,6 +8,7 @@ import {
   Handshake,
   Search,
   MessageCircle,
+  BellOff,
 } from "lucide-react";
 import { FormatLastSeen } from "../utils/FormatLastSeen.js";
 import CustomApiService from "../services/CustomApiService";
@@ -27,6 +28,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
     handlePartnerChange,
     updatePartnerStatus,
     unreadCounts,
+    isMuted,
   } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
@@ -418,7 +420,8 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
               </h3>
               <p className="text-xs text-gray-500 truncate">Open for everyone</p>
             </div>
-            {badge(unreadFor(publicRoomId))}
+            {badge(unreadFor(publicRoomId)) ||
+              (isMuted(publicRoomId) && <BellOff className="w-4 h-4 text-gray-400" aria-label="Muted" />)}
           </div>
           <div className="mx-3 mb-1 border-t border-white/60" />
 
@@ -453,9 +456,11 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
                     </h3>
                     {status(room?.friend?.isOnline, room?.friend?.lastSeen)}
                   </div>
-                  {badge(unreadFor(room._id)) || (
+                  {badge(unreadFor(room._id)) || (isMuted(room._id) ? (
+                    <BellOff className="w-4 h-4 text-gray-400" aria-label="Muted" />
+                  ) : (
                     <MessageCircle className="w-4 h-4 text-gray-400 group-hover:text-violet-600 transition-colors" />
-                  )}
+                  ))}
                 </div>
               ))}
             </div>

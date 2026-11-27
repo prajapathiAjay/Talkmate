@@ -1,22 +1,17 @@
-import jwt from "jsonwebtoken";
+import { verifyToken } from "../utils/token.js";
 
-export const socketAuth = (socket, next) => {
-  try {
-    const token = socket.handshake.auth.token;
+export const socketAuth = async (socket, next) => {
+  const token = socket.handshake.auth.token;
 
-    if (!token) {
-      return next(new Error("Unauthorized"));
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    socket.user = {
-      id: decoded.id,
-    };
-
-    next();
-  } catch (err) {
-    console.error(err);
-    next(new Error("Invalid or expired token"));
+  if (!token) {
+    return next(new Error("Unauthorized"));
   }
+
+  try {
+    socket.user = await verifyToken(token);
+  } catch (err) {
+    return next(new Error("Invalid or expired token"));
+  }
+
+  next();
 };

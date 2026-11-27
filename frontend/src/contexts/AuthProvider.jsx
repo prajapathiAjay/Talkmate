@@ -1,33 +1,43 @@
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { SESSION_EXPIRED_EVENT, getTokenExpiry } from "../utils/session.js";
+import {
+  SESSION_EXPIRED_EVENT,
+  getTokenExpiry,
+  getToken,
+  appStorage,
+  clearSession,
+} from "../utils/session.js";
+import socket from "../Socket.jsx";
 import CustomApiService from "../services/CustomApiService.jsx";
 import { AuthContext } from "./AuthContext.js";
 
 const AuthProvider = ({ children }) => {
   const { GET, POST } = CustomApiService();
+  // App data is kept beside the login token: in localStorage ("remember me") or
+  // sessionStorage (this browser session only) - see utils/session.js
   const [userData, setUserData] = useState(() => {
-    const availableUser = localStorage.getItem("userData");
+    if (!getToken()) return null;
+    const availableUser = appStorage().getItem("userData");
     return availableUser ? JSON.parse(availableUser) : null;
   });
 
   const [currentPartner, setCurrentPartner] = useState(() => {
-    const availablePartner = localStorage.getItem("currentPartner");
+    const availablePartner = appStorage().getItem("currentPartner");
     return availablePartner ? JSON.parse(availablePartner) : { type: "public" };
   });
 
   const [friendRoom, setFriendRoom] = useState(() => {
-    const availableFriends = localStorage.getItem("friendRoom");
+    const availableFriends = appStorage().getItem("friendRoom");
     return availableFriends ? JSON.parse(availableFriends) : [];
   });
 
   const [roomType, setRoomType] = useState(() => {
-    const availableRoomType = localStorage.getItem("roomType");
+    const availableRoomType = appStorage().getItem("roomType");
     return availableRoomType ? availableRoomType : "public";
   });
 
   const [chatRoomId, setChatRoomId] = useState(() =>
-    localStorage.getItem("chatRoomId")
+    appStorage().getItem("chatRoomId")
   );
 
   // Unread message counts per room id, e.g. { "<roomId>": 3 }.
@@ -49,7 +59,15 @@ const AuthProvider = ({ children }) => {
     }, 1000);
   };
 
+  // Chats the user muted: they never show unread badges. Kept on the server so
+  // muting applies on every device; a ref lets socket handlers see the latest list.
+  const [mutedRooms, setMutedRooms] = useState([]);
+  const mutedRoomsRef = useRef(mutedRooms);
+  mutedRoomsRef.current = mutedRooms;
+  const isMuted = (roomId) => mutedRooms.includes(String(roomId));
+
   const addUnread = (roomId) => {
+    if (mutedRoomsRef.current.includes(String(roomId))) return;
     setUnreadCounts((prev) => ({ ...prev, [roomId]: (prev[roomId] || 0) + 1 }));
   };
 
@@ -65,10 +83,11 @@ const AuthProvider = ({ children }) => {
 
   // Load the real counts from the server (on sign-in, app open and reconnect)
   const syncUnread = async () => {
-    if (!localStorage.getItem("token")) return;
+    if (!getToken()) return;
     try {
       const response = await GET("room/unread");
       if (!response?.success) return;
+      setMutedRooms(response.muted || []);
       const counts = { ...response.data };
       // The chat on screen is being read right now
       const openRoom = chatRoomIdRef.current;
@@ -86,32 +105,52 @@ const AuthProvider = ({ children }) => {
     if (userData) syncUnread();
   }, [userData]);
 
+  // Mute or unmute a chat; throws if the server refuses, so the caller can show it
+  const setRoomMuted = async (roomId, muted) => {
+    const response = await POST(`room/${roomId}/mute`, {}, {}, { muted });
+    setMutedRooms(response?.muted || []);
+    if (muted) {
+      setUnreadCounts((prev) => {
+        if (!prev[roomId]) return prev;
+        const next = { ...prev };
+        delete next[roomId];
+        return next;
+      });
+    }
+  };
+
+  // After renaming in Settings: show the new name here and use it for new messages
+  const updateUserName = (name) => {
+    setUserData((prev) => (prev ? { ...prev, user: { ...prev.user, name } } : prev));
+    socket.emit("refresh-profile");
+  };
+
   const totalUnread = Object.values(unreadCounts).reduce((sum, n) => sum + n, 0);
 
   useEffect(() => {
     if (userData) {
-      localStorage.setItem("userData", JSON.stringify(userData));
+      appStorage().setItem("userData", JSON.stringify(userData));
     } else {
-      localStorage.removeItem("userData");
+      appStorage().removeItem("userData");
     }
   }, [userData]);
 
   const handleChatRoomIdChange = (newChatRoomId) => {
     setChatRoomId(newChatRoomId);
-    localStorage.setItem("chatRoomId", newChatRoomId);
+    appStorage().setItem("chatRoomId", newChatRoomId);
   };
 
   useEffect(() => {
     if (chatRoomId) {
-      localStorage.setItem("chatRoomId", chatRoomId);
+      appStorage().setItem("chatRoomId", chatRoomId);
     } else {
-      localStorage.removeItem("chatRoomId");
+      appStorage().removeItem("chatRoomId");
     }
   }, [chatRoomId]);
 
   const handlePartnerChange = (data) => {
     setCurrentPartner(data);
-    localStorage.setItem("currentPartner", JSON.stringify(data));
+    appStorage().setItem("currentPartner", JSON.stringify(data));
   };
 
   // Keep the open chat partner's online status / last seen current. Does nothing
@@ -122,19 +161,19 @@ const AuthProvider = ({ children }) => {
       if (!prev?._id || String(prev._id) !== String(user._id)) return prev;
       if (prev.isOnline === user.isOnline && prev.lastSeen === user.lastSeen) return prev;
       const next = { ...prev, isOnline: user.isOnline, lastSeen: user.lastSeen };
-      localStorage.setItem("currentPartner", JSON.stringify(next));
+      appStorage().setItem("currentPartner", JSON.stringify(next));
       return next;
     });
   };
 
   const handleFriendRoom = (data) => {
     setFriendRoom(data);
-    localStorage.setItem("friendRoom", JSON.stringify(data));
+    appStorage().setItem("friendRoom", JSON.stringify(data));
   };
 
   const handleRoomTypeChange = (newRoomType) => {
     setRoomType(newRoomType);
-    localStorage.setItem("roomType", newRoomType);
+    appStorage().setItem("roomType", newRoomType);
   };
 
   const login = (data) => {
@@ -148,7 +187,8 @@ const AuthProvider = ({ children }) => {
     setChatRoomId(null);
     setRoomType(null);
     setUnreadCounts({});
-    localStorage.clear();
+    setMutedRooms([]);
+    clearSession();
   };
 
   // End the session cleanly when the login token expires, instead of leaving
@@ -161,7 +201,7 @@ const AuthProvider = ({ children }) => {
       toast.error("Your session expired. Please sign in again.", { id: "session-expired" });
     };
 
-    const expiry = getTokenExpiry(localStorage.getItem("token"));
+    const expiry = getTokenExpiry(getToken());
     if (!expiry || expiry <= Date.now()) {
       endSession();
       return;
@@ -198,6 +238,10 @@ const AuthProvider = ({ children }) => {
         clearUnread,
         markRead,
         syncUnread,
+        mutedRooms,
+        isMuted,
+        setRoomMuted,
+        updateUserName,
       }}
     >
       {children}

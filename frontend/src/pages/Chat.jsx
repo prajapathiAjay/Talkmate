@@ -169,30 +169,31 @@ const Chat = () => {
     if (chatRoomId) clearUnread(chatRoomId);
   }, [chatRoomId]);
 
-  const fetchAllMessages = async () => {
-    const params = {
-      roomId: chatRoomId,
-    };
-
-    try {
-      const response = await GET("messages/getMessages", params, {}, {});
-
-      if (response?.success) {
-        const allMessages = response?.data;
-        setMessages([...allMessages]);
-      }
-    } catch (error) {
-      console.error("error", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchAllMessages();
-  }, []);
-
+  // Load the open chat's history: once when the page opens and again on every
+  // chat switch (an effect also runs on first render, so one effect covers both)
   useEffect(() => {
     setMessages([]);
-    fetchAllMessages();
+    if (!chatRoomId) return;
+
+    // Switching chats before this reply arrives makes it stale: drop it, or a
+    // slow reply for the old chat would replace the new chat's messages
+    let cancelled = false;
+
+    GET("messages/getMessages", { roomId: chatRoomId }, {}, {})
+      .then((response) => {
+        if (cancelled || !response?.success) return;
+        const history = response.data || [];
+        const inHistory = new Set(history.map((msg) => msg._id));
+        // Keep live messages that arrived while loading and aren't in the history yet
+        setMessages((live) => [...history, ...live.filter((msg) => !inHistory.has(msg._id))]);
+      })
+      .catch((error) => {
+        if (!cancelled) console.error("Couldn't load messages:", error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [chatRoomId]);
 
   useEffect(() => {

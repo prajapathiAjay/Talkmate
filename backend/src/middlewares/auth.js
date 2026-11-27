@@ -1,30 +1,23 @@
-import jwt from "jsonwebtoken";
+import { verifyToken } from "../utils/token.js";
 
-export const authMiddleware = (req, res, next) => {
+export const authMiddleware = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+      success: false,
+      msg: "Unauthorized Access",
+    });
+  }
+
   try {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({
-        success: false,
-        msg: "Unauthorized Access",
-      });
-    }
-
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    req.user = {
-      id: decoded.id,
-    };
-
-    next();
+    req.user = await verifyToken(authHeader.split(" ")[1]);
   } catch (err) {
-    console.error(err);
-
     return res.status(401).json({
       success: false,
       msg: "Invalid or Expired Token",
     });
   }
+
+  next();
 };

@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import { UserModel } from "./user.schema.js";
 import { RoomModel } from "../room/room.schema.js";
 import { FriendModel } from "../friend/friend.schema.js";
@@ -7,7 +8,9 @@ import { startsWithRegex } from "../../utils/searchRegex.js";
 // Find a user by email ignoring capitals: "Ajay@gmail.com" and "ajay@gmail.com" are
 // the same inbox. The email is still saved exactly as the user typed it.
 const findUserByEmail = (email) =>
-  UserModel.findOne({ email: String(email ?? "").trim() }).collation({ locale: "en", strength: 2 });
+  UserModel.findOne({ email: String(email ?? "").trim() })
+    .collation({ locale: "en", strength: 2 })
+    .select("+tokenVersion");
 
 export const userRegisterationRepo = async (userData) => {
   try {
@@ -35,6 +38,7 @@ export const userRegisterationRepo = async (userData) => {
           publicRoomId: publicRoomData?._id,
           userId: newUser?._id,
           name: newUser?.name,
+          email: newUser?.email,
         },
       },
     };
@@ -103,11 +107,14 @@ export const userSignInRepo = async (data) => {
       success: true,
       status: 200,
       message: "Signin Successful",
+      // For the login token only; not sent to the app
+      tokenVersion: user.tokenVersion ?? 0,
       data: {
         user: {
           publicRoomId: publicRoomData?._id,
           userId: user?._id,
           name: user?.name,
+          email: user?.email,
         },
       },
     };
@@ -182,4 +189,93 @@ export const handleOnlineUsersrepo = async (onlineStatus, userId) => {
       message: error.message,
     };
   }
+};
+
+// ---- Account settings and password reset ----
+
+const accountError = (statusCode, msg) => ({ success: false, error: { statusCode, msg } });
+
+export const updateNameRepo = async (userId, name) => {
+  const user = await UserModel.findByIdAndUpdate(
+    userId,
+    { name: name.trim() },
+    { new: true, runValidators: true }
+  ).select("name email");
+  if (!user) return accountError(404, "User not found");
+  return { success: true, data: { name: user.name, email: user.email } };
+};
+
+// Saves a new password and marks when it changed, which logs out other devices
+const setPassword = (user, newPassword) =>
+  bcrypt.hash(newPassword, 10).then((hash) => {
+    user.password = hash;
+    user.passwordChangedAt = new Date();
+    // Invalidates every existing login token (other devices get signed out)
+    user.tokenVersion = (user.tokenVersion ?? 0) + 1;
+    user.resetPasswordTokenHash = undefined;
+    user.resetPasswordExpires = undefined;
+    // Only password fields change; don't fail on older accounts that predate newer rules
+    return user.save({ validateBeforeSave: false });
+  });
+
+export const changePasswordRepo = async (userId, currentPassword, newPassword) => {
+  const user = await UserModel.findById(userId).select("+tokenVersion");
+  if (!user) return accountError(404, "User not found");
+
+  if (!(await bcrypt.compare(currentPassword, user.password))) {
+    return accountError(400, "Current password is incorrect");
+  }
+  if (await bcrypt.compare(newPassword, user.password)) {
+    return accountError(400, "New password must be different from the current one");
+  }
+
+  await setPassword(user, newPassword);
+  return { success: true, tokenVersion: user.tokenVersion };
+};
+
+const RESET_CODE_MINUTES = 30;
+const hashCode = (code) => crypto.createHash("sha256").update(code).digest("hex");
+
+// Creates a one-time reset code for this email. Returns { user, code } when the
+// account exists, or null when it doesn't (the caller must not reveal which).
+export const createPasswordResetRepo = async (email) => {
+  const user = await findUserByEmail(email);
+  if (!user) return null;
+
+  const code = crypto.randomBytes(32).toString("hex");
+  user.resetPasswordTokenHash = hashCode(code);
+  user.resetPasswordExpires = new Date(Date.now() + RESET_CODE_MINUTES * 60 * 1000);
+  await user.save({ validateBeforeSave: false });
+
+  return { user, code, minutes: RESET_CODE_MINUTES };
+};
+
+export const resetPasswordRepo = async (code, newPassword) => {
+  if (typeof code !== "string" || !code) return accountError(400, "This reset link is invalid");
+
+  const user = await UserModel.findOne({
+    resetPasswordTokenHash: hashCode(code),
+    resetPasswordExpires: { $gt: new Date() },
+  }).select("+tokenVersion");
+  if (!user) {
+    return accountError(400, "This reset link is invalid or has expired. Please request a new one.");
+  }
+
+  await setPassword(user, newPassword);
+  return { success: true };
+};
+
+// ---- Muted chats ----
+
+export const getMutedRoomsRepo = async (userId) => {
+  const user = await UserModel.findById(userId).select("+mutedRooms").lean();
+  return (user?.mutedRooms || []).map((id) => id.toString());
+};
+
+export const setRoomMutedRepo = async (userId, roomId, muted) => {
+  await UserModel.updateOne(
+    { _id: userId },
+    muted ? { $addToSet: { mutedRooms: roomId } } : { $pull: { mutedRooms: roomId } }
+  );
+  return getMutedRoomsRepo(userId);
 };

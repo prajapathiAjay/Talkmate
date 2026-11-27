@@ -16,6 +16,22 @@ const MAX_FILES = 3;
 const MAX_FILE_SIZE_MB = 10;
 const ACCEPTED_IMAGES = "image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif";
 
+// Preview of a photo picked for sending. The blob: link is made once per photo
+// and released when the photo is removed or sent; making it during render would
+// create a new link on every keystroke and keep removed photos in memory.
+const FilePreview = ({ file }) => {
+  const [url, setUrl] = useState(null);
+
+  useEffect(() => {
+    const objectUrl = URL.createObjectURL(file);
+    setUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [file]);
+
+  if (!url) return <div className="w-full h-28 bg-white/40" />;
+  return <img src={url} alt="Preview" className="w-full h-28 object-cover" />;
+};
+
 const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
   const { POST } = CustomeApiService();
 
@@ -293,11 +309,7 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
                     className="relative group border border-white/70 rounded-xl overflow-hidden bg-white/50"
                   >
                     {/* Image */}
-                    <img
-                      src={URL.createObjectURL(file)}
-                      alt="Preview"
-                      className="w-full h-28 object-cover"
-                    />
+                    <FilePreview file={file} />
 
                     {/* Remove Button */}
                     <button

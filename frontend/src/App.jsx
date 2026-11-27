@@ -8,10 +8,8 @@ function App() {
   const { userData } = useAuth();
 
   useEffect(() => {
+    // The login token is attached in Socket.jsx
     if (userData && !socket.connected) {
-      socket.auth = {
-        token: localStorage.getItem("token"),
-      };
       socket.connect();
     }
 

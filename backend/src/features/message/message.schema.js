@@ -11,13 +11,13 @@ const messageSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: function () {
-        return this.type === "user";
+        return this.messageType === "user"; // join/system notices have no sender
       },
     },
     senderName: {
       type: String,
       required: function () {
-        return this.type === "user";
+        return this.messageType === "user"; // join/system notices have no sender
       },
     },
     message: {

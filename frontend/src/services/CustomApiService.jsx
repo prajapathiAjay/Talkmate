@@ -1,6 +1,6 @@
 import axios from "axios";
 import qs from "qs";
-import { expireSession } from "../utils/session.js";
+import { expireSession, getToken } from "../utils/session.js";
 
 // Single shared axios instance
 const apiClient = axios.create({
@@ -14,7 +14,7 @@ const apiClient = axios.create({
 // Attach the auth token to every request
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -59,7 +59,8 @@ const CustomApiService = () => {
   };
 
   const PATCH = async (endpoint, params = {}, headers = {}, data, id) => {
-    const res = await apiClient.patch(`/${endpoint}/${id}`, data, { params, headers });
+    const url = id === undefined ? `/${endpoint}` : `/${endpoint}/${id}`;
+    const res = await apiClient.patch(url, data, { params, headers });
     return { ...res.data, headers: res.headers };
   };
 

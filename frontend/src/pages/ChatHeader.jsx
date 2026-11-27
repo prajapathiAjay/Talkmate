@@ -7,7 +7,9 @@ import {
   LogOut,
   ArrowLeftRightIcon,
   ChevronDown,
+  BellOff,
 } from "lucide-react";
+import SettingsModal from "../components/SettingsModal.jsx";
 import { useNavigate } from "react-router-dom";
 import { FormatLastSeen } from "../utils/FormatLastSeen.js";
 import CustomApiService from "../services/CustomApiService";
@@ -24,7 +26,10 @@ const ChatHeader = () => {
     handleRoomTypeChange,
     handleChatRoomIdChange,
     unreadCounts,
+    chatRoomId,
+    isMuted,
   } = useAuth();
+  const [showSettings, setShowSettings] = useState(false);
 
   const publicUnread = unreadCounts?.[userData?.user?.publicRoomId] || 0;
 
@@ -90,8 +95,11 @@ const ChatHeader = () => {
             </div>
 
             <div className="flex flex-col min-w-0">
-              <h2 className="text-base sm:text-lg font-semibold leading-tight text-gray-900 truncate">
-                {roomType === "public" ? "Public Room" : currentPartner?.name}
+              <h2 className="flex items-center gap-1.5 text-base sm:text-lg font-semibold leading-tight text-gray-900 min-w-0">
+                <span className="truncate">{roomType === "public" ? "Public Room" : currentPartner?.name}</span>
+                {isMuted(chatRoomId) && (
+                  <BellOff className="w-3.5 h-3.5 shrink-0 text-gray-400" aria-label="Muted" />
+                )}
               </h2>
 
               <p
@@ -155,9 +163,15 @@ const ChatHeader = () => {
                       Manage
                     </p>
                   </div>
-                  <button className="w-full flex items-center gap-3 px-3.5 py-2 text-sm text-gray-700 hover:bg-white/70 hover:text-gray-900 transition-colors mx-auto w-[94%] rounded-lg">
+                  <button
+                    onClick={() => {
+                      setOpenMenu(false);
+                      setShowSettings(true);
+                    }}
+                    className="w-full flex items-center gap-3 px-3.5 py-2 text-sm text-gray-700 hover:bg-white/70 hover:text-gray-900 transition-colors mx-auto w-[94%] rounded-lg"
+                  >
                     <Settings className="w-4 h-4" />
-                    Room Settings
+                    Settings
                   </button>
                   <button
                     onClick={() => logOut()}
@@ -172,6 +186,7 @@ const ChatHeader = () => {
           </div>
         </div>
       </header>
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </>
   );
 };

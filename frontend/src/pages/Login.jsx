@@ -2,12 +2,97 @@ import { useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext.js";
-import { Mail, Lock, User, Eye, EyeOff, MessageSquare } from "lucide-react";
+import { Mail, Lock, User, Eye, EyeOff, MessageSquare, ArrowLeft, MailCheck } from "lucide-react";
 import CustomApiServices from "../services/CustomApiService";
 import { toast } from "sonner";
 import loginImage from "../assets/image/login.webp";
+import { saveToken } from "../utils/session.js";
+import { NAME_PATTERN, NAME_PATTERN_MESSAGE, countLetters } from "../utils/validation.js";
+
+// "Forgot password?": asks for the email and requests a reset link
+const ForgotPasswordForm = ({ onBack }) => {
+  const { POST } = CustomApiServices();
+  const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sentMessage, setSentMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    const value = email.trim();
+    if (!/^\S+@\S+\.\S+$/.test(value)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+    setSending(true);
+    setError("");
+    try {
+      const response = await POST("user/forgot-password", {}, {}, { email: value });
+      setSentMessage(response.message || "Check your email for a reset link.");
+    } catch (err) {
+      setError(err.message || "Couldn't send the reset email. Please try again.");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={onBack}
+        className="mb-4 flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-800"
+      >
+        <ArrowLeft className="w-3.5 h-3.5" />
+        Back to sign in
+      </button>
+      <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">Reset your password</h2>
+
+      {sentMessage ? (
+        <div className="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex gap-3">
+          <MailCheck className="w-5 h-5 shrink-0 text-emerald-600" />
+          <div className="text-sm text-emerald-800">
+            <p>{sentMessage}</p>
+            <p className="mt-1 text-emerald-700/80">The link works for 30 minutes. Check your spam folder too.</p>
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={onSubmit} className="space-y-4">
+          <p className="text-gray-500 text-sm mb-2">
+            Enter the email you signed up with and we'll send you a link to choose a new password.
+          </p>
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+              <Mail className="w-4 h-4 text-gray-500" />
+            </div>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoFocus
+              className="w-full pl-9 pr-3 py-2.5 text-base sm:text-sm field rounded-xl"
+              placeholder="Enter your Email"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={sending}
+            className="w-full py-3 text-sm font-semibold rounded-xl btn-primary"
+          >
+            {sending ? "Sending..." : "Send reset link"}
+          </button>
+        </form>
+      )}
+    </div>
+  );
+};
 
 const Login = () => {
   const { login } = useAuth();
@@ -27,6 +112,7 @@ const Login = () => {
       password: yup
         .string()
         .min(8, "Password must be at least 8 characters")
+        .max(128, "Password cannot exceed 128 characters")
         .matches(/[A-Z]/, "Must contain at least one uppercase letter")
         .matches(/[a-z]/, "Must contain at least one lowercase letter")
         .matches(/\d/, "Must contain at least one number")
@@ -40,15 +126,8 @@ const Login = () => {
           .trim()
           .required("Full name is required")
           // Letters (any language), spaces, and ' . - between words, e.g. "Mary-Jane O'Neil"
-          .matches(
-            /^\p{L}+(?:[ '.-]+\p{L}+)*\.?$/u,
-            "Name can only contain letters, spaces, and ' . -"
-          )
-          .test(
-            "min-letters",
-            "Name must have at least 3 letters",
-            (value) => (value?.match(/\p{L}/gu) || []).length >= 3
-          )
+          .matches(NAME_PATTERN, NAME_PATTERN_MESSAGE)
+          .test("min-letters", "Name must have at least 3 letters", (value) => countLetters(value) >= 3)
           .max(50, "Name cannot exceed 50 characters"),
         ...baseSchema,
         confirmPassword: yup
@@ -58,7 +137,7 @@ const Login = () => {
       });
     }
 
-    return yup.object().shape(baseSchema);
+    return yup.object().shape({ ...baseSchema, rememberMe: yup.boolean() });
   }, [type]);
 
   const {
@@ -68,6 +147,7 @@ const Login = () => {
     reset,
   } = useForm({
     resolver: yupResolver(schema),
+    defaultValues: { rememberMe: true },
   });
 
   const onSubmit = async (data) => {
@@ -78,7 +158,7 @@ const Login = () => {
       const endpoint = type === "login" ? "user/signIn" : "user/signUp";
       const payload =
         type === "login"
-          ? { email: data.email, password: data.password }
+          ? { email: data.email, password: data.password, rememberMe: data.rememberMe !== false }
           : {
               name: data.name.trim(),
               email: data.email,
@@ -87,7 +167,8 @@ const Login = () => {
 
       const response = await POST(endpoint, {}, {}, payload);
       if (response.success) {
-        localStorage.setItem("token", response.token);
+        // Sign-up always remembers; sign-in follows the "Remember me" box
+        saveToken(response.token, type === "signup" || data.rememberMe !== false);
         login(response.data);
         navigate("/chat");
         toast.success(
@@ -145,6 +226,10 @@ const Login = () => {
             </div>
 
             <div className="surface rounded-3xl p-6 lg:p-8">
+              {type === "forgot" ? (
+                <ForgotPasswordForm onBack={() => setType("login")} />
+              ) : (
+              <>
               {/* Form Header */}
               <div className="mb-6">
                 <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">
@@ -303,41 +388,33 @@ const Login = () => {
                   </div>
                 )}
 
-                {type === "signup" && (
-                  <div className="flex items-start space-x-2">
-                    <input
-                      type="checkbox"
-                      {...register("acceptTerms")}
-                      className="mt-0.5 h-3.5 w-3.5 accent-blue-600 rounded"
-                    />
-                    <label className="text-xs text-gray-500">
-                      I agree to the{" "}
-                      <a href="#" className="text-violet-600 hover:text-violet-600 font-medium">
-                        Terms
-                      </a>{" "}
-                      and{" "}
-                      <a href="#" className="text-violet-600 hover:text-violet-600 font-medium">
-                        Privacy Policy
-                      </a>
-                    </label>
-                  </div>
-                )}
-
                 {type === "login" && (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <input
                         type="checkbox"
                         id="remember"
+                        {...register("rememberMe")}
                         className="h-3.5 w-3.5 accent-blue-600 rounded"
                       />
-                      <label htmlFor="remember" className="ml-1.5 text-xs text-gray-500">
+                      <label
+                        htmlFor="remember"
+                        title="Untick on a shared computer: you'll be signed out when the browser closes"
+                        className="ml-1.5 text-xs text-gray-500"
+                      >
                         Remember me
                       </label>
                     </div>
-                    <a href="#" className="text-xs text-violet-600 hover:text-violet-600 font-medium">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setType("forgot");
+                        setError("");
+                      }}
+                      className="text-xs text-violet-600 hover:underline font-medium"
+                    >
                       Forgot password?
-                    </a>
+                    </button>
                   </div>
                 )}
 
@@ -385,7 +462,20 @@ const Login = () => {
                   )}
                 </p>
               </div>
+              </>
+              )}
             </div>
+
+            {/* Terms & Privacy: just links, nothing to tick. New tab, so a half-filled form isn't lost. */}
+            <p className="mt-4 text-center text-xs text-gray-500">
+              <Link to="/terms" target="_blank" className="hover:text-violet-600 hover:underline">
+                Terms
+              </Link>
+              <span className="mx-2">·</span>
+              <Link to="/privacy" target="_blank" className="hover:text-violet-600 hover:underline">
+                Privacy Policy
+              </Link>
+            </p>
           </div>
         </div>
       </div>

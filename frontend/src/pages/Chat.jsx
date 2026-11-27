@@ -263,9 +263,12 @@ const Chat = () => {
 
   return (
     // Fixed to the visible viewport (see the visualViewport effect above), so the
-    // header stays on screen and the input sits right above the mobile keyboard
+    // header stays on screen and the input sits right above the mobile keyboard.
+    // overflow-clip, not overflow-hidden: on phones the People panel waits just
+    // off-screen, and a hidden-overflow box can still be scrolled by focus (Tab,
+    // screen readers), which slid the whole chat sideways. Clip can't scroll at all.
     <div
-      className="fixed top-0 left-0 flex w-screen overflow-hidden app-bg text-gray-900"
+      className="fixed top-0 left-0 flex w-screen overflow-clip app-bg text-gray-900"
       style={{
         height: "var(--app-height, 100dvh)",
         transform: "translateY(var(--app-offset, 0px))",

@@ -196,7 +196,7 @@ const Login = () => {
         <div className="hidden lg:block lg:w-1/2 h-full relative overflow-hidden">
           <img
             src={loginImage}
-            alt="Login Illustration"
+            alt="JubJub chat open on a laptop and a phone"
             // Lazy images inside a hidden panel aren't downloaded, so phones skip it
             loading="lazy"
             className="w-full h-full object-cover"

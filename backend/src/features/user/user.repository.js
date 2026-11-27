@@ -4,9 +4,14 @@ import { RoomModel } from "../room/room.schema.js";
 import { FriendModel } from "../friend/friend.schema.js";
 import { startsWithRegex } from "../../utils/searchRegex.js";
 
+// Find a user by email ignoring capitals: "Ajay@gmail.com" and "ajay@gmail.com" are
+// the same inbox. The email is still saved exactly as the user typed it.
+const findUserByEmail = (email) =>
+  UserModel.findOne({ email: String(email ?? "").trim() }).collation({ locale: "en", strength: 2 });
+
 export const userRegisterationRepo = async (userData) => {
   try {
-    const existingUser = await UserModel.findOne({ email: userData?.email });
+    const existingUser = await findUserByEmail(userData?.email);
     if (existingUser) {
       return {
         success: false,
@@ -45,11 +50,22 @@ export const userRegisterationRepo = async (userData) => {
       };
     }
 
+    // Bad input (e.g. name too short, invalid email): a 400 with the schema's own message
+    if (error.name === "ValidationError") {
+      return {
+        success: false,
+        error: {
+          statusCode: 400,
+          msg: Object.values(error.errors)[0]?.message || "Invalid sign-up details",
+        },
+      };
+    }
+
     return {
       success: false,
       error: {
         statusCode: 500,
-        msg: error,
+        msg: "Registration failed. Please try again.",
       },
     };
   }
@@ -59,7 +75,7 @@ export const userSignInRepo = async (data) => {
   const { email, password } = data;
 
   try {
-    const user = await UserModel.findOne({ email });
+    const user = await findUserByEmail(email);
     const publicRoomData = await RoomModel.findOne({ type: "public" });
 
     if (!user) {
@@ -100,7 +116,7 @@ export const userSignInRepo = async (data) => {
       success: false,
       error: {
         statusCode: 500,
-        msg: error,
+        msg: "Sign in failed. Please try again.",
       },
     };
   }

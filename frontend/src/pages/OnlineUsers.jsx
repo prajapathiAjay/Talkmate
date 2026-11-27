@@ -25,6 +25,7 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
     handleChatRoomIdChange,
     handleRoomTypeChange,
     handlePartnerChange,
+    updatePartnerStatus,
     unreadCounts,
   } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
@@ -60,6 +61,18 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
   const handleStatusChange = (response) => {
     if (response.success && response?.data?._id !== userData?.user?.userId) {
       const newJoinedUsers = response?.data;
+
+      // The same person also appears in the Friends tab and maybe the chat header
+      const { isOnline, lastSeen } = newJoinedUsers;
+      setFriendRoom((prevRooms) =>
+        prevRooms.map((room) =>
+          room?.friend?._id === newJoinedUsers._id
+            ? { ...room, friend: { ...room.friend, isOnline, lastSeen } }
+            : room,
+        ),
+      );
+      updatePartnerStatus(newJoinedUsers);
+
       setAllUsers((prevUsers) => {
         const existingUser = prevUsers.some(
           (user) => user._id === newJoinedUsers._id,
@@ -117,15 +130,32 @@ const OnlineUsers = ({ showOnlineUsers, handleShowOnlineUsers, closeOnlineUsers 
             isCurrent: false,
           })),
         );
+        // The header's partner comes from localStorage and may be stale after a
+        // reload; fresh room data corrects it (only the open chat's partner matches)
+        response.data.forEach((room) => updatePartnerStatus(room?.friend));
       }
     } catch {
       // Errors are intentionally ignored here
     }
   };
 
+  // After our own connection drops and comes back (phone asleep, network blip),
+  // status changes in between were missed, so reload the lists. A ref keeps the
+  // latest functions, which see the current tab and search text.
+  const refreshListsRef = useRef(null);
+  refreshListsRef.current = () => {
+    getPrivateRoom();
+    if (selectedFilter !== "friends") getAllUsers();
+  };
+
   useEffect(() => {
+    const handleReconnect = () => refreshListsRef.current?.();
     socket.on("user-status-changed", handleStatusChange);
-    return () => socket.off("user-status-changed", handleStatusChange);
+    socket.io.on("reconnect", handleReconnect);
+    return () => {
+      socket.off("user-status-changed", handleStatusChange);
+      socket.io.off("reconnect", handleReconnect);
+    };
   }, []);
 
   useEffect(() => {

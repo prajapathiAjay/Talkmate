@@ -149,6 +149,10 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
     }
   };
 
+  // Switching chats while typing: stop typing in the chat being left (the cleanup
+  // runs with that chat's id), so typing in the next chat is announced right away
+  useEffect(() => stopTyping, [chatRoomId]);
+
   const handleEmojiSelect = (emoji) => {
     const emojiChar = emoji.native;
     setNewMsg((prev) => prev + emojiChar);
@@ -166,6 +170,12 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
     setShowEmojiPicker(false);
 
     if (!newMsg.trim() && files.length === 0) return;
+
+    // Offline: say so now and keep the text, instead of queueing a message that may never go
+    if (!socket.connected) {
+      toast.error("You're offline. Check your connection and try again.", { id: "send-offline" });
+      return;
+    }
 
     setSending(true);
 
@@ -192,10 +202,21 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
         roomId: chatRoomId,
       };
 
-      socket.emit("sendMessage", messageData, (response) => {
-        if (response?.success === false) {
-          toast.error(response.message || "Message could not be sent");
-        }
+      // The box clears right away so sending feels instant; if the server doesn't
+      // confirm within 10s (or says it failed), the text and photos are put back
+      const sentText = newMsg;
+      const sentFiles = files;
+      socket.timeout(10000).emit("sendMessage", messageData, (timedOut, response) => {
+        if (!timedOut && response?.success !== false) return;
+
+        toast.error(
+          timedOut
+            ? "Message not sent - the server didn't respond. Please try again."
+            : response?.message || "Message could not be sent",
+        );
+        // Restore only into an empty box, never over something new the user typed
+        setNewMsg((current) => (current.trim() ? current : sentText));
+        setFiles((current) => (current.length ? current : sentFiles));
       });
       stopTyping();
 

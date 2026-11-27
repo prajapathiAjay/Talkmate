@@ -114,6 +114,19 @@ const AuthProvider = ({ children }) => {
     localStorage.setItem("currentPartner", JSON.stringify(data));
   };
 
+  // Keep the open chat partner's online status / last seen current. Does nothing
+  // unless `user` is the person being chatted with, so it's safe to call for anyone.
+  const updatePartnerStatus = (user) => {
+    if (!user?._id) return;
+    setCurrentPartner((prev) => {
+      if (!prev?._id || String(prev._id) !== String(user._id)) return prev;
+      if (prev.isOnline === user.isOnline && prev.lastSeen === user.lastSeen) return prev;
+      const next = { ...prev, isOnline: user.isOnline, lastSeen: user.lastSeen };
+      localStorage.setItem("currentPartner", JSON.stringify(next));
+      return next;
+    });
+  };
+
   const handleFriendRoom = (data) => {
     setFriendRoom(data);
     localStorage.setItem("friendRoom", JSON.stringify(data));
@@ -177,6 +190,7 @@ const AuthProvider = ({ children }) => {
         logout,
         handleChatRoomIdChange,
         handlePartnerChange,
+        updatePartnerStatus,
         currentPartner,
         unreadCounts,
         totalUnread,

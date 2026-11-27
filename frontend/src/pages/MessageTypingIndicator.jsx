@@ -2,35 +2,51 @@ import { useState, useEffect, useRef } from "react";
 import socket from "../Socket";
 import { avatarGradient } from "../utils/avatarColor.js";
 
-const MessageTypingIndicator = () => {
+// While someone keeps typing, a new "typing" event arrives about every 2 seconds.
+// If none comes for this long, assume the "stopped typing" event was lost.
+const TYPING_EXPIRY_MS = 5000;
+
+// Shows who is typing in the open chat. Chat.jsx gives it key={roomId}, so
+// switching chats starts with an empty list instead of carrying the old one over.
+const MessageTypingIndicator = ({ roomId }) => {
   const [typingUsers, setTypingUsers] = useState(new Map());
   const indicatorRef = useRef(null);
 
-  const handleUserTyping = ({ userId, name }) => {
-    setTypingUsers((prev) => {
-      const updated = new Map(prev);
-      updated.set(userId, name); // unique by userId
-      return updated;
-    });
-  };
-
-  const handleUserStopTyping = ({ userId }) => {
-    setTypingUsers((prev) => {
-      const updated = new Map(prev);
-      updated.delete(userId);
-      return updated;
-    });
-  };
-
   useEffect(() => {
+    const expiryTimers = new Map(); // userId -> timeout
+
+    const removeUser = (userId) => {
+      clearTimeout(expiryTimers.get(userId));
+      expiryTimers.delete(userId);
+      setTypingUsers((prev) => {
+        if (!prev.has(userId)) return prev;
+        const updated = new Map(prev);
+        updated.delete(userId);
+        return updated;
+      });
+    };
+
+    const handleUserTyping = ({ roomId: eventRoomId, userId, name }) => {
+      if (String(eventRoomId) !== String(roomId)) return; // another chat's typing
+      setTypingUsers((prev) => new Map(prev).set(userId, name)); // unique by userId
+      clearTimeout(expiryTimers.get(userId));
+      expiryTimers.set(userId, setTimeout(() => removeUser(userId), TYPING_EXPIRY_MS));
+    };
+
+    const handleUserStopTyping = ({ roomId: eventRoomId, userId }) => {
+      if (String(eventRoomId) !== String(roomId)) return;
+      removeUser(userId);
+    };
+
     socket.on("userTyping", handleUserTyping);
     socket.on("userStopTyping", handleUserStopTyping);
 
     return () => {
       socket.off("userTyping", handleUserTyping);
       socket.off("userStopTyping", handleUserStopTyping);
+      expiryTimers.forEach(clearTimeout);
     };
-  }, []);
+  }, [roomId]);
 
   const usersArray = [...typingUsers.values()];
 

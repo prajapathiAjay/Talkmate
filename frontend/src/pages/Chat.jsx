@@ -340,7 +340,7 @@ const Chat = () => {
                 );
               })
             )}
-            <MessageTypingIndicator />
+            <MessageTypingIndicator key={chatRoomId} roomId={chatRoomId} />
             <div ref={messagesEndRef} />
           </div>
         </div>

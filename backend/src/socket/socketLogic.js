@@ -67,14 +67,26 @@ export const socketLogic = (server) => {
     // a real promise that runs once, and .catch keeps a DB error from crashing the server.
     const me = UserModel.findById(socket.user.id).select("name").lean().exec().catch(() => null);
 
-    // Typing indicators: only into the room this socket is in, under the real name
-    const relayTyping = (event) => async ({ roomId } = {}) => {
+    // Typing indicators: only into the room this socket is in, under the real name.
+    // socket.typingIn remembers the room this user is typing in, so the server can
+    // send "stopped typing" itself if they leave that room or disconnect first.
+    socket.on("typing", async ({ roomId } = {}) => {
       if (!roomId || !socket.rooms.has(roomId)) return;
+      socket.typingIn = roomId;
       const user = await me;
-      socket.broadcast.to(roomId).emit(event, { userId: socket.user.id, name: user?.name });
+      socket.broadcast.to(roomId).emit("userTyping", { roomId, userId: socket.user.id, name: user?.name });
+    });
+
+    const stopTypingIn = (roomId) => {
+      if (!roomId) return;
+      if (socket.typingIn === roomId) socket.typingIn = null;
+      io.to(roomId).except(socket.id).emit("userStopTyping", { roomId, userId: socket.user.id });
     };
-    socket.on("typing", relayTyping("userTyping"));
-    socket.on("stop-typing", relayTyping("userStopTyping"));
+
+    socket.on("stop-typing", ({ roomId } = {}) => {
+      // Accepted even after leaving the room, as long as it's the room they were typing in
+      if (roomId && (socket.rooms.has(roomId) || socket.typingIn === roomId)) stopTypingIn(roomId);
+    });
 
     socket.on("join-room", async ({ roomId } = {}) => {
       // Only the public room or private rooms you're a participant of
@@ -85,7 +97,11 @@ export const socketLogic = (server) => {
       }
 
       // One open chat at a time (unread counts come via the personal channel)
-      if (socket.roomId && socket.roomId !== roomId) socket.leave(socket.roomId);
+      if (socket.roomId && socket.roomId !== roomId) {
+        // Leaving mid-typing: tell the old room this user stopped
+        if (socket.typingIn === socket.roomId) stopTypingIn(socket.roomId);
+        socket.leave(socket.roomId);
+      }
 
       const user = await me;
       socket.roomId = roomId;
@@ -124,19 +140,19 @@ export const socketLogic = (server) => {
         };
         const messageSaved = await createMessageRepository(messageData);
 
+        // Not saved: tell only the sender, so their app can show an error and keep the text
+        if (!messageSaved?.success) {
+          console.error("sendMessage: saving failed", messageSaved?.error);
+          return ack?.({ success: false, message: "Failed to send message" });
+        }
+
         io.to(roomId).emit("message", messageSaved);
 
-        if (messageSaved?.success) {
-          notifyNewMessage(io, socket, messageSaved.data).catch((error) =>
-            console.error("Failed to send message notification:", error)
-          );
-        }
+        notifyNewMessage(io, socket, messageSaved.data).catch((error) =>
+          console.error("Failed to send message notification:", error)
+        );
 
-        if (messageSaved?.success) {
-          ack?.({
-            messageSaved,
-          });
-        }
+        ack?.({ success: true, messageSaved });
       } catch (error) {
         console.error("sendMessage failed:", error);
         ack?.({
@@ -147,6 +163,9 @@ export const socketLogic = (server) => {
     });
 
     socket.on("disconnect", async () => {
+      // Tab closed or connection lost mid-typing: nobody else will clear it
+      if (socket.typingIn) stopTypingIn(socket.typingIn);
+
       try {
         await handleOfflineUser(socket);
       } catch (error) {

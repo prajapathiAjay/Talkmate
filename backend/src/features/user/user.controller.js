@@ -3,8 +3,17 @@ import jwt from "jsonwebtoken";
 import { userRegisterationRepo, userSignInRepo, getAllUsersRepo } from "./user.repository.js";
 import { customErrorHandler } from "../../middlewares/errorHandler.js";
 
+// The first required field that is missing or not text, or null if all are present
+const missingField = (body, fields) =>
+  fields.find((field) => typeof body?.[field] !== "string" || !body[field].trim()) || null;
+
 export const userRegisteration = async (req, res, next) => {
   try {
+    const missing = missingField(req.body, ["name", "email", "password"]);
+    if (missing) {
+      return next(new customErrorHandler(400, `${missing} is required`));
+    }
+
     const { password } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -49,6 +58,11 @@ export const userRegisteration = async (req, res, next) => {
 
 export const userSignIn = async (req, res, next) => {
   try {
+    const missing = missingField(req.body, ["email", "password"]);
+    if (missing) {
+      return next(new customErrorHandler(400, `${missing} is required`));
+    }
+
     const response = await userSignInRepo(req.body);
 
     if (response.success) {

@@ -37,9 +37,19 @@ const Login = () => {
       return yup.object().shape({
         name: yup
           .string()
-          .min(2, "Name must be at least 2 characters")
-          .max(50, "Name cannot exceed 50 characters")
-          .required("Full name is required"),
+          .trim()
+          .required("Full name is required")
+          // Letters (any language), spaces, and ' . - between words, e.g. "Mary-Jane O'Neil"
+          .matches(
+            /^\p{L}+(?:[ '.-]+\p{L}+)*\.?$/u,
+            "Name can only contain letters, spaces, and ' . -"
+          )
+          .test(
+            "min-letters",
+            "Name must have at least 3 letters",
+            (value) => (value?.match(/\p{L}/gu) || []).length >= 3
+          )
+          .max(50, "Name cannot exceed 50 characters"),
         ...baseSchema,
         confirmPassword: yup
           .string()
@@ -70,7 +80,7 @@ const Login = () => {
         type === "login"
           ? { email: data.email, password: data.password }
           : {
-              name: data.name,
+              name: data.name.trim(),
               email: data.email,
               password: data.password,
             };

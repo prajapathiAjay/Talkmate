@@ -288,7 +288,7 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
           {files.length > 0 && (
             <div className="absolute bottom-full mb-3 w-full max-w-xl surface-raised shadow-2xl shadow-gray-900/10 rounded-2xl z-50">
               {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-white/60 rounded-t-2xl">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 rounded-t-2xl">
                 <h3 className="text-sm font-semibold text-gray-800">
                   Selected Files ({files.length})
                 </h3>
@@ -306,7 +306,7 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
                 {files.map((file, index) => (
                   <div
                     key={index}
-                    className="relative group border border-white/70 rounded-xl overflow-hidden bg-white/50"
+                    className="relative group border border-gray-200 rounded-xl overflow-hidden bg-gray-50"
                   >
                     {/* Image */}
                     <FilePreview file={file} />
@@ -384,7 +384,7 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
                   <button
                     type="button"
                     onClick={openCamera}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-800 hover:bg-white/60"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-800 hover:bg-gray-100"
                   >
                     <span className="w-9 h-9 rounded-full bg-gradient-to-br from-fuchsia-500 to-rose-500 text-white flex items-center justify-center">
                       <Camera className="w-4 h-4" />
@@ -394,7 +394,7 @@ const MessageInput = ({ disabled = false, handleShowOnlineUsers }) => {
                   <button
                     type="button"
                     onClick={openFiles}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-800 hover:bg-white/60"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-800 hover:bg-gray-100"
                   >
                     <span className="w-9 h-9 rounded-full brand-bg text-white flex items-center justify-center">
                       <ImageIcon className="w-4 h-4" />

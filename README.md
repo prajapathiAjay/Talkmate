@@ -54,6 +54,7 @@
 - 🔁 **Nothing gets lost**: if a message can't be sent (server error, no reply within 10 s, or offline), you get an error and your text and photos are put back in the box
 - 😀 Emoji picker, multi-line messages (Enter to send, Shift+Enter for a new line)
 - 🗓️ Date separators (*Today*, *Yesterday*, weekday) and "X, Y and Z joined the chat" grouping
+- 📜 **Scrolls like a real chat app**: opens at the newest message, or at your first unread one under an *Unread messages* divider; loads older messages as you scroll up without moving what you're reading; a **↓ New messages** button instead of yanking you down while you read history
 
 **People & presence**
 - 👥 Add friends, search people, online / *last seen* status updated live everywhere (people list, friends list and the chat header)
@@ -252,7 +253,7 @@ All endpoints except sign-up, sign-in, forgot-password and reset-password need `
 | `GET` | `/api/room/unread` | Unread counts per chat `{ roomId: count }` and your muted chats |
 | `POST` | `/api/room/:roomId/read` | Mark a chat as read |
 | `POST` | `/api/room/:roomId/mute` | Mute or unmute a chat (`{ muted: true \| false }`) |
-| `GET` | `/api/messages/getMessages?roomId=` | Messages of a room you belong to |
+| `GET` | `/api/messages/getMessages?roomId=&limit=&before=` | A page of a room's messages (newest 50 by default; `before=<message id>` for older ones) plus `hasMore` |
 | `POST` | `/api/friend/add` | Add a friend |
 | `GET` | `/api/friend/getFriends` | Your friends |
 | `POST` | `/api/upload/messages` | Upload up to 3 images, 10 MB each (multipart `files`) |
@@ -286,7 +287,7 @@ The live version runs on **Render** (a *Web Service* for the backend and a *Stat
 ## 🗺️ Roadmap
 
 - [ ] Read receipts (✓ / ✓✓)
-- [ ] Message pagination (load older messages on scroll)
+- [x] Message pagination (load older messages on scroll)
 - [ ] Installable PWA with push notifications
 - [ ] Reply / react to a message
 - [ ] Group chats beyond the public room

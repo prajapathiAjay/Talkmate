@@ -168,7 +168,7 @@ const ChatHeader = () => {
                       setOpenMenu(false);
                       setShowSettings(true);
                     }}
-                    className="w-full flex items-center gap-3 px-3.5 py-2 text-sm text-gray-700 hover:bg-white/70 hover:text-gray-900 transition-colors mx-auto w-[94%] rounded-lg"
+                    className="w-full flex items-center gap-3 px-3.5 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors mx-auto w-[94%] rounded-lg"
                   >
                     <Settings className="w-4 h-4" />
                     Settings

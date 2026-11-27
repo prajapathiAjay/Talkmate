@@ -1,5 +1,18 @@
 import { handleOnlineUsersrepo } from "../features/user/user.repository.js";
 import { createMessageRepository } from "../features/message/message.repository.js";
+import { MessageModel } from "../features/message/message.schema.js";
+
+// Has this user ever had a "joined the chat" notice in this room? Older notices
+// were saved without a sender, so those are matched by their text.
+const hasJoinedBefore = (roomId, userId, userName) =>
+  MessageModel.exists({
+    roomId,
+    messageType: "join",
+    $or: [
+      { senderId: userId },
+      { senderId: { $exists: false }, message: `${userName} has joined the chat` },
+    ],
+  });
 
 // userId -> Set of socket ids (one per tab/device)
 const onlineUsers = new Map();
@@ -32,11 +45,17 @@ export const handleOnlineUsers = async (socket) => {
     if (isFirstConnection) {
       const response = await handleOnlineUsersrepo(true, userId);
 
-      if (response.success && socket.roomType !== "private") {
-        const userName = response.data.name;
-
+      // "X joined the chat" only the first time someone joins the public room;
+      // coming back online is shown by their green dot, not a new message
+      const userName = response.data?.name;
+      if (
+        response.success &&
+        socket.roomType !== "private" &&
+        !(await hasJoinedBefore(socket.roomId, userId, userName))
+      ) {
         const message = await createMessageRepository({
           roomId: socket.roomId,
+          senderId: userId,
           message: `${userName} has joined the chat`,
           messageType: "join",
         });

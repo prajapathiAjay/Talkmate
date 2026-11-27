@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { ArrowDown, Loader2 } from "lucide-react";
 import socket from "../Socket.jsx";
 import ChatHeader from "./ChatHeader";
 import MessageItem from "./MessageItem";
@@ -11,6 +12,11 @@ import { expireSession } from "../utils/session.js";
 import { toast } from "sonner";
 
 const JOIN_SUFFIX = / has joined the chat$/i;
+
+// Messages per page: the newest ones load first, older ones as you scroll up
+const PAGE_SIZE = 50;
+// How close (px) to the bottom still counts as "reading the newest messages"
+const BOTTOM_SLACK = 60;
 
 const formatDayLabel = (date) => {
   const day = new Date(date);
@@ -32,10 +38,14 @@ const formatJoinLabel = (names) => {
 };
 
 // Turn the flat message list into what we render: date separators,
-// runs of "joined" notices merged into one line, and regular messages
-const buildTimeline = (messages) => {
+// runs of "joined" notices merged into one line, the "Unread messages" divider,
+// and regular messages
+const buildTimeline = (messages, firstUnreadId) => {
   const items = [];
   let lastDay = null;
+  // Older versions saved a "joined" notice every time someone came online;
+  // show each person's earliest one only
+  const joinedNames = new Set();
 
   // Chronological order, so date separators never repeat
   const ordered = [...messages].sort(
@@ -51,8 +61,14 @@ const buildTimeline = (messages) => {
 
     const prevItem = items[items.length - 1];
 
+    if (msg?._id && msg._id === firstUnreadId) {
+      items.push({ type: "unread", key: "unread-divider" });
+    }
+
     if (msg?.messageType === "join") {
       const name = msg?.message?.replace(JOIN_SUFFIX, "") || "Someone";
+      if (joinedNames.has(name)) return;
+      joinedNames.add(name);
       if (prevItem?.type === "join") {
         if (!prevItem.names.includes(name)) prevItem.names.push(name);
         return;
@@ -81,6 +97,7 @@ const Chat = () => {
     addUnread,
     clearUnread,
     markRead,
+    unreadCounts,
     syncUnread,
     handleRoomTypeChange,
     handleChatRoomIdChange,
@@ -88,11 +105,26 @@ const Chat = () => {
   const userName = userData?.user?.name;
   const [currentUser] = useState(userData?.user?.userId);
   const [messages, setMessages] = useState([]);
-  const [isAtBottom, setIsAtBottom] = useState(true);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  // New messages that arrived while you were reading older ones
+  const [newCount, setNewCount] = useState(0);
+  const [farFromBottom, setFarFromBottom] = useState(false);
+  // First message you hadn't read when you opened the chat
+  const [firstUnreadId, setFirstUnreadId] = useState(null);
   const [showOnlineUsers, setShowOnlineUsers] = useState(false);
-  const messagesEndRef = useRef(null);
   const scrollerRef = useRef(null);
+  const contentRef = useRef(null);
+  // true while the view is at the newest message, so it follows new ones
   const isAtBottomRef = useRef(true);
+  // What to do with the scroll position after the next render:
+  // "open" a chat, "bottom" for a new message, "prepend" older messages
+  const pendingScrollRef = useRef(null);
+  const loadingOlderRef = useRef(false);
+  // While a smooth scroll to the newest message is animating, the view is briefly
+  // "not at the bottom"; this keeps that from counting as reading older messages
+  const autoScrollUntilRef = useRef(0);
 
   // Pin the chat to the part of the screen that's actually visible.
   // iOS Safari (and some Android browsers) don't shrink the page when the
@@ -119,28 +151,37 @@ const Chat = () => {
     };
   }, []);
 
-  // Keep the newest messages in view when the message area shrinks,
-  // e.g. while the input grows or the mobile keyboard opens
+  // Keep the newest messages in view when the visible area shrinks (the input
+  // grows, the mobile keyboard opens) or the content grows (photos finish loading)
   useEffect(() => {
     const scroller = scrollerRef.current;
-    if (!scroller) return;
+    if (!scroller || !contentRef.current) return;
     const observer = new ResizeObserver(() => {
-      if (isAtBottomRef.current) {
+      if (isAtBottomRef.current && !pendingScrollRef.current) {
         scroller.scrollTop = scroller.scrollHeight;
       }
     });
     observer.observe(scroller);
+    observer.observe(contentRef.current);
     return () => observer.disconnect();
   }, []);
 
   const handleMessage = (message) => {
     // The socket stays in rooms opened earlier, so ignore other rooms' messages here
     if (message?.success && String(message.data?.roomId) === String(chatRoomId)) {
-      setMessages((prevMessages) => [...prevMessages, message.data]);
-      // Seen as it arrives, so it shouldn't count as unread next time
-      if (String(message.data?.senderId) !== String(userData?.user?.userId)) {
-        markRead(chatRoomId);
+      const mine = String(message.data?.senderId) === String(userData?.user?.userId);
+      setMessages((prevMessages) =>
+        prevMessages.some((m) => m._id === message.data._id) ? prevMessages : [...prevMessages, message.data],
+      );
+      if (mine || isAtBottomRef.current) {
+        // Your own message, or you're following along: show it
+        pendingScrollRef.current = { type: "bottom" };
+      } else {
+        // You're reading older messages: don't yank the view, offer a button instead
+        setNewCount((count) => count + 1);
       }
+      // Seen as it arrives, so it shouldn't count as unread next time
+      if (!mine) markRead(chatRoomId);
     }
   };
 
@@ -169,32 +210,135 @@ const Chat = () => {
     if (chatRoomId) clearUnread(chatRoomId);
   }, [chatRoomId]);
 
-  // Load the open chat's history: once when the page opens and again on every
-  // chat switch (an effect also runs on first render, so one effect covers both)
+  // Load the open chat's newest messages: once when the page opens and again on
+  // every chat switch (an effect also runs on first render, so one effect covers both)
   useEffect(() => {
+    // Unread count from just before opening (the effect above clears it for next time)
+    const unreadAtOpen = unreadCounts?.[chatRoomId] || 0;
+
     setMessages([]);
+    setHasMore(false);
+    setNewCount(0);
+    setFarFromBottom(false);
+    setFirstUnreadId(null);
+    isAtBottomRef.current = true;
+    pendingScrollRef.current = null;
+    loadingOlderRef.current = false;
+    setLoadingOlder(false);
     if (!chatRoomId) return;
+    setLoadingHistory(true);
 
     // Switching chats before this reply arrives makes it stale: drop it, or a
     // slow reply for the old chat would replace the new chat's messages
     let cancelled = false;
+    // Enough to include every unread message, so the view can open at the first one
+    const limit = Math.min(200, Math.max(PAGE_SIZE, unreadAtOpen + 20));
 
-    GET("messages/getMessages", { roomId: chatRoomId }, {}, {})
+    GET("messages/getMessages", { roomId: chatRoomId, limit }, {}, {})
       .then((response) => {
         if (cancelled || !response?.success) return;
         const history = response.data || [];
         const inHistory = new Set(history.map((msg) => msg._id));
         // Keep live messages that arrived while loading and aren't in the history yet
         setMessages((live) => [...history, ...live.filter((msg) => !inHistory.has(msg._id))]);
+        setHasMore(!!response.hasMore);
+
+        if (unreadAtOpen > 0) {
+          const fromOthers = history.filter(
+            (msg) => msg.messageType === "user" && String(msg.senderId) !== String(currentUser),
+          );
+          setFirstUnreadId(fromOthers[Math.max(0, fromOthers.length - unreadAtOpen)]?._id || null);
+        }
+        pendingScrollRef.current = { type: "open" };
       })
       .catch((error) => {
         if (!cancelled) console.error("Couldn't load messages:", error);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingHistory(false);
       });
 
     return () => {
       cancelled = true;
     };
   }, [chatRoomId]);
+
+  // Older messages, when you scroll near the top
+  const loadOlder = () => {
+    if (loadingOlderRef.current || !hasMore || messages.length === 0) return;
+    const roomId = chatRoomId;
+    const oldest = messages.reduce((a, b) => (new Date(a.createdAt) <= new Date(b.createdAt) ? a : b));
+    loadingOlderRef.current = true;
+    setLoadingOlder(true);
+
+    GET("messages/getMessages", { roomId, before: oldest._id, limit: PAGE_SIZE }, {}, {})
+      .then((response) => {
+        if (roomId !== chatRoomIdRef.current || !response?.success) return;
+        const scroller = scrollerRef.current;
+        // Remember where you were, so adding messages above doesn't move what you're reading
+        pendingScrollRef.current = { type: "prepend", height: scroller.scrollHeight, top: scroller.scrollTop };
+        setMessages((current) => {
+          const have = new Set(current.map((msg) => msg._id));
+          return [...(response.data || []).filter((msg) => !have.has(msg._id)), ...current];
+        });
+        setHasMore(!!response.hasMore);
+      })
+      .catch((error) => console.error("Couldn't load older messages:", error))
+      .finally(() => {
+        if (roomId !== chatRoomIdRef.current) return;
+        loadingOlderRef.current = false;
+        setLoadingOlder(false);
+      });
+  };
+
+  // Apply the scroll position asked for above, right after the DOM updates and
+  // before the browser paints, so nothing visibly jumps
+  useLayoutEffect(() => {
+    const scroller = scrollerRef.current;
+    const pending = pendingScrollRef.current;
+    if (!scroller || !pending) return;
+    pendingScrollRef.current = null;
+
+    if (pending.type === "prepend") {
+      scroller.scrollTop = pending.top + (scroller.scrollHeight - pending.height);
+      return;
+    }
+    if (pending.type === "open") {
+      // Open at the first unread message if there is one, otherwise at the newest
+      const divider = scroller.querySelector("[data-unread-divider]");
+      if (divider) {
+        const offset = divider.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+        scroller.scrollTop += offset - 12;
+      } else {
+        scroller.scrollTop = scroller.scrollHeight;
+      }
+    } else {
+      autoScrollUntilRef.current = Date.now() + 700;
+      scroller.scrollTo({ top: scroller.scrollHeight, behavior: "smooth" });
+      setNewCount(0);
+    }
+    const distance = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight;
+    isAtBottomRef.current = pending.type === "bottom" || distance <= BOTTOM_SLACK;
+  }, [messages, firstUnreadId]);
+
+  const jumpToNewest = () => {
+    pendingScrollRef.current = null;
+    isAtBottomRef.current = true;
+    setNewCount(0);
+    autoScrollUntilRef.current = Date.now() + 700;
+    scrollerRef.current?.scrollTo({ top: scrollerRef.current.scrollHeight, behavior: "smooth" });
+  };
+
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    const distance = scrollHeight - scrollTop - clientHeight;
+    if (distance <= BOTTOM_SLACK) isAtBottomRef.current = true;
+    else if (Date.now() > autoScrollUntilRef.current) isAtBottomRef.current = false;
+    if (isAtBottomRef.current && newCount) setNewCount(0);
+    const far = distance > 400;
+    if (far !== farFromBottom) setFarFromBottom(far);
+    if (scrollTop < 200) loadOlder();
+  };
 
   useEffect(() => {
     if (!currentUser || !chatRoomId) return;
@@ -243,16 +387,6 @@ const Chat = () => {
     };
   }, [currentUser, chatRoomId]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    if (isAtBottom) {
-      scrollToBottom();
-    }
-  }, [messages]);
-
   const handleShowOnlineUsers = () => {
     setShowOnlineUsers((prev) => !prev);
   };
@@ -281,18 +415,31 @@ const Chat = () => {
         <ChatHeader />
 
         {/* Messages - scrolling container */}
+        <div className="relative flex-1 min-h-0">
         <div
           ref={scrollerRef}
-          className="flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6"
-          onScroll={(e) => {
-            const { scrollTop, scrollHeight, clientHeight } = e.target;
-            const atBottom = scrollHeight - scrollTop <= clientHeight + 50;
-            isAtBottomRef.current = atBottom;
-            setIsAtBottom(atBottom);
-          }}
+          className="h-full overflow-y-auto overscroll-contain px-3 py-4 sm:px-6"
+          onScroll={handleScroll}
         >
-          <div className="w-full lg:max-w-4xl mx-auto">
-            {messages.length === 0 ? (
+          <div ref={contentRef} className="w-full lg:max-w-4xl mx-auto">
+            {/* Top of the history: fixed height, so swapping its contents never shifts the messages */}
+            {messages.length > 0 && (
+              <div className="h-8 flex items-center justify-center text-[11px] text-gray-500">
+                {loadingOlder ? (
+                  <span className="flex items-center gap-1.5">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-500" />
+                    Loading earlier messages...
+                  </span>
+                ) : !hasMore ? (
+                  "This is the beginning of the chat"
+                ) : null}
+              </div>
+            )}
+            {loadingHistory && messages.length === 0 ? (
+              <div className="flex justify-center pt-24">
+                <Loader2 className="w-7 h-7 animate-spin text-violet-500" />
+              </div>
+            ) : messages.length === 0 ? (
               <div className="h-full flex items-center justify-center pt-16">
                 <div className="text-center text-gray-500">
                   <svg
@@ -315,7 +462,18 @@ const Chat = () => {
                 </div>
               </div>
             ) : (
-              buildTimeline(messages).map((item) => {
+              buildTimeline(messages, firstUnreadId).map((item) => {
+                if (item.type === "unread") {
+                  return (
+                    <div key={item.key} data-unread-divider className="flex items-center gap-3 my-3">
+                      <span className="flex-1 h-px bg-rose-300/70" />
+                      <span className="text-[11px] font-semibold text-rose-500 uppercase tracking-wider">
+                        Unread messages
+                      </span>
+                      <span className="flex-1 h-px bg-rose-300/70" />
+                    </div>
+                  );
+                }
                 if (item.type === "date") {
                   return (
                     <div key={item.key} className="flex justify-center pt-4 pb-1">
@@ -345,8 +503,24 @@ const Chat = () => {
               })
             )}
             <MessageTypingIndicator key={chatRoomId} roomId={chatRoomId} />
-            <div ref={messagesEndRef} />
           </div>
+        </div>
+
+        {/* Back to the newest messages, while reading older ones */}
+        {(newCount > 0 || farFromBottom) && (
+          <button
+            onClick={jumpToNewest}
+            title="Jump to the newest messages"
+            className={`absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 rounded-full shadow-lg transition-colors ${
+              newCount > 0
+                ? "btn-primary px-4 py-2 text-sm font-semibold"
+                : "w-10 h-10 justify-center bg-white/90 text-violet-600 hover:bg-white border border-white"
+            }`}
+          >
+            <ArrowDown className="w-4 h-4" />
+            {newCount > 0 && `${newCount} new message${newCount > 1 ? "s" : ""}`}
+          </button>
+        )}
         </div>
 
         {/* Input Area */}
